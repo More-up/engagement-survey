@@ -308,6 +308,15 @@ header h1 {
     box-shadow: 0 8px 20px rgba(15, 76, 58, 0.3);
 }
 
+/* ボタングループ */
+.button-group {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 30px;
+    flex-wrap: wrap;
+}
+
 /* ==============================
    進捗バー
    ============================== */
@@ -559,23 +568,159 @@ header h1 {
 }
 
 /* ==============================
+   診断履歴
+   ============================== */
+.history-item {
+    background: #f8f9fa;
+    border-left: 4px solid #1e7a5f;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+}
+
+.history-item:hover {
+    background: #e8f5f1;
+    transform: translateX(5px);
+}
+
+.history-date {
+    font-size: 0.9em;
+    color: #636e72;
+    margin-bottom: 10px;
+}
+
+.history-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.history-score {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: #1e7a5f;
+}
+
+/* ==============================
    印刷用スタイル
    ============================== */
+.print-only {
+    display: none;
+}
+
+.no-print {
+    display: block;
+}
+
 @media print {
+    /* 基本設定 */
     body {
         background: white;
+        color: black;
+        margin: 0;
+        padding: 0;
     }
     
-    .btn-primary, .btn-secondary {
-        display: none;
+    .container {
+        max-width: 100%;
+        padding: 10mm;
     }
     
-    .results-header {
+    /* 非表示要素 */
+    .no-print {
+        display: none !important;
+    }
+    
+    /* 印刷時のみ表示 */
+    .print-only {
+        display: block !important;
+    }
+    
+    /* ページ設定 */
+    @page {
+        size: A4;
+        margin: 15mm;
+    }
+    
+    /* 印刷用ヘッダー */
+    .print-header {
+        text-align: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 3px solid #1e7a5f;
+    }
+    
+    .print-header h1 {
         color: #0f4c3a;
+        font-size: 2em;
+        margin-bottom: 10px;
     }
     
-    .result-card {
+    .print-info p {
+        margin: 5px 0;
+        color: #2d3436;
+        font-size: 1em;
+    }
+    
+    /* 結果グリッド */
+    .results-grid {
+        display: block;
         page-break-inside: avoid;
+    }
+    
+    /* 結果カード */
+    .result-card {
+        box-shadow: none;
+        border: 2px solid #e0e0e0;
+        page-break-inside: avoid;
+        margin-bottom: 15px;
+        padding: 20px;
+    }
+    
+    .result-card h3 {
+        color: #0f4c3a;
+        font-size: 1.3em;
+    }
+    
+    /* 総合スコア */
+    .total-score {
+        font-size: 3em;
+        color: #1e7a5f;
+        text-shadow: none;
+    }
+    
+    /* スコアバー */
+    .score-bar {
+        border: 1px solid #e0e0e0;
+    }
+    
+    .score-bar-fill {
+        background: #1e7a5f;
+        box-shadow: none;
+    }
+    
+    /* レーダーチャート */
+    .chart-card {
+        grid-column: span 1;
+        page-break-before: always;
+    }
+    
+    /* Canvas要素の調整 */
+    canvas {
+        max-width: 100% !important;
+        height: auto !important;
+    }
+    
+    /* フィードバック */
+    .feedback-excellent,
+    .feedback-good,
+    .feedback-average,
+    .feedback-low {
+        color: #2d3436;
+        font-size: 1.1em;
     }
 }
 
@@ -589,6 +734,7 @@ header h1 {
     .content-card { padding: 30px; }
     .survey-container { padding: 30px; }
     .navigation { flex-direction: column; gap: 15px; }
+    .button-group { flex-direction: column; }
     .chart-card { grid-column: span 1; }
     .results-header h2 { font-size: 2.2em; }
     .total-score { font-size: 3.5em; }
