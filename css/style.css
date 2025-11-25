@@ -253,7 +253,7 @@ body {
 }
 
 /* ============================
-   診断ページ（カテゴリー単位）
+   診断ページ（セクション単位）
 ============================ */
 .progress-container {
     background: white;
@@ -671,7 +671,7 @@ body {
         padding: 25px;
     }
 
-    .category-header-large {
+    .section-header-large {
         font-size: 1.4em;
         padding: 15px 20px;
     }
