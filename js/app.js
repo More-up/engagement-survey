@@ -6,6 +6,7 @@ let currentQuestionIndex = 0;
 let answers = {};
 let selectedDepartment = '';
 let employeeCode = '';
+let radarChart = null; // チャートインスタンスを保持
 
 // ページ要素（初期化後に取得）
 let pages = {};
@@ -258,7 +259,7 @@ function showResults() {
     drawRadarChart(categoryScores);
     
     // フィードバック表示
-    displayFeedback(totalScore);
+    displayFeedback(totalScore, categoryScores);
     
     // 診断結果をローカルストレージに保存
     saveResultToStorage(totalScore, categoryScores, dateStr);
@@ -287,9 +288,9 @@ function saveResultToStorage(totalScore, categoryScores, dateStr) {
     // 新しい結果を追加
     history.push(result);
     
-    // 最新10件のみ保持
-    if (history.length > 10) {
-        history = history.slice(-10);
+    // 最新20件のみ保持
+    if (history.length > 20) {
+        history = history.slice(-20);
     }
     
     // 保存
@@ -302,13 +303,18 @@ function saveResultToStorage(totalScore, categoryScores, dateStr) {
 function drawRadarChart(categoryScores) {
     const ctx = document.getElementById('radar-chart').getContext('2d');
     
+    // 既存のチャートがあれば削除（エラー対策）
+    if (radarChart) {
+        radarChart.destroy();
+    }
+    
     const labels = Object.keys(categoryScores);
     const data = labels.map(category => {
         const maxScore = questions.filter(q => q.category === category).length * 5;
         return Math.round((categoryScores[category] / maxScore) * 100);
     });
     
-    new Chart(ctx, {
+    radarChart = new Chart(ctx, {
         type: 'radar',
         data: {
             labels: labels,
@@ -344,46 +350,97 @@ function drawRadarChart(categoryScores) {
 }
 
 // ==============================
-// フィードバック表示
+// フィードバック表示（改善版）
 // ==============================
-function displayFeedback(totalScore) {
+function displayFeedback(totalScore, categoryScores) {
     const feedbackDiv = document.getElementById('feedback');
     let feedback = '';
     
+    // 低スコアのカテゴリーを抽出
+    const lowCategories = [];
+    Object.entries(categoryScores).forEach(([category, score]) => {
+        const maxScore = questions.filter(q => q.category === category).length * 5;
+        const percentage = Math.round((score / maxScore) * 100);
+        if (percentage < 60) {
+            lowCategories.push(category);
+        }
+    });
+    
     if (totalScore >= 400) {
-        feedback = '<p class="feedback-excellent">🌟 素晴らしい！あなたの職場エンゲージメントは非常に高い水準です。</p>';
+        feedback = `
+            <p class="feedback-excellent">
+                🌟 素晴らしい！<br>
+                あなたの職場エンゲージメントは非常に高い水準です。<br>
+                現在の働き方や職場環境に高い満足度を感じておられるようです。<br>
+                この状態を維持しながら、さらなる成長を目指していきましょう。
+            </p>
+        `;
     } else if (totalScore >= 300) {
-        feedback = '<p class="feedback-good">👍 良好です。多くの面で満足度が高いようです。</p>';
+        feedback = `
+            <p class="feedback-good">
+                👍 良好です。<br>
+                多くの面で満足度が高く、職場での働きがいを感じておられます。<br>
+                ${lowCategories.length > 0 ? `特に「${lowCategories.join('、')}」の分野で改善の余地があるかもしれません。<br>` : ''}
+                引き続き前向きに取り組んでいきましょう。
+            </p>
+        `;
     } else if (totalScore >= 200) {
-        feedback = '<p class="feedback-average">📊 平均的なレベルです。<br>改善の余地がいくつかあります。</p>';
+        feedback = `
+            <p class="feedback-average">
+                📊 平均的なレベルです。<br>
+                職場環境には改善の余地がいくつか見られます。<br>
+                ${lowCategories.length > 0 ? `特に「${lowCategories.join('、')}」について、<br>上司や人事担当者に相談してみることをおすすめします。<br>` : ''}
+                小さな改善から始めてみましょう。
+            </p>
+        `;
     } else {
-        feedback = '<p class="feedback-low">💡 改善が必要です。職場環境の見直しを検討しましょう。</p>';
+        feedback = `
+            <p class="feedback-low">
+                💡 改善が必要です。<br>
+                職場環境や働き方について、何らかの課題を抱えておられるようです。<br>
+                ${lowCategories.length > 0 ? `特に「${lowCategories.join('、')}」のスコアが低くなっています。<br>` : ''}
+                一人で抱え込まず、信頼できる上司や人事担当者、<br>
+                または外部の相談窓口に相談することをおすすめします。
+            </p>
+        `;
     }
     
     feedbackDiv.innerHTML = feedback;
 }
 
 // ==============================
-// 診断履歴の表示
+// 診断履歴の表示（自分の履歴のみ）
 // ==============================
 function showHistory() {
-    const history = JSON.parse(localStorage.getItem('surveyHistory') || '[]');
+    const allHistory = JSON.parse(localStorage.getItem('surveyHistory') || '[]');
+    
+    // 現在ログインしている従業員コードでフィルタリング
+    const myHistory = allHistory.filter(item => item.employeeCode === employeeCode);
+    
     const historyList = document.getElementById('history-list');
     
-    if (history.length === 0) {
-        historyList.innerHTML = '<p style="text-align: center; color: #636e72; padding: 40px;">まだ診断履歴がありません</p>';
+    if (myHistory.length === 0) {
+        historyList.innerHTML = `
+            <p style="text-align: center; color: #636e72; padding: 40px;">
+                まだ診断履歴がありません<br>
+                <span style="font-size: 0.9em;">（従業員コード: ${employeeCode}）</span>
+            </p>
+        `;
     } else {
-        historyList.innerHTML = '';
+        historyList.innerHTML = `
+            <p style="text-align: center; color: #636e72; margin-bottom: 20px; font-size: 0.95em;">
+                従業員コード「${employeeCode}」の診断履歴（全${myHistory.length}件）
+            </p>
+        `;
         
         // 新しい順に表示
-        history.reverse().forEach((item, index) => {
+        myHistory.reverse().forEach((item, index) => {
             const historyItem = document.createElement('div');
             historyItem.className = 'history-item';
             historyItem.innerHTML = `
                 <div class="history-date">${item.date}</div>
                 <div class="history-info">
                     <div>
-                        <strong>従業員コード:</strong> ${item.employeeCode}<br>
                         <strong>所属部署:</strong> ${item.department}
                     </div>
                     <div class="history-score">${item.totalScore} / 500点</div>
@@ -407,6 +464,12 @@ function completeSurvey() {
         answers = {};
         selectedDepartment = '';
         employeeCode = '';
+        
+        // チャートもクリア
+        if (radarChart) {
+            radarChart.destroy();
+            radarChart = null;
+        }
         
         // トップページへ
         showPage('home');
