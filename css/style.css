@@ -393,17 +393,20 @@ body {
 .total-score-card h3 {
     font-size: 1.5em;
     margin-bottom: 20px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .total-score {
     font-size: 5em;
     font-weight: 700;
     margin-bottom: 10px;
+    text-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
 }
 
 .score-description {
     font-size: 1.2em;
-    opacity: 0.9;
+    opacity: 0.95;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .category-scores-section {
@@ -503,6 +506,11 @@ body {
 
 .feedback-average {
     background: #fffbeb;
+    border-left: 5px solid #f59e0b;
+}
+
+.feedback-caution {
+    background: #fef3c7;
     border-left: 5px solid #f59e0b;
 }
 
