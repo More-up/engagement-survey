@@ -5,6 +5,7 @@
 let currentQuestionIndex = 0;
 let answers = {};
 let selectedDepartment = '';
+let employeeCode = ''; // 従業員コード
 
 // ページ要素（初期化後に取得）
 let pages = {};
@@ -59,15 +60,30 @@ function completeOrientation() {
 // 部署選択と診断開始
 // ==============================
 function saveDepartmentAndStart() {
+    // 従業員コードの取得
+    const employeeCodeInput = document.getElementById('employee-code');
+    employeeCode = employeeCodeInput.value.trim();
+    
+    // 従業員コードの必須チェック
+    if (!employeeCode) {
+        alert('従業員コードを入力してください');
+        employeeCodeInput.focus();
+        return;
+    }
+    
+    // 部署の取得
     const departmentSelect = document.getElementById('department-select');
     selectedDepartment = departmentSelect.value;
 
+    // 部署の必須チェック
     if (!selectedDepartment) {
         alert('部署を選択してください');
+        departmentSelect.focus();
         return;
     }
 
-    // 部署情報をローカルストレージに保存
+    // ローカルストレージに保存
+    localStorage.setItem('employeeCode', employeeCode);
     localStorage.setItem('selectedDepartment', selectedDepartment);
 
     // 診断開始
@@ -193,11 +209,23 @@ function showResults() {
     // 総合スコア表示
     document.getElementById('total-score').textContent = totalScore;
     
+    // 従業員コードの表示
+    const employeeCodeDisplay = document.getElementById('employee-code-display');
+    if (employeeCode) {
+        employeeCodeDisplay.textContent = `従業員コード: ${employeeCode}`;
+    }
+    
     // 部署名の表示
     const departmentDisplay = document.getElementById('department-display');
     if (selectedDepartment) {
         departmentDisplay.textContent = `所属部署: ${selectedDepartment}`;
     }
+    
+    // 診断日時の表示
+    const surveyDate = document.getElementById('survey-date');
+    const now = new Date();
+    const dateStr = `診断日時: ${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+    surveyDate.textContent = dateStr;
     
     // カテゴリー別スコア表示
     const categoryScoresDiv = document.getElementById('category-scores');
@@ -226,8 +254,39 @@ function showResults() {
     // フィードバック表示
     displayFeedback(totalScore);
     
+    // 診断結果をローカルストレージに保存
+    saveResultToStorage(totalScore, categoryScores, dateStr);
+    
     // 結果ページへ遷移
     showPage('results');
+}
+
+// ==============================
+// 診断結果の保存
+// ==============================
+function saveResultToStorage(totalScore, categoryScores, dateStr) {
+    const result = {
+        employeeCode: employeeCode,
+        department: selectedDepartment,
+        date: dateStr,
+        totalScore: totalScore,
+        categoryScores: categoryScores,
+        answers: answers
+    };
+    
+    // 過去の結果を取得
+    let history = JSON.parse(localStorage.getItem('surveyHistory') || '[]');
+    
+    // 新しい結果を追加
+    history.push(result);
+    
+    // 最新10件のみ保持
+    if (history.length > 10) {
+        history = history.slice(-10);
+    }
+    
+    // 保存
+    localStorage.setItem('surveyHistory', JSON.stringify(history));
 }
 
 // ==============================
@@ -249,16 +308,28 @@ function drawRadarChart(categoryScores) {
             datasets: [{
                 label: 'エンゲージメントスコア（%）',
                 data: data,
-                backgroundColor: 'rgba(102, 126, 234, 0.2)',
-                borderColor: 'rgba(102, 126, 234, 1)',
-                borderWidth: 2
+                backgroundColor: 'rgba(30, 122, 95, 0.2)',
+                borderColor: 'rgba(30, 122, 95, 1)',
+                borderWidth: 2,
+                pointBackgroundColor: 'rgba(246, 185, 59, 1)',
+                pointBorderColor: '#fff',
+                pointHoverBackgroundColor: '#fff',
+                pointHoverBorderColor: 'rgba(246, 185, 59, 1)'
             }]
         },
         options: {
             scales: {
                 r: {
                     beginAtZero: true,
-                    max: 100
+                    max: 100,
+                    ticks: {
+                        stepSize: 20
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: false
                 }
             }
         }
@@ -292,6 +363,8 @@ function restartSurvey() {
     currentQuestionIndex = 0;
     answers = {};
     selectedDepartment = '';
+    employeeCode = '';
+    localStorage.removeItem('employeeCode');
     localStorage.removeItem('selectedDepartment');
     showPage('home');
 }
