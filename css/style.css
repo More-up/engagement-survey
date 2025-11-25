@@ -178,6 +178,73 @@ header h1 {
 }
 
 /* ==============================
+   従業員コード入力欄
+   ============================== */
+.employee-code-input {
+    width: 100%;
+    padding: 16px;
+    font-size: 1.1em;
+    border: 2px solid #1e7a5f;
+    border-radius: 12px;
+    background: white;
+    color: #2d3436;
+    transition: all 0.3s ease;
+}
+
+.employee-code-input:focus {
+    outline: none;
+    border-color: #f6b93b;
+    box-shadow: 0 0 15px rgba(246, 185, 59, 0.3);
+}
+
+/* ==============================
+   情報ボックス（説明文用）
+   ============================== */
+.info-box {
+    background: linear-gradient(135deg, #e8f5f1 0%, #fff9e6 100%);
+    border-left: 4px solid #1e7a5f;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 15px;
+}
+
+.info-title {
+    font-size: 1em;
+    font-weight: 600;
+    color: #0f4c3a;
+    margin-bottom: 12px;
+}
+
+.info-list {
+    list-style: none;
+    padding: 0;
+    margin: 12px 0;
+}
+
+.info-list li {
+    padding: 6px 0 6px 25px;
+    position: relative;
+    color: #2d3436;
+    font-size: 0.95em;
+}
+
+.info-list li:before {
+    content: "•";
+    position: absolute;
+    left: 8px;
+    color: #1e7a5f;
+    font-weight: bold;
+    font-size: 1.3em;
+}
+
+.info-note {
+    font-size: 0.9em;
+    color: #636e72;
+    margin-top: 12px;
+    line-height: 1.7;
+}
+
+/* ==============================
    部署選択セレクトボックス
    ============================== */
 .department-select {
@@ -438,11 +505,6 @@ header h1 {
     margin-bottom: 10px;
 }
 
-.score-label {
-    font-weight: 500;
-    color: #2d3436;
-}
-
 .score-value {
     font-weight: 600;
     color: #1e7a5f;
@@ -494,6 +556,27 @@ header h1 {
     font-size: 1.3em; 
     font-weight: 600; 
     line-height: 1.8;
+}
+
+/* ==============================
+   印刷用スタイル
+   ============================== */
+@media print {
+    body {
+        background: white;
+    }
+    
+    .btn-primary, .btn-secondary {
+        display: none;
+    }
+    
+    .results-header {
+        color: #0f4c3a;
+    }
+    
+    .result-card {
+        page-break-inside: avoid;
+    }
 }
 
 /* ==============================
