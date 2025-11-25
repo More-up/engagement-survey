@@ -155,7 +155,11 @@ function renderQuestion() {
     }
     
     if (prevBtn) {
-        prevBtn.style.display = currentQuestionIndex === 1 ? 'none' : 'inline-block';
+        if (currentQuestionIndex === 1) {
+            prevBtn.style.visibility = 'hidden';
+        } else {
+            prevBtn.style.visibility = 'visible';
+        }
     }
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
