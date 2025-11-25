@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>エンゲージメント診断 | 株式会社モアップ</title>
+    <title>Engagement Survey | More-Up</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script src="js/questions.js"></script>
@@ -13,28 +13,28 @@
     <div id="home" class="page active">
         <div class="container">
             <header>
-                <h1>エンゲージメント診断</h1>
-                <p class="subtitle">株式会社モアップ</p>
+                <h1>Engagement Survey</h1>
+                <p class="subtitle">Powered by More-Up</p>
             </header>
 
             <div class="hero">
                 <h2>働きがい・働きやすさを可視化</h2>
-                <p>100問の質問で、あなたの職場エンゲージメントを診断します。</p>
+                <p>100問の質問で、<br>あなたの職場エンゲージメントを診断します。</p>
                 <button class="btn-primary" onclick="showPage('orientation')">診断を開始する</button>
             </div>
 
             <div class="features">
                 <div class="feature-card">
                     <h3>🎯 9つのカテゴリー</h3>
-                    <p>仕事の充実感、成長機会、健康、上司サポートなど</p>
+                    <p>仕事の充実感、成長機会、<br>心身の健康、上司のサポートなど</p>
                 </div>
                 <div class="feature-card">
                     <h3>⏱️ 所要時間 15〜20分</h3>
-                    <p>じっくり振り返りながら回答できます</p>
+                    <p>じっくり振り返りながら<br>回答できます</p>
                 </div>
                 <div class="feature-card">
                     <h3>🔒 完全匿名</h3>
-                    <p>率直な回答で正確な診断結果が得られます</p>
+                    <p>率直な回答で<br>正確な診断結果が得られます</p>
                 </div>
             </div>
         </div>
@@ -46,10 +46,10 @@
             <div class="content-card">
                 <h2>診断を始める前に</h2>
                 <ul>
-                    <li>全100問の質問に答えていただきます</li>
-                    <li>回答は5段階評価（そう思わない〜そう思う）で選択</li>
-                    <li>途中で中断しても、続きから再開できます</li>
-                    <li>正直な回答が、より正確な診断結果につながります</li>
+                    <li>全100問の質問に<br>答えていただきます</li>
+                    <li>回答は5段階評価で選択<br>（そう思わない〜そう思う）</li>
+                    <li>途中で中断しても、<br>続きから再開できます</li>
+                    <li>正直な回答が、<br>より正確な診断結果につながります</li>
                 </ul>
                 <div style="margin-top: 30px;">
                     <button class="btn-primary" onclick="completeOrientation()">理解しました。次へ</button>
@@ -58,12 +58,12 @@
         </div>
     </div>
 
-    <!-- 部署選択ページ（新規追加） -->
+    <!-- 部署選択ページ -->
     <div id="department-selection" class="page">
         <div class="container">
             <div class="content-card">
                 <h2>所属部署を選択してください</h2>
-                <p style="margin-bottom: 20px;">診断結果の分析に使用します。匿名性は保たれます。</p>
+                <p style="margin-bottom: 20px;">診断結果の分析に使用します。<br>匿名性は保たれます。</p>
                 <select id="department-select" class="department-select">
                     <option value="">-- 選択してください --</option>
                     <option value="営業部">営業部</option>
@@ -133,7 +133,7 @@
         <div class="container">
             <div class="results-header">
                 <h2>診断結果</h2>
-                <p id="department-display" style="margin-top: 10px; font-size: 1.1em; color: #666;"></p>
+                <p id="department-display" style="margin-top: 10px; font-size: 1.1em; color: #fff;"></p>
             </div>
 
             <div class="results-grid">
