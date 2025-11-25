@@ -70,7 +70,7 @@ function saveDepartmentAndStart() {
     const deptSelect = document.getElementById('department');
     selectedDepartment = deptSelect ? deptSelect.value : '';
     
-    if (!selectedDepartment || selectedDepartment === '' || selectedDepartment === '-- 部署を選択してください --') {
+    if (!selectedDepartment) {
         alert('部署を選択してください。');
         return;
     }
@@ -337,32 +337,47 @@ function displayFeedback(totalScore, categoryScores) {
         feedbackTitle = '🎉 素晴らしいです！';
         feedbackDetail = 'あなたのエンゲージメントは非常に高い水準にあります。<br>現在の働き方や環境に高い満足度を感じており、<br>モチベーション高く業務に取り組めている状態です。';
         suggestions = 'この良好な状態を維持しながら、<br>さらなる成長やチャレンジの機会を模索してみましょう。';
-    } else if (totalScore >= 60) {
+    } else if (totalScore >= 70) {
         feedbackClass = 'feedback-good';
         feedbackTitle = '👍 良好です';
-        feedbackDetail = '多くの面で満足度が高く、<br>前向きに業務に取り組めている状態です。<br>いくつかの改善の余地はありますが、<br>全体としてバランスの取れた働き方ができています。';
+        feedbackDetail = '多くの面で満足度が高く、<br>前向きに業務に取り組めている状態です。<br>全体としてバランスの取れた働き方ができています。';
         
         const lowCategories = Object.entries(categoryScores)
-            .filter(([cat, score]) => score < 60)
+            .filter(([cat, score]) => score < 70)
             .map(([cat, score]) => cat);
         
         if (lowCategories.length > 0) {
-            suggestions = `特に「${lowCategories.join('」「')}」の分野で<br>改善の機会があるかもしれません。<br>上司や人事担当者と相談してみることをお勧めします。`;
+            suggestions = `特に「${lowCategories.join('」「')}」の分野で<br>さらなる向上の機会があるかもしれません。`;
         } else {
             suggestions = '現在の良好な状態を維持しつつ、<br>さらに充実した働き方を目指しましょう。';
         }
-    } else if (totalScore >= 40) {
+    } else if (totalScore >= 60) {
         feedbackClass = 'feedback-average';
-        feedbackTitle = '📊 改善の余地があります';
-        feedbackDetail = 'エンゲージメントレベルは平均的ですが、<br>いくつかの重要な分野で改善が必要です。<br>現状に不満を感じている点があるかもしれません。';
+        feedbackTitle = '📊 平均的です';
+        feedbackDetail = 'エンゲージメントレベルは平均的な水準です。<br>特に問題はありませんが、<br>より充実した働き方を目指す余地があります。';
         
         const lowCategories = Object.entries(categoryScores)
-            .filter(([cat, score]) => score < 50)
+            .filter(([cat, score]) => score < 60)
             .map(([cat, score]) => cat)
             .slice(0, 3);
         
         if (lowCategories.length > 0) {
-            suggestions = `特に「${lowCategories.join('」「')}」について、<br>具体的な改善策を検討することをお勧めします。<br>上司や人事部門に相談し、サポートを求めてみましょう。`;
+            suggestions = `「${lowCategories.join('」「')}」などの分野で<br>改善の機会を探してみることをお勧めします。`;
+        } else {
+            suggestions = '現状を維持しつつ、<br>さらに満足度を高められる点を探してみましょう。';
+        }
+    } else if (totalScore >= 50) {
+        feedbackClass = 'feedback-caution';
+        feedbackTitle = '📊 改善の余地があります';
+        feedbackDetail = 'エンゲージメントレベルがやや低めです。<br>いくつかの分野で改善が必要かもしれません。<br>現状に不満を感じている点があるかもしれません。';
+        
+        const lowCategories = Object.entries(categoryScores)
+            .filter(([cat, score]) => score < 55)
+            .map(([cat, score]) => cat)
+            .slice(0, 3);
+        
+        if (lowCategories.length > 0) {
+            suggestions = `特に「${lowCategories.join('」「')}」について、<br>具体的な改善策を検討することをお勧めします。<br>上司や人事部門に相談してみましょう。`;
         } else {
             suggestions = '職場環境や働き方について、<br>改善できる点を一緒に考えていきましょう。';
         }
@@ -372,7 +387,7 @@ function displayFeedback(totalScore, categoryScores) {
         feedbackDetail = 'エンゲージメントレベルが低い状態にあります。<br>現在の働き方や環境に大きな課題を感じており、<br>モチベーションの維持が難しい状況かもしれません。';
         
         const criticalCategories = Object.entries(categoryScores)
-            .filter(([cat, score]) => score < 40)
+            .filter(([cat, score]) => score < 50)
             .map(([cat, score]) => cat)
             .slice(0, 3);
         
