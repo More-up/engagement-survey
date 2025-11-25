@@ -72,13 +72,14 @@
 
                 <div class="orientation-section">
                     <h3>❓ 質問数</h3>
-                    <p>全100問（9つのカテゴリーに分類）</p>
+                    <p>全100問（9つのセクションに分類）</p>
                 </div>
 
                 <div class="orientation-section">
                     <h3>✍️ 回答方法</h3>
                     <p>各質問に対して、5段階であなたの気持ちに最も近いものを選択してください。</p>
                     <p class="note">上から「強くそう思う」→「そう思う」→「どちらでもない」→「そう思わない」→「全くそう思わない」の順です。</p>
+                    <p class="note">特定のテーマを意識せず、直感的にお答えください。</p>
                 </div>
 
                 <div class="orientation-section">
@@ -150,7 +151,7 @@
     </div>
 
     <!-- ============================
-         診断ページ（カテゴリー単位表示）
+         診断ページ（セクション単位表示）
     ============================ -->
     <div id="survey" class="page">
         <div class="container">
@@ -159,12 +160,12 @@
                 <div class="progress-bar">
                     <div class="progress-fill" id="progress-fill"></div>
                 </div>
-                <p class="progress-text" id="progress-text">カテゴリー 1 / 9</p>
+                <p class="progress-text" id="progress-text">セクション 1 / 9</p>
             </div>
 
-            <!-- カテゴリーカード -->
+            <!-- セクションカード -->
             <div class="category-card">
-                <div class="category-header-large" id="category-header">カテゴリー名</div>
+                <div class="section-header-large" id="section-header">セクション 1 / 9</div>
                 <div class="category-progress" id="category-progress-text">0 / 11 問回答済み</div>
                 
                 <!-- 質問リスト -->
@@ -176,10 +177,10 @@
             <!-- ナビゲーションボタン -->
             <div class="nav-buttons">
                 <button class="btn btn-secondary" id="prev-btn" onclick="previousCategory()">
-                    前のカテゴリー
+                    前のセクション
                 </button>
                 <button class="btn btn-primary" id="next-btn" onclick="nextCategory()">
-                    次のカテゴリーへ
+                    次のセクションへ
                 </button>
             </div>
         </div>
