@@ -5,7 +5,7 @@
 let currentQuestionIndex = 0;
 let answers = {};
 let selectedDepartment = '';
-let employeeCode = ''; // 従業員コード
+let employeeCode = '';
 
 // ページ要素（初期化後に取得）
 let pages = {};
@@ -19,7 +19,8 @@ function initPages() {
         orientation: document.getElementById('orientation'),
         departmentSelection: document.getElementById('department-selection'),
         survey: document.getElementById('survey'),
-        results: document.getElementById('results')
+        results: document.getElementById('results'),
+        history: document.getElementById('history')
     };
 }
 
@@ -222,10 +223,15 @@ function showResults() {
     }
     
     // 診断日時の表示
-    const surveyDate = document.getElementById('survey-date');
     const now = new Date();
     const dateStr = `診断日時: ${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const surveyDate = document.getElementById('survey-date');
     surveyDate.textContent = dateStr;
+    
+    // 印刷用の情報も設定
+    document.getElementById('print-employee-code').textContent = `従業員コード: ${employeeCode}`;
+    document.getElementById('print-department').textContent = `所属部署: ${selectedDepartment}`;
+    document.getElementById('print-date').textContent = dateStr;
     
     // カテゴリー別スコア表示
     const categoryScoresDiv = document.getElementById('category-scores');
@@ -269,6 +275,7 @@ function saveResultToStorage(totalScore, categoryScores, dateStr) {
         employeeCode: employeeCode,
         department: selectedDepartment,
         date: dateStr,
+        timestamp: new Date().getTime(),
         totalScore: totalScore,
         categoryScores: categoryScores,
         answers: answers
@@ -357,16 +364,53 @@ function displayFeedback(totalScore) {
 }
 
 // ==============================
-// 診断のリセット
+// 診断履歴の表示
 // ==============================
-function restartSurvey() {
-    currentQuestionIndex = 0;
-    answers = {};
-    selectedDepartment = '';
-    employeeCode = '';
-    localStorage.removeItem('employeeCode');
-    localStorage.removeItem('selectedDepartment');
-    showPage('home');
+function showHistory() {
+    const history = JSON.parse(localStorage.getItem('surveyHistory') || '[]');
+    const historyList = document.getElementById('history-list');
+    
+    if (history.length === 0) {
+        historyList.innerHTML = '<p style="text-align: center; color: #636e72; padding: 40px;">まだ診断履歴がありません</p>';
+    } else {
+        historyList.innerHTML = '';
+        
+        // 新しい順に表示
+        history.reverse().forEach((item, index) => {
+            const historyItem = document.createElement('div');
+            historyItem.className = 'history-item';
+            historyItem.innerHTML = `
+                <div class="history-date">${item.date}</div>
+                <div class="history-info">
+                    <div>
+                        <strong>従業員コード:</strong> ${item.employeeCode}<br>
+                        <strong>所属部署:</strong> ${item.department}
+                    </div>
+                    <div class="history-score">${item.totalScore} / 500点</div>
+                </div>
+            `;
+            historyList.appendChild(historyItem);
+        });
+    }
+    
+    showPage('history');
+}
+
+// ==============================
+// 診断を完了する
+// ==============================
+function completeSurvey() {
+    // 確認ダイアログ
+    if (confirm('診断を完了してトップページに戻りますか？')) {
+        // データをクリア
+        currentQuestionIndex = 0;
+        answers = {};
+        selectedDepartment = '';
+        employeeCode = '';
+        
+        // トップページへ
+        showPage('home');
+    }
 }
 
 // ==============================
