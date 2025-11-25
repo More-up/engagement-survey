@@ -1,184 +1,124 @@
-// 質問データ
+// ==============================
+// エンゲージメント診断 質問データ
+// 全100問（9カテゴリー）
+// ==============================
+
 const questions = [
     // カテゴリー1: 仕事の充実感（12問）
-    {
-        category: "仕事の充実感",
-        categoryDescription: "仕事そのものに対する満足度・やりがいを測定",
-        questions: [
-            { id: 1, text: "今の仕事にやりがいを感じている", reverse: false },
-            { id: 2, text: "自分の仕事が会社の成長に貢献していると感じる", reverse: false },
-            { id: 3, text: "仕事を通じて自分の強みを活かせている", reverse: false },
-            { id: 4, text: "今の仕事内容に満足している", reverse: false },
-            { id: 5, text: "仕事に対して前向きな気持ちで取り組めている", reverse: false },
-            { id: 6, text: "自分の仕事が顧客や社会に価値を提供していると感じる", reverse: false },
-            { id: 7, text: "仕事の成果が目に見える形で現れることが多い", reverse: false },
-            { id: 8, text: "今の仕事は自分の適性に合っていると思う", reverse: false },
-            { id: 9, text: "毎日の業務に意義を感じている", reverse: false },
-            { id: 10, text: "自分の仕事に誇りを持っている", reverse: false },
-            { id: 11, text: "仕事を通じて達成感を得られている", reverse: false },
-            { id: 12, text: "今の仕事を続けたいと思う", reverse: false }
-        ]
-    },
+    { id: 1, text: "今の仕事にやりがいを感じている", category: "仕事の充実感" },
+    { id: 2, text: "自分の仕事が会社の成果に貢献していると感じる", category: "仕事の充実感" },
+    { id: 3, text: "仕事を通じて達成感を得られている", category: "仕事の充実感" },
+    { id: 4, text: "自分の強みを活かせる仕事ができている", category: "仕事の充実感" },
+    { id: 5, text: "仕事の内容に興味や関心を持っている", category: "仕事の充実感" },
+    { id: 6, text: "日々の業務に意義を感じている", category: "仕事の充実感" },
+    { id: 7, text: "仕事を通じて自己実現ができていると感じる", category: "仕事の充実感" },
+    { id: 8, text: "担当業務に誇りを持っている", category: "仕事の充実感" },
+    { id: 9, text: "仕事で新しいことに挑戦する機会がある", category: "仕事の充実感" },
+    { id: 10, text: "自分の裁量で仕事を進められている", category: "仕事の充実感" },
+    { id: 11, text: "仕事の目標が明確である", category: "仕事の充実感" },
+    { id: 12, text: "仕事に集中できる環境が整っている", category: "仕事の充実感" },
+
     // カテゴリー2: 成長機会（11問）
-    {
-        category: "成長機会",
-        categoryDescription: "キャリア開発・スキルアップの機会を測定",
-        questions: [
-            { id: 13, text: "会社は社員の成長を支援する環境が整っている", reverse: false },
-            { id: 14, text: "新しいスキルを学ぶ機会が定期的に提供されている", reverse: false },
-            { id: 15, text: "自分のキャリアプランについて上司と話し合う機会がある", reverse: false },
-            { id: 16, text: "挑戦的な仕事を任せてもらえる", reverse: false },
-            { id: 17, text: "今の会社で自分の市場価値が高まっていると感じる", reverse: false },
-            { id: 18, text: "研修や教育プログラムが充実している", reverse: false },
-            { id: 19, text: "将来のキャリアアップの道筋が見えている", reverse: false },
-            { id: 20, text: "多様な業務経験を積むことができている", reverse: false },
-            { id: 21, text: "自己啓発のための支援制度が整っている", reverse: false },
-            { id: 22, text: "この会社で長期的に成長できると感じる", reverse: false },
-            { id: 23, text: "自分の専門性を深める機会がある", reverse: false }
-        ]
-    },
-    // カテゴリー3: 心身の健康（10問・逆転項目あり）
-    {
-        category: "心身の健康",
-        categoryDescription: "ストレス・疲労・健康状態を測定",
-        questions: [
-            { id: 24, text: "仕事によるストレスで体調を崩すことがある", reverse: true },
-            { id: 25, text: "休日でも仕事のことが頭から離れない", reverse: true },
-            { id: 26, text: "最近、疲労が蓄積していると感じる", reverse: true },
-            { id: 27, text: "仕事とプライベートのバランスが取れている", reverse: false },
-            { id: 28, text: "十分な休息を取ることができている", reverse: false },
-            { id: 29, text: "心身ともに健康な状態で働けている", reverse: false },
-            { id: 30, text: "仕事による精神的な負担が大きい", reverse: true },
-            { id: 31, text: "会社は社員の健康管理を重視している", reverse: false },
-            { id: 32, text: "業務量は適切だと感じる", reverse: false },
-            { id: 33, text: "朝、仕事に行くのが憂鬱に感じることがある", reverse: true }
-        ]
-    },
+    { id: 13, text: "この会社で成長できていると感じる", category: "成長機会" },
+    { id: 14, text: "スキルアップの機会が提供されている", category: "成長機会" },
+    { id: 15, text: "研修や教育プログラムが充実している", category: "成長機会" },
+    { id: 16, text: "新しい知識や技術を学ぶ機会がある", category: "成長機会" },
+    { id: 17, text: "自己啓発を支援する制度がある", category: "成長機会" },
+    { id: 18, text: "キャリアパスが明確に示されている", category: "成長機会" },
+    { id: 19, text: "上司から適切なフィードバックを受けている", category: "成長機会" },
+    { id: 20, text: "失敗から学ぶことが奨励されている", category: "成長機会" },
+    { id: 21, text: "他部署との協働を通じて学びがある", category: "成長機会" },
+    { id: 22, text: "自分の成長目標が明確である", category: "成長機会" },
+    { id: 23, text: "将来のキャリアに希望を持っている", category: "成長機会" },
+
+    // カテゴリー3: 心身の健康（10問）
+    { id: 24, text: "仕事のストレスは適度な範囲である", category: "心身の健康" },
+    { id: 25, text: "十分な休息を取ることができている", category: "心身の健康" },
+    { id: 26, text: "心身ともに健康を維持できている", category: "心身の健康" },
+    { id: 27, text: "仕事とプライベートのバランスが取れている", category: "心身の健康" },
+    { id: 28, text: "過度な長時間労働はない", category: "心身の健康" },
+    { id: 29, text: "有給休暇を取得しやすい", category: "心身の健康" },
+    { id: 30, text: "メンタルヘルスのサポート体制がある", category: "心身の健康" },
+    { id: 31, text: "健康診断やヘルスケアのサポートがある", category: "心身の健康" },
+    { id: 32, text: "職場の人間関係によるストレスは少ない", category: "心身の健康" },
+    { id: 33, text: "心理的安全性が保たれている", category: "心身の健康" },
+
     // カテゴリー4: 上司のサポート（11問）
-    {
-        category: "上司のサポート",
-        categoryDescription: "直属上司のマネジメント・支援を測定",
-        questions: [
-            { id: 34, text: "上司は部下の意見に耳を傾けてくれる", reverse: false },
-            { id: 35, text: "上司から適切なフィードバックをもらえている", reverse: false },
-            { id: 36, text: "困ったときに上司に相談しやすい", reverse: false },
-            { id: 37, text: "上司は公平に評価してくれる", reverse: false },
-            { id: 38, text: "上司のマネジメントスタイルに満足している", reverse: false },
-            { id: 39, text: "上司は部下の成長を支援してくれる", reverse: false },
-            { id: 40, text: "上司から明確な指示や方向性が示される", reverse: false },
-            { id: 41, text: "上司との信頼関係が築けている", reverse: false },
-            { id: 42, text: "上司は部下の業務負担に配慮してくれる", reverse: false },
-            { id: 43, text: "上司の判断やリーダーシップに納得している", reverse: false },
-            { id: 44, text: "上司は部下の強みを理解し活かそうとしている", reverse: false }
-        ]
-    },
-    // カテゴリー5: チームの関係性（11問）
-    {
-        category: "チームの関係性",
-        categoryDescription: "同僚・チームメンバーとの関係性を測定",
-        questions: [
-            { id: 45, text: "チームメンバーと良好な関係を築けている", reverse: false },
-            { id: 46, text: "困ったときに同僚が助けてくれる", reverse: false },
-            { id: 47, text: "チーム内で気軽に意見を言い合える雰囲気がある", reverse: false },
-            { id: 48, text: "チームメンバーを信頼している", reverse: false },
-            { id: 49, text: "チームで協力して仕事を進められている", reverse: false },
-            { id: 50, text: "職場に尊敬できる同僚がいる", reverse: false },
-            { id: 51, text: "チーム内でお互いの強みを活かし合えている", reverse: false },
-            { id: 52, text: "職場の人間関係にストレスを感じることが少ない", reverse: false },
-            { id: 53, text: "チームの一体感を感じる", reverse: false },
-            { id: 54, text: "同僚とのコミュニケーションは円滑だ", reverse: false },
-            { id: 55, text: "職場で孤立していると感じることはない", reverse: false }
-        ]
-    },
-    // カテゴリー6: 評価・承認（11問）
-    {
-        category: "評価・承認",
-        categoryDescription: "評価の公正性・承認・報酬への満足度を測定",
-        questions: [
-            { id: 56, text: "自分の頑張りが正当に評価されていると感じる", reverse: false },
-            { id: 57, text: "評価制度は公平だと思う", reverse: false },
-            { id: 58, text: "上司や同僚から感謝の言葉をかけられることが多い", reverse: false },
-            { id: 59, text: "自分の成果が認められていると感じる", reverse: false },
-            { id: 60, text: "報酬は自分の貢献度に見合っていると思う", reverse: false },
-            { id: 61, text: "評価基準が明確で納得できる", reverse: false },
-            { id: 62, text: "頑張れば報われる環境だと感じる", reverse: false },
-            { id: 63, text: "自分の仕事ぶりについて定期的にフィードバックがある", reverse: false },
-            { id: 64, text: "昇進・昇格の機会は公平に与えられている", reverse: false },
-            { id: 65, text: "自分の努力が会社に認められていると感じる", reverse: false },
-            { id: 66, text: "給与・待遇に満足している", reverse: false }
-        ]
-    },
+    { id: 34, text: "上司は部下の意見を尊重してくれる", category: "上司のサポート" },
+    { id: 35, text: "上司とのコミュニケーションは円滑である", category: "上司のサポート" },
+    { id: 36, text: "上司は適切な指導をしてくれる", category: "上司のサポート" },
+    { id: 37, text: "上司は部下の成長を支援してくれる", category: "上司のサポート" },
+    { id: 38, text: "上司に相談しやすい雰囲気がある", category: "上司のサポート" },
+    { id: 39, text: "上司は公平に評価してくれる", category: "上司のサポート" },
+    { id: 40, text: "上司から適切な権限委譲がされている", category: "上司のサポート" },
+    { id: 41, text: "上司は部下の業務負荷を理解している", category: "上司のサポート" },
+    { id: 42, text: "上司は模範となる行動をしている", category: "上司のサポート" },
+    { id: 43, text: "上司からの期待が明確である", category: "上司のサポート" },
+    { id: 44, text: "上司との信頼関係が築けている", category: "上司のサポート" },
+
+    // カテゴリー5: チーム関係（11問）
+    { id: 45, text: "チームメンバーと良好な関係を築けている", category: "チーム関係" },
+    { id: 46, text: "チーム内でのコミュニケーションは円滑である", category: "チーム関係" },
+    { id: 47, text: "お互いに助け合う文化がある", category: "チーム関係" },
+    { id: 48, text: "チームの目標が共有されている", category: "チーム関係" },
+    { id: 49, text: "チーム内で情報共有が適切に行われている", category: "チーム関係" },
+    { id: 50, text: "意見を自由に言える雰囲気がある", category: "チーム関係" },
+    { id: 51, text: "チームメンバーを信頼している", category: "チーム関係" },
+    { id: 52, text: "チームでの協働がうまくいっている", category: "チーム関係" },
+    { id: 53, text: "チーム内の役割分担が明確である", category: "チーム関係" },
+    { id: 54, text: "チームの雰囲気は良好である", category: "チーム関係" },
+    { id: 55, text: "チームでの成果を実感できている", category: "チーム関係" },
+
+    // カテゴリー6: 評価と承認（11問）
+    { id: 56, text: "自分の仕事が適切に評価されている", category: "評価と承認" },
+    { id: 57, text: "評価基準が明確である", category: "評価と承認" },
+    { id: 58, text: "評価制度は公平である", category: "評価と承認" },
+    { id: 59, text: "成果に対して適切な報酬が得られている", category: "評価と承認" },
+    { id: 60, text: "上司や同僚から感謝や称賛を受けている", category: "評価と承認" },
+    { id: 61, text: "自分の貢献が認められていると感じる", category: "評価と承認" },
+    { id: 62, text: "評価面談は有意義である", category: "評価と承認" },
+    { id: 63, text: "昇進・昇格の機会は公平である", category: "評価と承認" },
+    { id: 64, text: "給与水準に満足している", category: "評価と承認" },
+    { id: 65, text: "福利厚生は充実している", category: "評価と承認" },
+    { id: 66, text: "頑張りが報われる会社だと感じる", category: "評価と承認" },
+
     // カテゴリー7: 経営方針（11問）
-    {
-        category: "経営方針",
-        categoryDescription: "会社のミッション・ビジョン・戦略への共感を測定",
-        questions: [
-            { id: 67, text: "会社のビジョンに共感している", reverse: false },
-            { id: 68, text: "会社の方向性は明確だと感じる", reverse: false },
-            { id: 69, text: "経営陣の判断を信頼している", reverse: false },
-            { id: 70, text: "会社の価値観に共感できる", reverse: false },
-            { id: 71, text: "会社の将来性に期待している", reverse: false },
-            { id: 72, text: "経営方針が社員に適切に共有されている", reverse: false },
-            { id: 73, text: "会社の事業内容に誇りを持っている", reverse: false },
-            { id: 74, text: "経営陣は社員の声に耳を傾けている", reverse: false },
-            { id: 75, text: "会社の理念やミッションに共感している", reverse: false },
-            { id: 76, text: "会社の意思決定プロセスは透明だと感じる", reverse: false },
-            { id: 77, text: "この会社の一員であることを誇りに思う", reverse: false }
-        ]
-    },
-    // カテゴリー8: 職場風土（12問）
-    {
-        category: "職場風土",
-        categoryDescription: "組織の雰囲気・文化・心理的安全性を測定",
-        questions: [
-            { id: 78, text: "職場では失敗を恐れずに挑戦できる雰囲気がある", reverse: false },
-            { id: 79, text: "意見の違いを尊重し合う文化がある", reverse: false },
-            { id: 80, text: "職場で自分らしくいられる", reverse: false },
-            { id: 81, text: "新しいアイデアや提案が歓迎される", reverse: false },
-            { id: 82, text: "職場の雰囲気は明るく前向きだ", reverse: false },
-            { id: 83, text: "部門間の連携がスムーズだ", reverse: false },
-            { id: 84, text: "職場では率直なコミュニケーションが取れる", reverse: false },
-            { id: 85, text: "会社は多様性を尊重している", reverse: false },
-            { id: 86, text: "困難な状況でもチーム全体で乗り越えようとする風土がある", reverse: false },
-            { id: 87, text: "職場では助け合いの精神が根付いている", reverse: false },
-            { id: 88, text: "会社の文化や価値観に共感できる", reverse: false },
-            { id: 89, text: "心理的に安全な環境で働けている", reverse: false }
-        ]
-    },
-    // カテゴリー9: 就業環境（11問）
-    {
-        category: "就業環境",
-        categoryDescription: "物理的環境・制度・ワークライフバランスを測定",
-        questions: [
-            { id: 90, text: "オフィス環境は快適だ", reverse: false },
-            { id: 91, text: "必要な設備やツールが整っている", reverse: false },
-            { id: 92, text: "柔軟な働き方（リモートワーク等）が可能だ", reverse: false },
-            { id: 93, text: "休暇を取りやすい雰囲気がある", reverse: false },
-            { id: 94, text: "労働時間は適切に管理されている", reverse: false },
-            { id: 95, text: "福利厚生制度は充実している", reverse: false },
-            { id: 96, text: "通勤の負担は少ない", reverse: false },
-            { id: 97, text: "業務に集中できる環境が整っている", reverse: false },
-            { id: 98, text: "会社の制度（休暇・手当等）に満足している", reverse: false },
-            { id: 99, text: "プライベートの時間を十分に確保できている", reverse: false },
-            { id: 100, text: "今の働き方に満足している", reverse: false }
-        ]
-    }
+    { id: 67, text: "会社のビジョンに共感している", category: "経営方針" },
+    { id: 68, text: "会社の経営方針が明確である", category: "経営方針" },
+    { id: 69, text: "会社の将来性に期待している", category: "経営方針" },
+    { id: 70, text: "経営層からの情報発信は十分である", category: "経営方針" },
+    { id: 71, text: "会社の方向性に納得している", category: "経営方針" },
+    { id: 72, text: "会社の意思決定プロセスは透明である", category: "経営方針" },
+    { id: 73, text: "会社の価値観に共感している", category: "経営方針" },
+    { id: 74, text: "会社の社会的意義を感じている", category: "経営方針" },
+    { id: 75, text: "経営層を信頼している", category: "経営方針" },
+    { id: 76, text: "会社の変革に前向きである", category: "経営方針" },
+    { id: 77, text: "この会社で長く働きたいと思う", category: "経営方針" },
+
+    // カテゴリー8: 職場環境（12問）
+    { id: 78, text: "オフィス環境は快適である", category: "職場環境" },
+    { id: 79, text: "必要な設備やツールが整っている", category: "職場環境" },
+    { id: 80, text: "ITシステムは使いやすい", category: "職場環境" },
+    { id: 81, text: "業務効率化のための投資がされている", category: "職場環境" },
+    { id: 82, text: "安全で衛生的な職場環境である", category: "職場環境" },
+    { id: 83, text: "リモートワークなど柔軟な働き方ができる", category: "職場環境" },
+    { id: 84, text: "通勤の負担は許容範囲である", category: "職場環境" },
+    { id: 85, text: "休憩スペースが適切に確保されている", category: "職場環境" },
+    { id: 86, text: "職場の清潔さが保たれている", category: "職場環境" },
+    { id: 87, text: "集中できる作業環境がある", category: "職場環境" },
+    { id: 88, text: "コミュニケーションしやすいレイアウトである", category: "職場環境" },
+    { id: 89, text: "職場の照明や温度は適切である", category: "職場環境" },
+
+    // カテゴリー9: 働く環境（11問）
+    { id: 90, text: "労働時間は適切である", category: "働く環境" },
+    { id: 91, text: "残業時間は許容範囲である", category: "働く環境" },
+    { id: 92, text: "休日は十分に確保されている", category: "働く環境" },
+    { id: 93, text: "業務量は適切である", category: "働く環境" },
+    { id: 94, text: "仕事の締め切りは現実的である", category: "働く環境" },
+    { id: 95, text: "無理な要求をされることは少ない", category: "働く環境" },
+    { id: 96, text: "ハラスメントのない職場である", category: "働く環境" },
+    { id: 97, text: "多様性が尊重されている", category: "働く環境" },
+    { id: 98, text: "働きやすい制度が整っている", category: "働く環境" },
+    { id: 99, text: "育児・介護との両立支援がある", category: "働く環境" },
+    { id: 100, text: "総合的に働きやすい職場だと感じる", category: "働く環境" }
 ];
-
-// スコア評価基準
-const scoreCriteria = {
-    excellent: { min: 80, label: "非常に高いエンゲージメント", color: "#10b981" },
-    good: { min: 70, label: "良好なエンゲージメント", color: "#3b82f6" },
-    moderate: { min: 60, label: "平均的なエンゲージメント", color: "#f59e0b" },
-    low: { min: 50, label: "やや低いエンゲージメント", color: "#f97316" },
-    critical: { min: 0, label: "早急な対策が必要", color: "#ef4444" }
-};
-
-// フィードバックメッセージ
-const feedbackMessages = {
-    excellent: "非常に高いエンゲージメントです！現在の良好な状態を維持しながら、更なる成長を目指しましょう。",
-    good: "良好なエンゲージメントが保たれています。より高い水準を目指して、改善の余地がある分野に注目しましょう。",
-    moderate: "エンゲージメントは平均的な水準です。スコアが低いカテゴリーを重点的に改善することで、全体の向上が期待できます。",
-    low: "エンゲージメントがやや低い状態です。特に低スコアのカテゴリーについて、具体的な改善施策が必要です。",
-    critical: "エンゲージメントが著しく低い状態です。早急に組織的な対策を講じることを強く推奨します。"
-};
