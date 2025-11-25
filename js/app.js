@@ -58,6 +58,13 @@ function showPage(pageId) {
 }
 
 // ============================
+// オリエンテーション完了
+// ============================
+function completeOrientation() {
+    showPage('department-selection');
+}
+
+// ============================
 // 部署選択・従業員コード保存
 // ============================
 function saveDepartmentAndStart() {
