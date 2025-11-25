@@ -16,7 +16,7 @@ function initPages() {
     pages = {
         home: document.getElementById('home'),
         orientation: document.getElementById('orientation'),
-        departmentSelection: document.getElementById('department-selection'), // 部署選択ページ
+        departmentSelection: document.getElementById('department-selection'),
         survey: document.getElementById('survey'),
         results: document.getElementById('results')
     };
@@ -41,10 +41,10 @@ function showPage(pageId) {
         pages[pageId].classList.add('active');
     }
     
-    // ★ スクロール位置を一番上にリセット
+    // スクロール位置を一番上にリセット
     window.scrollTo({
         top: 0,
-        behavior: 'smooth' // スムーズにスクロール
+        behavior: 'smooth'
     });
 }
 
@@ -52,7 +52,7 @@ function showPage(pageId) {
 // オリエンテーション完了
 // ==============================
 function completeOrientation() {
-    showPage('departmentSelection'); // 部署選択ページへ遷移
+    showPage('departmentSelection');
 }
 
 // ==============================
@@ -135,7 +135,7 @@ function nextQuestion() {
         currentQuestionIndex++;
         renderQuestion();
         
-        // ★ 質問切り替え時もスクロールをリセット
+        // 質問切り替え時もスクロールをリセット
         window.scrollTo({
             top: 0,
             behavior: 'smooth'
@@ -154,7 +154,7 @@ function previousQuestion() {
         currentQuestionIndex--;
         renderQuestion();
         
-        // ★ 質問切り替え時もスクロールをリセット
+        // 質問切り替え時もスクロールをリセット
         window.scrollTo({
             top: 0,
             behavior: 'smooth'
@@ -266,4 +266,31 @@ function displayFeedback(totalScore) {
     if (totalScore >= 400) {
         feedback = '<p class="feedback-excellent">🌟 素晴らしい！あなたの職場エンゲージメントは非常に高い水準です。</p>';
     } else if (totalScore >= 300) {
-        feedback = '<p class="feedback-good">👍 良好です。多
+        feedback = '<p class="feedback-good">👍 良好です。多くの面で満足度が高いようです。</p>';
+    } else if (totalScore >= 200) {
+        feedback = '<p class="feedback-average">📊 平均的なレベルです。改善の余地がいくつかあります。</p>';
+    } else {
+        feedback = '<p class="feedback-low">💡 改善が必要です。職場環境の見直しを検討しましょう。</p>';
+    }
+    
+    feedbackDiv.innerHTML = feedback;
+}
+
+// ==============================
+// 診断のリセット
+// ==============================
+function restartSurvey() {
+    currentQuestionIndex = 0;
+    answers = {};
+    selectedDepartment = '';
+    localStorage.removeItem('selectedDepartment');
+    showPage('home');
+}
+
+// ==============================
+// ページ読み込み時の初期化
+// ==============================
+document.addEventListener('DOMContentLoaded', function() {
+    initPages();
+    showPage('home');
+});
