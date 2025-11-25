@@ -1,500 +1,278 @@
-// アプリケーション状態管理
-let currentQuestionIndex = 0;
-let answers = [];
-let currentPage = 'home';
+// ==============================
+// エンゲージメント診断 メインロジック
+// ==============================
 
-// ページ要素（DOMContentLoaded後に初期化）
+let currentQuestionIndex = 0;
+let answers = {};
+let selectedDepartment = ''; // 部署情報を保存
+
+// ページ要素（初期化後に取得）
 let pages = {};
 
-// ページ要素を初期化
+// ==============================
+// 初期化関数
+// ==============================
 function initPages() {
     pages = {
-        home: document.getElementById('homePage'),
-        orientation: document.getElementById('orientationPage'),
-        survey: document.getElementById('surveyPage'),
-        results: document.getElementById('resultsPage')
+        home: document.getElementById('home'),
+        orientation: document.getElementById('orientation'),
+        departmentSelection: document.getElementById('department-selection'), // 部署選択ページ
+        survey: document.getElementById('survey'),
+        results: document.getElementById('results')
     };
 }
 
+// ==============================
 // ページ遷移
-function showPage(pageName) {
-    Object.keys(pages).forEach(page => {
-        if (pages[page]) {
-            pages[page].classList.remove('active');
-        }
+// ==============================
+function showPage(pageId) {
+    if (!pages || !pages.home) {
+        console.error('Pages not initialized');
+        return;
+    }
+    
+    // 全ページを非表示
+    Object.values(pages).forEach(page => {
+        if (page) page.classList.remove('active');
     });
-    if (pages[pageName]) {
-        pages[pageName].classList.add('active');
-    }
-    currentPage = pageName;
     
-    if (pageName === 'survey') {
-        renderQuestion();
-    } else if (pageName === 'results') {
-        displayResults();
+    // 指定ページを表示
+    if (pages[pageId]) {
+        pages[pageId].classList.add('active');
     }
 }
 
-// 診断開始
-function startSurvey() {
-    currentQuestionIndex = 0;
-    answers = new Array(100).fill(null);
-    showPage('orientation');
-}
-
+// ==============================
 // オリエンテーション完了
+// ==============================
 function completeOrientation() {
-    showPage('survey');
+    showPage('departmentSelection'); // 部署選択ページへ遷移
 }
 
-// 質問を描画
+// ==============================
+// 部署選択と診断開始
+// ==============================
+function saveDepartmentAndStart() {
+    const departmentSelect = document.getElementById('department-select');
+    selectedDepartment = departmentSelect.value;
+
+    if (!selectedDepartment) {
+        alert('部署を選択してください');
+        return;
+    }
+
+    // 部署情報をローカルストレージに保存
+    localStorage.setItem('selectedDepartment', selectedDepartment);
+
+    // 診断開始
+    currentQuestionIndex = 0;
+    answers = {};
+    showPage('survey');
+    renderQuestion();
+}
+
+// ==============================
+// 質問の描画
+// ==============================
 function renderQuestion() {
-    const container = document.getElementById('questionContainer');
-    const progressInfo = document.getElementById('progressInfo');
-    const progressFill = document.getElementById('progressFill');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const submitBtn = document.getElementById('submitBtn');
+    const question = questions[currentQuestionIndex];
     
-    if (!container) return;
+    // 質問文、カテゴリー、進捗を表示
+    document.getElementById('question-text').textContent = question.text;
+    document.getElementById('category-name').textContent = question.category;
+    document.getElementById('current-question').textContent = currentQuestionIndex + 1;
+    document.getElementById('total-questions').textContent = questions.length;
     
-    // 進捗情報更新
-    const progress = ((currentQuestionIndex + 1) / 100) * 100;
-    if (progressInfo) {
-        progressInfo.innerHTML = `
-            <span>質問 ${currentQuestionIndex + 1} / 100</span>
-            <span>${Math.round(progress)}% 完了</span>
-        `;
-    }
-    if (progressFill) {
-        progressFill.style.width = `${progress}%`;
-    }
+    // 進捗バーの更新
+    const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+    document.getElementById('progress-fill').style.width = progress + '%';
     
-    // 現在の質問を取得
-    let questionData = null;
-    let questionInCategory = 0;
-    let cumulativeCount = 0;
-    
-    for (const category of questions) {
-        if (currentQuestionIndex < cumulativeCount + category.questions.length) {
-            questionData = category.questions[currentQuestionIndex - cumulativeCount];
-            questionInCategory = currentQuestionIndex - cumulativeCount;
-            break;
-        }
-        cumulativeCount += category.questions.length;
-    }
-    
-    // カテゴリーが変わったかチェック
-    const currentCategory = getCurrentCategory();
-    const isNewCategory = questionInCategory === 0;
-    
-    // 質問カードを描画
-    container.innerHTML = '';
-    
-    // 新しいカテゴリーの開始時にヘッダーを表示
-    if (isNewCategory) {
-        const categoryHeader = document.createElement('div');
-        categoryHeader.className = 'category-header';
-        categoryHeader.innerHTML = `
-            <h3>${currentCategory.category}</h3>
-            <p>${currentCategory.categoryDescription}</p>
-        `;
-        container.appendChild(categoryHeader);
-    }
-    
-    // 質問カード
-    const questionCard = document.createElement('div');
-    questionCard.className = 'question-card';
-    questionCard.innerHTML = `
-        <div class="question-header">
-            <div class="question-number">${currentQuestionIndex + 1}</div>
-            <div class="question-text">${questionData.text}</div>
-        </div>
-        <div class="options">
-            <button class="option-btn" onclick="selectAnswer(1)" data-value="1">
-                全くそう思わない<br><small>1点</small>
-            </button>
-            <button class="option-btn" onclick="selectAnswer(2)" data-value="2">
-                そう思わない<br><small>2点</small>
-            </button>
-            <button class="option-btn" onclick="selectAnswer(3)" data-value="3">
-                どちらでもない<br><small>3点</small>
-            </button>
-            <button class="option-btn" onclick="selectAnswer(4)" data-value="4">
-                そう思う<br><small>4点</small>
-            </button>
-            <button class="option-btn" onclick="selectAnswer(5)" data-value="5">
-                非常にそう思う<br><small>5点</small>
-            </button>
-        </div>
-    `;
-    container.appendChild(questionCard);
-    
-    // 既存の回答をハイライト
-    if (answers[currentQuestionIndex] !== null) {
-        const selectedBtn = questionCard.querySelector(`[data-value="${answers[currentQuestionIndex]}"]`);
-        if (selectedBtn) {
-            selectedBtn.classList.add('selected');
-        }
-    }
+    // 前回の回答を復元
+    const savedAnswer = answers[question.id];
+    document.querySelectorAll('input[name="answer"]').forEach(input => {
+        input.checked = (input.value == savedAnswer);
+    });
     
     // ボタンの表示制御
-    if (prevBtn) {
-        prevBtn.style.display = currentQuestionIndex > 0 ? 'inline-block' : 'none';
-    }
-    if (nextBtn) {
-        nextBtn.style.display = currentQuestionIndex < 99 ? 'inline-block' : 'none';
-    }
-    if (submitBtn) {
-        submitBtn.style.display = currentQuestionIndex === 99 ? 'inline-block' : 'none';
-    }
+    document.getElementById('prev-btn').style.display = currentQuestionIndex === 0 ? 'none' : 'inline-block';
     
-    // ボタンの有効/無効
-    if (currentQuestionIndex < 99 && nextBtn) {
-        nextBtn.disabled = answers[currentQuestionIndex] === null;
-    }
-    if (currentQuestionIndex === 99 && submitBtn) {
-        submitBtn.disabled = answers[currentQuestionIndex] === null;
+    const nextBtn = document.getElementById('next-btn');
+    if (currentQuestionIndex === questions.length - 1) {
+        nextBtn.textContent = '結果を見る';
+    } else {
+        nextBtn.textContent = '次の質問 →';
     }
 }
 
-// 現在のカテゴリーを取得
-function getCurrentCategory() {
-    let cumulativeCount = 0;
-    for (const category of questions) {
-        if (currentQuestionIndex < cumulativeCount + category.questions.length) {
-            return category;
-        }
-        cumulativeCount += category.questions.length;
+// ==============================
+// 回答の保存
+// ==============================
+function saveAnswer() {
+    const selected = document.querySelector('input[name="answer"]:checked');
+    if (!selected) {
+        alert('回答を選択してください');
+        return false;
     }
-    return questions[questions.length - 1];
+    
+    const question = questions[currentQuestionIndex];
+    answers[question.id] = parseInt(selected.value);
+    return true;
 }
 
-// 回答を選択
-function selectAnswer(value) {
-    answers[currentQuestionIndex] = value;
+// ==============================
+// 次の質問へ
+// ==============================
+function nextQuestion() {
+    if (!saveAnswer()) return;
     
-    // 選択状態を更新
-    const buttons = document.querySelectorAll('.option-btn');
-    buttons.forEach(btn => {
-        btn.classList.remove('selected');
-        if (parseInt(btn.dataset.value) === value) {
-            btn.classList.add('selected');
-        }
-    });
-    
-    // 次へボタンを有効化
-    const nextBtn = document.getElementById('nextBtn');
-    const submitBtn = document.getElementById('submitBtn');
-    
-    if (currentQuestionIndex < 99 && nextBtn) {
-        nextBtn.disabled = false;
-    } else if (submitBtn) {
-        submitBtn.disabled = false;
+    if (currentQuestionIndex < questions.length - 1) {
+        currentQuestionIndex++;
+        renderQuestion();
+    } else {
+        showResults();
     }
 }
 
+// ==============================
 // 前の質問へ
+// ==============================
 function previousQuestion() {
+    saveAnswer();
     if (currentQuestionIndex > 0) {
         currentQuestionIndex--;
         renderQuestion();
     }
 }
 
-// 次の質問へ
-function nextQuestion() {
-    if (currentQuestionIndex < 99 && answers[currentQuestionIndex] !== null) {
-        currentQuestionIndex++;
-        renderQuestion();
-    }
-}
-
-// 診断を完了
-function completeSurvey() {
-    // 全ての質問に回答されているか確認
-    if (answers.includes(null)) {
-        alert('全ての質問に回答してください。');
-        return;
+// ==============================
+// 結果の表示
+// ==============================
+function showResults() {
+    // 総合スコアの計算
+    let totalScore = 0;
+    Object.values(answers).forEach(score => {
+        totalScore += score;
+    });
+    
+    // カテゴリー別スコアの計算
+    const categoryScores = {};
+    questions.forEach(q => {
+        if (!categoryScores[q.category]) {
+            categoryScores[q.category] = 0;
+        }
+        categoryScores[q.category] += answers[q.id] || 0;
+    });
+    
+    // 総合スコア表示
+    document.getElementById('total-score').textContent = totalScore;
+    
+    // 部署名の表示
+    const departmentDisplay = document.getElementById('department-display');
+    if (selectedDepartment) {
+        departmentDisplay.textContent = `所属部署: ${selectedDepartment}`;
     }
     
+    // カテゴリー別スコア表示
+    const categoryScoresDiv = document.getElementById('category-scores');
+    categoryScoresDiv.innerHTML = '';
+    Object.entries(categoryScores).forEach(([category, score]) => {
+        const maxScore = questions.filter(q => q.category === category).length * 5;
+        const percentage = Math.round((score / maxScore) * 100);
+        
+        const scoreItem = document.createElement('div');
+        scoreItem.className = 'score-item';
+        scoreItem.innerHTML = `
+            <div class="score-row">
+                <span class="score-label">${category}</span>
+                <span class="score-value">${score} / ${maxScore} (${percentage}%)</span>
+            </div>
+            <div class="score-bar">
+                <div class="score-bar-fill" style="width: ${percentage}%;"></div>
+            </div>
+        `;
+        categoryScoresDiv.appendChild(scoreItem);
+    });
+    
+    // レーダーチャートの描画
+    drawRadarChart(categoryScores);
+    
+    // フィードバック表示
+    displayFeedback(totalScore);
+    
+    // 結果ページへ遷移
     showPage('results');
 }
 
-// 結果を表示
-function displayResults() {
-    const scores = calculateScores();
+// ==============================
+// レーダーチャートの描画
+// ==============================
+function drawRadarChart(categoryScores) {
+    const ctx = document.getElementById('radar-chart').getContext('2d');
     
-    // 総合スコア表示
-    displayTotalScore(scores.total);
+    const labels = Object.keys(categoryScores);
+    const data = labels.map(category => {
+        const maxScore = questions.filter(q => q.category === category).length * 5;
+        return Math.round((categoryScores[category] / maxScore) * 100);
+    });
     
-    // カテゴリー別スコア表示
-    displayCategoryScores(scores.categories);
-    
-    // レーダーチャート表示
-    displayRadarChart(scores.categories);
-    
-    // フィードバック表示
-    displayFeedback(scores.total, scores.categories);
-}
-
-// スコア計算
-function calculateScores() {
-    const categoryScores = [];
-    let totalScore = 0;
-    let questionCount = 0;
-    
-    for (const category of questions) {
-        let categorySum = 0;
-        let categoryQuestionCount = category.questions.length;
-        
-        for (const question of category.questions) {
-            const answer = answers[question.id - 1];
-            // 逆転項目の処理
-            const score = question.reverse ? (6 - answer) : answer;
-            categorySum += score;
-            totalScore += score;
-            questionCount++;
-        }
-        
-        // カテゴリースコアを100点満点に正規化
-        const categoryScore = (categorySum / (categoryQuestionCount * 5)) * 100;
-        categoryScores.push({
-            name: category.category,
-            score: Math.round(categoryScore)
-        });
-    }
-    
-    // 総合スコアを100点満点に正規化
-    const normalizedTotal = (totalScore / (questionCount * 5)) * 100;
-    
-    return {
-        total: Math.round(normalizedTotal),
-        categories: categoryScores
-    };
-}
-
-// 総合スコア表示
-function displayTotalScore(score) {
-    const container = document.getElementById('totalScoreContainer');
-    if (!container) return;
-    
-    const level = getScoreLevel(score);
-    
-    container.innerHTML = `
-        <div class="total-score" style="background: linear-gradient(135deg, ${level.color} 0%, ${level.color}dd 100%);">
-            <h3>総合スコア</h3>
-            <div class="score-value">${score}</div>
-            <div class="score-label">${level.label}</div>
-        </div>
-    `;
-}
-
-// スコアレベルを取得
-function getScoreLevel(score) {
-    for (const [key, criteria] of Object.entries(scoreCriteria)) {
-        if (score >= criteria.min) {
-            return criteria;
-        }
-    }
-    return scoreCriteria.critical;
-}
-
-// カテゴリー別スコア表示
-function displayCategoryScores(categories) {
-    const container = document.getElementById('categoryScoresContainer');
-    if (!container) return;
-    
-    const html = categories.map(cat => `
-        <div class="category-score-item">
-            <span class="category-name">${cat.name}</span>
-            <span class="category-score-value">${cat.score}点</span>
-        </div>
-    `).join('');
-    
-    container.innerHTML = html;
-}
-
-// レーダーチャート表示
-function displayRadarChart(categories) {
-    const canvas = document.getElementById('radarChart');
-    if (!canvas) return;
-    
-    const ctx = canvas.getContext('2d');
-    
-    // キャンバスサイズ設定
-    const size = 400;
-    canvas.width = size;
-    canvas.height = size;
-    
-    const centerX = size / 2;
-    const centerY = size / 2;
-    const radius = size / 2 - 60;
-    
-    // 背景をクリア
-    ctx.clearRect(0, 0, size, size);
-    
-    // グリッド線を描画
-    ctx.strokeStyle = '#e2e8f0';
-    ctx.lineWidth = 1;
-    
-    for (let i = 1; i <= 5; i++) {
-        ctx.beginPath();
-        const r = (radius / 5) * i;
-        
-        for (let j = 0; j < categories.length; j++) {
-            const angle = (Math.PI * 2 / categories.length) * j - Math.PI / 2;
-            const x = centerX + r * Math.cos(angle);
-            const y = centerY + r * Math.sin(angle);
-            
-            if (j === 0) {
-                ctx.moveTo(x, y);
-            } else {
-                ctx.lineTo(x, y);
+    new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'エンゲージメントスコア（%）',
+                data: data,
+                backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                borderColor: 'rgba(52, 152, 219, 1)',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 100
+                }
             }
         }
-        ctx.closePath();
-        ctx.stroke();
-    }
-    
-    // 軸を描画
-    ctx.strokeStyle = '#cbd5e1';
-    categories.forEach((cat, i) => {
-        const angle = (Math.PI * 2 / categories.length) * i - Math.PI / 2;
-        const x = centerX + radius * Math.cos(angle);
-        const y = centerY + radius * Math.sin(angle);
-        
-        ctx.beginPath();
-        ctx.moveTo(centerX, centerY);
-        ctx.lineTo(x, y);
-        ctx.stroke();
-    });
-    
-    // データを描画
-    ctx.fillStyle = 'rgba(37, 99, 235, 0.2)';
-    ctx.strokeStyle = '#2563eb';
-    ctx.lineWidth = 2;
-    
-    ctx.beginPath();
-    categories.forEach((cat, i) => {
-        const angle = (Math.PI * 2 / categories.length) * i - Math.PI / 2;
-        const r = (radius * cat.score) / 100;
-        const x = centerX + r * Math.cos(angle);
-        const y = centerY + r * Math.sin(angle);
-        
-        if (i === 0) {
-            ctx.moveTo(x, y);
-        } else {
-            ctx.lineTo(x, y);
-        }
-    });
-    ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
-    
-    // ラベルを描画
-    ctx.fillStyle = '#1e293b';
-    ctx.font = 'bold 12px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    
-    categories.forEach((cat, i) => {
-        const angle = (Math.PI * 2 / categories.length) * i - Math.PI / 2;
-        const labelRadius = radius + 30;
-        const x = centerX + labelRadius * Math.cos(angle);
-        const y = centerY + labelRadius * Math.sin(angle);
-        
-        // テキストを複数行に分割
-        const words = cat.name.split('');
-        const maxWidth = 40;
-        let line = '';
-        let lines = [];
-        
-        for (let word of words) {
-            const testLine = line + word;
-            const metrics = ctx.measureText(testLine);
-            if (metrics.width > maxWidth && line !== '') {
-                lines.push(line);
-                line = word;
-            } else {
-                line = testLine;
-            }
-        }
-        lines.push(line);
-        
-        // 複数行テキストを描画
-        const lineHeight = 14;
-        const startY = y - ((lines.length - 1) * lineHeight) / 2;
-        lines.forEach((textLine, idx) => {
-            ctx.fillText(textLine, x, startY + idx * lineHeight);
-        });
     });
 }
 
+// ==============================
 // フィードバック表示
-function displayFeedback(totalScore, categories) {
-    const container = document.getElementById('feedbackContainer');
-    if (!container) return;
+// ==============================
+function displayFeedback(totalScore) {
+    const feedbackDiv = document.getElementById('feedback');
+    let feedback = '';
     
-    const level = getScoreLevel(totalScore);
-    
-    // 総合フィードバック
-    let feedback = `<div class="feedback-message">
-        <p><strong>総合評価：</strong>${level.label}</p>
-        <p>${getFeedbackMessage(totalScore)}</p>
-    </div>`;
-    
-    // 低スコアカテゴリーへの提言
-    const lowScoreCategories = categories.filter(cat => cat.score < 60).sort((a, b) => a.score - b.score);
-    
-    if (lowScoreCategories.length > 0) {
-        feedback += `<div class="feedback-message">
-            <p><strong>重点改善項目：</strong></p>
-            <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">`;
-        
-        lowScoreCategories.forEach(cat => {
-            feedback += `<li><strong>${cat.name}</strong>（${cat.score}点）：改善が推奨されます</li>`;
-        });
-        
-        feedback += `</ul></div>`;
+    if (totalScore >= 400) {
+        feedback = '<p class="feedback-excellent">🌟 素晴らしい！あなたの職場エンゲージメントは非常に高い水準です。</p>';
+    } else if (totalScore >= 300) {
+        feedback = '<p class="feedback-good">👍 良好です。多くの面で満足度が高いようです。</p>';
+    } else if (totalScore >= 200) {
+        feedback = '<p class="feedback-average">📊 平均的なレベルです。改善の余地がいくつかあります。</p>';
+    } else {
+        feedback = '<p class="feedback-low">💡 改善が必要です。職場環境の見直しを検討しましょう。</p>';
     }
     
-    // 高スコアカテゴリーの称賛
-    const highScoreCategories = categories.filter(cat => cat.score >= 80).sort((a, b) => b.score - a.score);
-    
-    if (highScoreCategories.length > 0) {
-        feedback += `<div class="feedback-message">
-            <p><strong>優れている項目：</strong></p>
-            <ul style="margin-left: 1.5rem; margin-top: 0.5rem;">`;
-        
-        highScoreCategories.forEach(cat => {
-            feedback += `<li><strong>${cat.name}</strong>（${cat.score}点）：非常に良好です</li>`;
-        });
-        
-        feedback += `</ul></div>`;
-    }
-    
-    container.innerHTML = feedback;
+    feedbackDiv.innerHTML = feedback;
 }
 
-// フィードバックメッセージ取得
-function getFeedbackMessage(score) {
-    if (score >= 80) return feedbackMessages.excellent;
-    if (score >= 70) return feedbackMessages.good;
-    if (score >= 60) return feedbackMessages.moderate;
-    if (score >= 50) return feedbackMessages.low;
-    return feedbackMessages.critical;
-}
-
-// 最初からやり直す
+// ==============================
+// 診断のリセット
+// ==============================
 function restartSurvey() {
     currentQuestionIndex = 0;
-    answers = [];
+    answers = {};
+    selectedDepartment = '';
+    localStorage.removeItem('selectedDepartment');
     showPage('home');
 }
 
-// 初期化
+// ==============================
+// ページ読み込み時の初期化
+// ==============================
 document.addEventListener('DOMContentLoaded', function() {
-    initPages();
-    showPage('home');
+    initPages(); // ページ要素を初期化
+    showPage('home'); // ホームページを表示
 });
