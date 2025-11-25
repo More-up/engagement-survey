@@ -35,12 +35,12 @@
                 <div class="feature-card">
                     <div class="feature-icon">📊</div>
                     <h3>9つの視点から診断</h3>
-                    <p>仕事の充実感、成長機会、<br>心身の健康、上司サポートなど</p>
+                    <p>仕事の充実感、成長機会、心身の健康、上司サポートなど</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">⏱️</div>
                     <h3>約15～20分で完了</h3>
-                    <p>100問の質問に<br>直感的に回答するだけ</p>
+                    <p>100問の質問に直感的に回答するだけ</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">📈</div>
@@ -79,6 +79,11 @@
                     <h3>✍️ 回答方法</h3>
                     <p>各質問に対して、5段階であなたの気持ちに最も近いものを選択してください。</p>
                     <p class="note">上から「強くそう思う」→「そう思う」→「どちらでもない」→「そう思わない」→「全くそう思わない」の順です。</p>
+                </div>
+
+                <div class="orientation-section">
+                    <h3>💾 一時保存機能</h3>
+                    <p>回答は自動的に保存されます。ブラウザを閉じても、続きから再開できます。</p>
                 </div>
 
                 <div class="orientation-section">
@@ -145,34 +150,36 @@
     </div>
 
     <!-- ============================
-         診断ページ
+         診断ページ（カテゴリー単位表示）
     ============================ -->
     <div id="survey" class="page">
         <div class="container">
-            <!-- 進捗バー -->
+            <!-- 全体進捗バー -->
             <div class="progress-container">
                 <div class="progress-bar">
                     <div class="progress-fill" id="progress-fill"></div>
                 </div>
-                <p class="progress-text" id="progress-text">質問 1 / 100</p>
+                <p class="progress-text" id="progress-text">カテゴリー 1 / 9</p>
             </div>
 
-            <!-- 質問カード -->
-            <div class="question-card">
-                <div class="category-header" id="category-header">カテゴリー</div>
-                <h2 class="question-title" id="question-title">質問文がここに表示されます</h2>
-                <div class="options-container" id="options-container">
-                    <!-- オプションは動的に生成 -->
+            <!-- カテゴリーカード -->
+            <div class="category-card">
+                <div class="category-header-large" id="category-header">カテゴリー名</div>
+                <div class="category-progress" id="category-progress-text">0 / 11 問回答済み</div>
+                
+                <!-- 質問リスト -->
+                <div id="questions-container" class="questions-container">
+                    <!-- 質問は動的に生成 -->
                 </div>
             </div>
 
             <!-- ナビゲーションボタン -->
             <div class="nav-buttons">
-                <button class="btn btn-secondary" id="prev-btn" onclick="previousQuestion()">
-                    前へ
+                <button class="btn btn-secondary" id="prev-btn" onclick="previousCategory()">
+                    前のカテゴリー
                 </button>
-                <button class="btn btn-primary" onclick="nextQuestion()">
-                    次へ
+                <button class="btn btn-primary" id="next-btn" onclick="nextCategory()">
+                    次のカテゴリーへ
                 </button>
             </div>
         </div>
