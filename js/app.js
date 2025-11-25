@@ -3,20 +3,29 @@ let currentQuestionIndex = 0;
 let answers = [];
 let currentPage = 'home';
 
-// ページ要素
-const pages = {
-    home: document.getElementById('homePage'),
-    orientation: document.getElementById('orientationPage'),
-    survey: document.getElementById('surveyPage'),
-    results: document.getElementById('resultsPage')
-};
+// ページ要素（DOMContentLoaded後に初期化）
+let pages = {};
+
+// ページ要素を初期化
+function initPages() {
+    pages = {
+        home: document.getElementById('homePage'),
+        orientation: document.getElementById('orientationPage'),
+        survey: document.getElementById('surveyPage'),
+        results: document.getElementById('resultsPage')
+    };
+}
 
 // ページ遷移
 function showPage(pageName) {
     Object.keys(pages).forEach(page => {
-        pages[page].classList.remove('active');
+        if (pages[page]) {
+            pages[page].classList.remove('active');
+        }
     });
-    pages[pageName].classList.add('active');
+    if (pages[pageName]) {
+        pages[pageName].classList.add('active');
+    }
     currentPage = pageName;
     
     if (pageName === 'survey') {
@@ -47,13 +56,19 @@ function renderQuestion() {
     const nextBtn = document.getElementById('nextBtn');
     const submitBtn = document.getElementById('submitBtn');
     
+    if (!container) return;
+    
     // 進捗情報更新
     const progress = ((currentQuestionIndex + 1) / 100) * 100;
-    progressInfo.innerHTML = `
-        <span>質問 ${currentQuestionIndex + 1} / 100</span>
-        <span>${Math.round(progress)}% 完了</span>
-    `;
-    progressFill.style.width = `${progress}%`;
+    if (progressInfo) {
+        progressInfo.innerHTML = `
+            <span>質問 ${currentQuestionIndex + 1} / 100</span>
+            <span>${Math.round(progress)}% 完了</span>
+        `;
+    }
+    if (progressFill) {
+        progressFill.style.width = `${progress}%`;
+    }
     
     // 現在の質問を取得
     let questionData = null;
@@ -124,15 +139,21 @@ function renderQuestion() {
     }
     
     // ボタンの表示制御
-    prevBtn.style.display = currentQuestionIndex > 0 ? 'inline-block' : 'none';
-    nextBtn.style.display = currentQuestionIndex < 99 ? 'inline-block' : 'none';
-    submitBtn.style.display = currentQuestionIndex === 99 ? 'inline-block' : 'none';
+    if (prevBtn) {
+        prevBtn.style.display = currentQuestionIndex > 0 ? 'inline-block' : 'none';
+    }
+    if (nextBtn) {
+        nextBtn.style.display = currentQuestionIndex < 99 ? 'inline-block' : 'none';
+    }
+    if (submitBtn) {
+        submitBtn.style.display = currentQuestionIndex === 99 ? 'inline-block' : 'none';
+    }
     
     // ボタンの有効/無効
-    if (currentQuestionIndex < 99) {
+    if (currentQuestionIndex < 99 && nextBtn) {
         nextBtn.disabled = answers[currentQuestionIndex] === null;
     }
-    if (currentQuestionIndex === 99) {
+    if (currentQuestionIndex === 99 && submitBtn) {
         submitBtn.disabled = answers[currentQuestionIndex] === null;
     }
 }
@@ -166,9 +187,9 @@ function selectAnswer(value) {
     const nextBtn = document.getElementById('nextBtn');
     const submitBtn = document.getElementById('submitBtn');
     
-    if (currentQuestionIndex < 99) {
+    if (currentQuestionIndex < 99 && nextBtn) {
         nextBtn.disabled = false;
-    } else {
+    } else if (submitBtn) {
         submitBtn.disabled = false;
     }
 }
@@ -256,6 +277,8 @@ function calculateScores() {
 // 総合スコア表示
 function displayTotalScore(score) {
     const container = document.getElementById('totalScoreContainer');
+    if (!container) return;
+    
     const level = getScoreLevel(score);
     
     container.innerHTML = `
@@ -280,6 +303,7 @@ function getScoreLevel(score) {
 // カテゴリー別スコア表示
 function displayCategoryScores(categories) {
     const container = document.getElementById('categoryScoresContainer');
+    if (!container) return;
     
     const html = categories.map(cat => `
         <div class="category-score-item">
@@ -294,6 +318,8 @@ function displayCategoryScores(categories) {
 // レーダーチャート表示
 function displayRadarChart(categories) {
     const canvas = document.getElementById('radarChart');
+    if (!canvas) return;
+    
     const ctx = canvas.getContext('2d');
     
     // キャンバスサイズ設定
@@ -408,6 +434,8 @@ function displayRadarChart(categories) {
 // フィードバック表示
 function displayFeedback(totalScore, categories) {
     const container = document.getElementById('feedbackContainer');
+    if (!container) return;
+    
     const level = getScoreLevel(totalScore);
     
     // 総合フィードバック
@@ -467,5 +495,6 @@ function restartSurvey() {
 
 // 初期化
 document.addEventListener('DOMContentLoaded', function() {
+    initPages();
     showPage('home');
 });
