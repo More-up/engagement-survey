@@ -93,12 +93,12 @@ function renderQuestion() {
     const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
     document.getElementById('progress-fill').style.width = progress + '%';
     
-    // ★ まず全ての選択を解除
+    // まず全ての選択を解除
     document.querySelectorAll('input[name="answer"]').forEach(input => {
         input.checked = false;
     });
     
-    // ★ 保存された回答がある場合のみ復元
+    // 保存された回答がある場合のみ復元
     const savedAnswer = answers[question.id];
     if (savedAnswer) {
         document.querySelectorAll('input[name="answer"]').forEach(input => {
@@ -277,7 +277,7 @@ function displayFeedback(totalScore) {
     } else if (totalScore >= 300) {
         feedback = '<p class="feedback-good">👍 良好です。多くの面で満足度が高いようです。</p>';
     } else if (totalScore >= 200) {
-        feedback = '<p class="feedback-average">📊 平均的なレベルです。改善の余地がいくつかあります。</p>';
+        feedback = '<p class="feedback-average">📊 平均的なレベルです。<br>改善の余地がいくつかあります。</p>';
     } else {
         feedback = '<p class="feedback-low">💡 改善が必要です。職場環境の見直しを検討しましょう。</p>';
     }
