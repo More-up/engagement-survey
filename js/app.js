@@ -40,6 +40,12 @@ function showPage(pageId) {
     if (pages[pageId]) {
         pages[pageId].classList.add('active');
     }
+    
+    // ★ スクロール位置を一番上にリセット
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth' // スムーズにスクロール
+    });
 }
 
 // ==============================
@@ -128,6 +134,12 @@ function nextQuestion() {
     if (currentQuestionIndex < questions.length - 1) {
         currentQuestionIndex++;
         renderQuestion();
+        
+        // ★ 質問切り替え時もスクロールをリセット
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
     } else {
         showResults();
     }
@@ -141,6 +153,12 @@ function previousQuestion() {
     if (currentQuestionIndex > 0) {
         currentQuestionIndex--;
         renderQuestion();
+        
+        // ★ 質問切り替え時もスクロールをリセット
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
     }
 }
 
@@ -222,8 +240,8 @@ function drawRadarChart(categoryScores) {
             datasets: [{
                 label: 'エンゲージメントスコア（%）',
                 data: data,
-                backgroundColor: 'rgba(52, 152, 219, 0.2)',
-                borderColor: 'rgba(52, 152, 219, 1)',
+                backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                borderColor: 'rgba(102, 126, 234, 1)',
                 borderWidth: 2
             }]
         },
@@ -248,31 +266,4 @@ function displayFeedback(totalScore) {
     if (totalScore >= 400) {
         feedback = '<p class="feedback-excellent">🌟 素晴らしい！あなたの職場エンゲージメントは非常に高い水準です。</p>';
     } else if (totalScore >= 300) {
-        feedback = '<p class="feedback-good">👍 良好です。多くの面で満足度が高いようです。</p>';
-    } else if (totalScore >= 200) {
-        feedback = '<p class="feedback-average">📊 平均的なレベルです。改善の余地がいくつかあります。</p>';
-    } else {
-        feedback = '<p class="feedback-low">💡 改善が必要です。職場環境の見直しを検討しましょう。</p>';
-    }
-    
-    feedbackDiv.innerHTML = feedback;
-}
-
-// ==============================
-// 診断のリセット
-// ==============================
-function restartSurvey() {
-    currentQuestionIndex = 0;
-    answers = {};
-    selectedDepartment = '';
-    localStorage.removeItem('selectedDepartment');
-    showPage('home');
-}
-
-// ==============================
-// ページ読み込み時の初期化
-// ==============================
-document.addEventListener('DOMContentLoaded', function() {
-    initPages(); // ページ要素を初期化
-    showPage('home'); // ホームページを表示
-});
+        feedback = '<p class="feedback-good">👍 良好です。多
