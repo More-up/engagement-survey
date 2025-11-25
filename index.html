@@ -62,18 +62,56 @@
     <div id="department-selection" class="page">
         <div class="container">
             <div class="content-card">
-                <h2>所属部署を選択してください</h2>
-                <p style="margin-bottom: 20px;">診断結果の分析に使用します。<br>匿名性は保たれます。</p>
-                <select id="department-select" class="department-select">
-                    <option value="">-- 選択してください --</option>
-                    <option value="営業部">営業部</option>
-                    <option value="経理部">経理部</option>
-                    <option value="人事部">人事部</option>
-                    <option value="総務部">総務部</option>
-                    <option value="開発部">開発部</option>
-                    <option value="マーケティング部">マーケティング部</option>
-                </select>
-                <div style="margin-top: 30px;">
+                <h2>基本情報の入力</h2>
+                
+                <!-- 従業員コード入力欄 -->
+                <div style="margin-bottom: 30px;">
+                    <label for="employee-code" style="display: block; font-size: 1.1em; font-weight: 600; color: #0f4c3a; margin-bottom: 10px;">
+                        従業員コード <span style="color: #e17055;">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="employee-code" 
+                        class="employee-code-input" 
+                        placeholder="例: EMP001"
+                        maxlength="20"
+                    >
+                    
+                    <!-- 説明文（案2：シンプル版） -->
+                    <div class="info-box">
+                        <p class="info-title">【なぜ従業員コードが必要？】</p>
+                        <ul class="info-list">
+                            <li>重複回答の防止</li>
+                            <li>未回答者へのリマインド送付</li>
+                            <li>データの信頼性確保</li>
+                        </ul>
+                        <p class="info-note">
+                            ※ 回答内容と個人を紐付けて見られるのは株式会社モアップのみです<br>
+                            ※ 社内では完全匿名で集計されます
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 部署選択 -->
+                <div style="margin-bottom: 30px;">
+                    <label for="department-select" style="display: block; font-size: 1.1em; font-weight: 600; color: #0f4c3a; margin-bottom: 10px;">
+                        所属部署 <span style="color: #e17055;">*</span>
+                    </label>
+                    <select id="department-select" class="department-select">
+                        <option value="">-- 選択してください --</option>
+                        <option value="営業部">営業部</option>
+                        <option value="経理部">経理部</option>
+                        <option value="人事部">人事部</option>
+                        <option value="総務部">総務部</option>
+                        <option value="開発部">開発部</option>
+                        <option value="マーケティング部">マーケティング部</option>
+                    </select>
+                    <p style="font-size: 0.9em; color: #636e72; margin-top: 8px;">
+                        ※ 部署別の分析に使用します
+                    </p>
+                </div>
+
+                <div style="margin-top: 35px;">
                     <button class="btn-primary" onclick="saveDepartmentAndStart()">診断を開始する</button>
                 </div>
             </div>
@@ -133,7 +171,9 @@
         <div class="container">
             <div class="results-header">
                 <h2>診断結果</h2>
-                <p id="department-display" style="margin-top: 10px; font-size: 1.1em; color: #fff;"></p>
+                <p id="employee-code-display" style="margin-top: 10px; font-size: 1.1em; color: #fff; opacity: 0.9;"></p>
+                <p id="department-display" style="margin-top: 5px; font-size: 1.1em; color: #fff;"></p>
+                <p id="survey-date" style="margin-top: 5px; font-size: 0.95em; color: #fff; opacity: 0.85;"></p>
             </div>
 
             <div class="results-grid">
@@ -159,7 +199,10 @@
                 </div>
             </div>
 
-            <button class="btn-primary" onclick="restartSurvey()">もう一度診断する</button>
+            <div style="display: flex; gap: 20px; justify-content: center; margin-top: 30px; flex-wrap: wrap;">
+                <button class="btn-secondary" onclick="window.print()">📄 結果を印刷</button>
+                <button class="btn-primary" onclick="restartSurvey()">もう一度診断する</button>
+            </div>
         </div>
     </div>
 
