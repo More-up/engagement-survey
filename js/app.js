@@ -12,24 +12,16 @@ let radarChart = null;
 // ============================
 // 従業員コード正規化関数
 // ============================
-/**
- * 従業員コードを正規化（全角→半角、大文字統一、スペース削除）
- */
 function normalizeEmployeeCode(code) {
     if (!code) return '';
     
     return code
-        // 全角英数字を半角に変換
         .replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(s) {
             return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
         })
-        // 全角スペースを半角スペースに変換
         .replace(/　/g, ' ')
-        // すべてのスペースを削除
         .replace(/\s+/g, '')
-        // 英字を大文字に統一
         .toUpperCase()
-        // 前後の空白を削除
         .trim();
 }
 
@@ -51,8 +43,6 @@ function showPage(pageId) {
     if (targetPage) {
         targetPage.classList.add('active');
         currentPage = pageId;
-        
-        // ページ遷移時に画面トップへスクロール
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 }
@@ -68,7 +58,6 @@ function completeOrientation() {
 // 部署選択・従業員コード保存
 // ============================
 function saveDepartmentAndStart() {
-    // 従業員コード取得＆正規化
     const codeInput = document.getElementById('employee-code');
     const rawCode = codeInput ? codeInput.value.trim() : '';
     employeeCode = normalizeEmployeeCode(rawCode);
@@ -78,20 +67,17 @@ function saveDepartmentAndStart() {
         return;
     }
     
-    // 部署選択取得
     const deptSelect = document.getElementById('department');
     selectedDepartment = deptSelect ? deptSelect.value : '';
     
-    if (!selectedDepartment) {
+    if (!selectedDepartment || selectedDepartment === '' || selectedDepartment === '-- 部署を選択してください --') {
         alert('部署を選択してください。');
         return;
     }
     
-    // LocalStorageに保存
     localStorage.setItem('employeeCode', employeeCode);
     localStorage.setItem('selectedDepartment', selectedDepartment);
     
-    // 診断ページへ
     showPage('survey');
     renderQuestion();
 }
@@ -113,17 +99,14 @@ function renderQuestion() {
     const progressText = document.getElementById('progress-text');
     const prevBtn = document.getElementById('prev-btn');
     
-    // カテゴリー表示
     if (categoryHeader) {
         categoryHeader.textContent = question.category;
     }
     
-    // 質問文表示
     if (questionTitle) {
         questionTitle.textContent = `Q${currentQuestionIndex}. ${question.question}`;
     }
     
-    // 選択肢を生成（すべてのラジオボタンをクリア→再生成）
     if (optionsContainer) {
         optionsContainer.innerHTML = '';
         
@@ -145,7 +128,6 @@ function renderQuestion() {
             radio.value = opt.value;
             radio.id = `option-${opt.value}`;
             
-            // 既に回答済みの場合はチェック
             if (answers[currentQuestionIndex] == opt.value) {
                 radio.checked = true;
             }
@@ -164,7 +146,6 @@ function renderQuestion() {
         });
     }
     
-    // 進捗バー更新
     const progress = (currentQuestionIndex / questions.length) * 100;
     if (progressFill) {
         progressFill.style.width = `${progress}%`;
@@ -173,12 +154,10 @@ function renderQuestion() {
         progressText.textContent = `質問 ${currentQuestionIndex} / ${questions.length}`;
     }
     
-    // 「前へ」ボタンの表示制御
     if (prevBtn) {
         prevBtn.style.display = currentQuestionIndex === 1 ? 'none' : 'inline-block';
     }
     
-    // ページ遷移時に画面トップへスクロール
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -210,7 +189,6 @@ function previousQuestion() {
 function showResults() {
     showPage('results');
     
-    // 従業員コード・部署・診断日時を表示
     const employeeCodeDisplay = document.getElementById('employee-code-display');
     const departmentDisplay = document.getElementById('department-display');
     const surveyDateDisplay = document.getElementById('survey-date-display');
@@ -226,29 +204,19 @@ function showResults() {
         surveyDateDisplay.textContent = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`;
     }
     
-    // スコア計算
     const categoryScores = calculateCategoryScores();
     const totalScore = calculateTotalScore(categoryScores);
     
-    // 総合スコア表示
     const totalScoreElement = document.getElementById('total-score');
     if (totalScoreElement) {
         totalScoreElement.textContent = totalScore;
     }
     
-    // カテゴリー別スコア表示
     displayCategoryScores(categoryScores);
-    
-    // レーダーチャート描画
     drawRadarChart(categoryScores);
-    
-    // フィードバック表示
     displayFeedback(totalScore, categoryScores);
-    
-    // 結果を履歴に保存
     saveResultToStorage(totalScore, categoryScores);
     
-    // ページ遷移時に画面トップへスクロール
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -270,7 +238,7 @@ function calculateCategoryScores() {
     const scores = {};
     for (let cat in categories) {
         const avg = categories[cat].total / categories[cat].count;
-        scores[cat] = Math.round(avg * 20); // 100点満点に換算
+        scores[cat] = Math.round(avg * 20);
     }
     
     return scores;
@@ -314,7 +282,6 @@ function drawRadarChart(categoryScores) {
     
     const ctx = canvas.getContext('2d');
     
-    // 既存のチャートを破棄
     if (radarChart) {
         radarChart.destroy();
     }
@@ -365,7 +332,6 @@ function displayFeedback(totalScore, categoryScores) {
     let feedbackDetail = '';
     let suggestions = '';
     
-    // スコア別の総合評価
     if (totalScore >= 80) {
         feedbackClass = 'feedback-excellent';
         feedbackTitle = '🎉 素晴らしいです！';
@@ -376,7 +342,6 @@ function displayFeedback(totalScore, categoryScores) {
         feedbackTitle = '👍 良好です';
         feedbackDetail = '多くの面で満足度が高く、<br>前向きに業務に取り組めている状態です。<br>いくつかの改善の余地はありますが、<br>全体としてバランスの取れた働き方ができています。';
         
-        // 低スコアカテゴリーを特定
         const lowCategories = Object.entries(categoryScores)
             .filter(([cat, score]) => score < 60)
             .map(([cat, score]) => cat);
@@ -391,11 +356,10 @@ function displayFeedback(totalScore, categoryScores) {
         feedbackTitle = '📊 改善の余地があります';
         feedbackDetail = 'エンゲージメントレベルは平均的ですが、<br>いくつかの重要な分野で改善が必要です。<br>現状に不満を感じている点があるかもしれません。';
         
-        // 低スコアカテゴリーを特定
         const lowCategories = Object.entries(categoryScores)
             .filter(([cat, score]) => score < 50)
             .map(([cat, score]) => cat)
-            .slice(0, 3); // 最大3つ
+            .slice(0, 3);
         
         if (lowCategories.length > 0) {
             suggestions = `特に「${lowCategories.join('」「')}」について、<br>具体的な改善策を検討することをお勧めします。<br>上司や人事部門に相談し、サポートを求めてみましょう。`;
@@ -407,7 +371,6 @@ function displayFeedback(totalScore, categoryScores) {
         feedbackTitle = '⚠️ 早急な対応が必要です';
         feedbackDetail = 'エンゲージメントレベルが低い状態にあります。<br>現在の働き方や環境に大きな課題を感じており、<br>モチベーションの維持が難しい状況かもしれません。';
         
-        // 特に低いカテゴリーを特定
         const criticalCategories = Object.entries(categoryScores)
             .filter(([cat, score]) => score < 40)
             .map(([cat, score]) => cat)
@@ -420,7 +383,6 @@ function displayFeedback(totalScore, categoryScores) {
         }
     }
     
-    // フィードバック表示
     feedbackElement.className = feedbackClass;
     feedbackElement.innerHTML = `
         <div style="font-size: 1.3em; font-weight: bold; margin-bottom: 15px;">${feedbackTitle}</div>
@@ -449,7 +411,7 @@ function saveResultToStorage(totalScore, categoryScores) {
 }
 
 // ============================
-// 履歴表示（従業員コードでフィルタリング）
+// 履歴表示
 // ============================
 function showHistory() {
     showPage('history');
@@ -457,7 +419,6 @@ function showHistory() {
     const historyContainer = document.getElementById('history-list');
     if (!historyContainer) return;
     
-    // 現在の従業員コードを取得＆正規化
     const currentCode = normalizeEmployeeCode(localStorage.getItem('employeeCode') || '');
     
     if (!currentCode) {
@@ -465,10 +426,8 @@ function showHistory() {
         return;
     }
     
-    // LocalStorageから全履歴取得
     const allResults = JSON.parse(localStorage.getItem('surveyResults')) || [];
     
-    // 自分の従業員コードの履歴のみフィルタリング
     const myResults = allResults.filter(result => {
         const resultCode = normalizeEmployeeCode(result.employeeCode || '');
         return resultCode === currentCode;
@@ -479,10 +438,8 @@ function showHistory() {
         return;
     }
     
-    // 履歴を新しい順にソート
     myResults.sort((a, b) => new Date(b.date) - new Date(a.date));
     
-    // 履歴表示
     historyContainer.innerHTML = '';
     
     myResults.forEach((result, index) => {
@@ -505,7 +462,6 @@ function showHistory() {
         historyContainer.appendChild(historyItem);
     });
     
-    // ページ遷移時に画面トップへスクロール
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -518,7 +474,6 @@ function printResults() {
 
 function completeSurvey() {
     if (confirm('診断を完了してトップページに戻りますか？')) {
-        // 状態をリセット
         currentQuestionIndex = 1;
         answers = {};
         employeeCode = '';
