@@ -142,7 +142,7 @@ function clearTemporaryAnswers() {
 }
 
 // ============================
-// カテゴリー単位の質問表示
+// カテゴリー単位の質問表示（カテゴリー名非表示）
 // ============================
 function renderCategoryQuestions() {
     if (currentCategoryIndex >= categories.length) {
@@ -153,7 +153,7 @@ function renderCategoryQuestions() {
     const category = categories[currentCategoryIndex];
     const progressFill = document.getElementById('progress-fill');
     const progressText = document.getElementById('progress-text');
-    const categoryHeader = document.getElementById('category-header');
+    const sectionHeader = document.getElementById('section-header');
     const categoryProgressText = document.getElementById('category-progress-text');
     const questionsContainer = document.getElementById('questions-container');
     const prevBtn = document.getElementById('prev-btn');
@@ -165,12 +165,12 @@ function renderCategoryQuestions() {
         progressFill.style.width = `${overallProgress}%`;
     }
     if (progressText) {
-        progressText.textContent = `カテゴリー ${currentCategoryIndex + 1} / ${categories.length}`;
+        progressText.textContent = `セクション ${currentCategoryIndex + 1} / ${categories.length}`;
     }
     
-    // カテゴリーヘッダー
-    if (categoryHeader) {
-        categoryHeader.textContent = category.name;
+    // セクションヘッダー（カテゴリー名を表示しない）
+    if (sectionHeader) {
+        sectionHeader.textContent = `セクション ${currentCategoryIndex + 1} / ${categories.length}`;
     }
     
     // カテゴリー内進捗
@@ -248,7 +248,7 @@ function renderCategoryQuestions() {
         if (currentCategoryIndex === categories.length - 1) {
             nextBtn.textContent = '結果を見る';
         } else {
-            nextBtn.textContent = '次のカテゴリーへ';
+            nextBtn.textContent = '次のセクションへ';
         }
     }
     
