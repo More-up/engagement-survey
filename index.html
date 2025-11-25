@@ -77,7 +77,7 @@
                         maxlength="20"
                     >
                     
-                    <!-- 説明文（案2：シンプル版） -->
+                    <!-- 説明文 -->
                     <div class="info-box">
                         <p class="info-title">【なぜ従業員コードが必要？】</p>
                         <ul class="info-list">
@@ -169,11 +169,21 @@
     <!-- 結果ページ -->
     <div id="results" class="page">
         <div class="container">
-            <div class="results-header">
+            <div class="results-header no-print">
                 <h2>診断結果</h2>
                 <p id="employee-code-display" style="margin-top: 10px; font-size: 1.1em; color: #fff; opacity: 0.9;"></p>
                 <p id="department-display" style="margin-top: 5px; font-size: 1.1em; color: #fff;"></p>
                 <p id="survey-date" style="margin-top: 5px; font-size: 0.95em; color: #fff; opacity: 0.85;"></p>
+            </div>
+
+            <!-- 印刷用ヘッダー -->
+            <div class="print-only print-header">
+                <h1>エンゲージメント診断結果</h1>
+                <div class="print-info">
+                    <p id="print-employee-code"></p>
+                    <p id="print-department"></p>
+                    <p id="print-date"></p>
+                </div>
             </div>
 
             <div class="results-grid">
@@ -199,9 +209,23 @@
                 </div>
             </div>
 
-            <div style="display: flex; gap: 20px; justify-content: center; margin-top: 30px; flex-wrap: wrap;">
+            <div class="button-group no-print">
                 <button class="btn-secondary" onclick="window.print()">📄 結果を印刷</button>
-                <button class="btn-primary" onclick="restartSurvey()">もう一度診断する</button>
+                <button class="btn-secondary" onclick="showHistory()">📊 過去の診断履歴</button>
+                <button class="btn-primary" onclick="completeSurvey()">✅ 診断を完了する</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 診断履歴ページ（新規追加） -->
+    <div id="history" class="page">
+        <div class="container">
+            <div class="content-card">
+                <h2>過去の診断履歴</h2>
+                <div id="history-list"></div>
+                <div style="margin-top: 30px; text-align: center;">
+                    <button class="btn-secondary" onclick="showPage('home')">🏠 トップに戻る</button>
+                </div>
             </div>
         </div>
     </div>
