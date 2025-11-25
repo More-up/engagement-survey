@@ -2,12 +2,12 @@
 // グローバル変数
 // ============================
 let currentPage = 'home';
-let currentCategory = 0;
-let currentQuestionIndex = 1;
+let currentCategoryIndex = 0;
 let answers = {};
 let employeeCode = '';
 let selectedDepartment = '';
 let radarChart = null;
+let categories = [];
 
 // ============================
 // 従業員コード正規化関数
@@ -78,112 +78,224 @@ function saveDepartmentAndStart() {
     localStorage.setItem('employeeCode', employeeCode);
     localStorage.setItem('selectedDepartment', selectedDepartment);
     
+    // カテゴリーを準備
+    prepareCategories();
+    
+    // 一時保存データを読み込み
+    loadTemporaryAnswers();
+    
     showPage('survey');
-    renderQuestion();
+    renderCategoryQuestions();
 }
 
 // ============================
-// 診断（質問表示）
+// カテゴリー準備
 // ============================
-function renderQuestion() {
-    if (currentQuestionIndex > questions.length) {
+function prepareCategories() {
+    const categoryMap = {};
+    
+    questions.forEach((q, index) => {
+        if (!categoryMap[q.category]) {
+            categoryMap[q.category] = [];
+        }
+        categoryMap[q.category].push({
+            ...q,
+            questionNumber: index + 1
+        });
+    });
+    
+    categories = Object.keys(categoryMap).map(cat => ({
+        name: cat,
+        questions: categoryMap[cat]
+    }));
+}
+
+// ============================
+// 一時保存機能
+// ============================
+function saveTemporaryAnswers() {
+    const tempData = {
+        employeeCode: employeeCode,
+        department: selectedDepartment,
+        currentCategoryIndex: currentCategoryIndex,
+        answers: answers,
+        timestamp: new Date().toISOString()
+    };
+    localStorage.setItem('tempSurveyData', JSON.stringify(tempData));
+}
+
+function loadTemporaryAnswers() {
+    const tempDataStr = localStorage.getItem('tempSurveyData');
+    if (!tempDataStr) return;
+    
+    const tempData = JSON.parse(tempDataStr);
+    
+    // 同じ従業員コードの一時データのみ復元
+    if (normalizeEmployeeCode(tempData.employeeCode) === employeeCode) {
+        answers = tempData.answers || {};
+        currentCategoryIndex = tempData.currentCategoryIndex || 0;
+    }
+}
+
+function clearTemporaryAnswers() {
+    localStorage.removeItem('tempSurveyData');
+}
+
+// ============================
+// カテゴリー単位の質問表示
+// ============================
+function renderCategoryQuestions() {
+    if (currentCategoryIndex >= categories.length) {
         showResults();
         return;
     }
     
-    const question = questions[currentQuestionIndex - 1];
-    const categoryHeader = document.getElementById('category-header');
-    const questionTitle = document.getElementById('question-title');
-    const optionsContainer = document.getElementById('options-container');
+    const category = categories[currentCategoryIndex];
     const progressFill = document.getElementById('progress-fill');
     const progressText = document.getElementById('progress-text');
+    const categoryHeader = document.getElementById('category-header');
+    const categoryProgressText = document.getElementById('category-progress-text');
+    const questionsContainer = document.getElementById('questions-container');
     const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
     
+    // 全体進捗バー
+    const overallProgress = ((currentCategoryIndex + 1) / categories.length) * 100;
+    if (progressFill) {
+        progressFill.style.width = `${overallProgress}%`;
+    }
+    if (progressText) {
+        progressText.textContent = `カテゴリー ${currentCategoryIndex + 1} / ${categories.length}`;
+    }
+    
+    // カテゴリーヘッダー
     if (categoryHeader) {
-        categoryHeader.textContent = question.category;
+        categoryHeader.textContent = category.name;
     }
     
-    if (questionTitle) {
-        questionTitle.textContent = `Q${currentQuestionIndex}. ${question.question}`;
+    // カテゴリー内進捗
+    const answeredCount = category.questions.filter(q => answers[q.questionNumber] !== undefined).length;
+    if (categoryProgressText) {
+        categoryProgressText.textContent = `${answeredCount} / ${category.questions.length} 問回答済み`;
     }
     
-    if (optionsContainer) {
-        optionsContainer.innerHTML = '';
+    // 質問を表示
+    if (questionsContainer) {
+        questionsContainer.innerHTML = '';
         
-        const options = [
-            { value: 5, label: '強くそう思う' },
-            { value: 4, label: 'そう思う' },
-            { value: 3, label: 'どちらでもない' },
-            { value: 2, label: 'そう思わない' },
-            { value: 1, label: '全くそう思わない' }
-        ];
-        
-        options.forEach(opt => {
-            const optionDiv = document.createElement('div');
-            optionDiv.className = 'option';
+        category.questions.forEach(q => {
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'question-item';
             
-            const radio = document.createElement('input');
-            radio.type = 'radio';
-            radio.name = 'answer';
-            radio.value = opt.value;
-            radio.id = `option-${opt.value}`;
+            const questionTitle = document.createElement('div');
+            questionTitle.className = 'question-item-title';
+            questionTitle.textContent = `Q${q.questionNumber}. ${q.question}`;
             
-            if (answers[currentQuestionIndex] == opt.value) {
-                radio.checked = true;
-            }
+            const optionsDiv = document.createElement('div');
+            optionsDiv.className = 'question-item-options';
             
-            radio.addEventListener('change', () => {
-                answers[currentQuestionIndex] = parseInt(opt.value);
+            const options = [
+                { value: 5, label: '強くそう思う' },
+                { value: 4, label: 'そう思う' },
+                { value: 3, label: 'どちらでもない' },
+                { value: 2, label: 'そう思わない' },
+                { value: 1, label: '全くそう思わない' }
+            ];
+            
+            options.forEach(opt => {
+                const optionLabel = document.createElement('label');
+                optionLabel.className = 'radio-option';
+                
+                const radio = document.createElement('input');
+                radio.type = 'radio';
+                radio.name = `question-${q.questionNumber}`;
+                radio.value = opt.value;
+                
+                if (answers[q.questionNumber] == opt.value) {
+                    radio.checked = true;
+                }
+                
+                radio.addEventListener('change', () => {
+                    answers[q.questionNumber] = parseInt(opt.value);
+                    saveTemporaryAnswers();
+                    updateCategoryProgress();
+                });
+                
+                const span = document.createElement('span');
+                span.textContent = opt.label;
+                
+                optionLabel.appendChild(radio);
+                optionLabel.appendChild(span);
+                optionsDiv.appendChild(optionLabel);
             });
             
-            const label = document.createElement('label');
-            label.setAttribute('for', `option-${opt.value}`);
-            label.innerHTML = `<span>${opt.label}</span>`;
-            
-            optionDiv.appendChild(radio);
-            optionDiv.appendChild(label);
-            optionsContainer.appendChild(optionDiv);
+            questionDiv.appendChild(questionTitle);
+            questionDiv.appendChild(optionsDiv);
+            questionsContainer.appendChild(questionDiv);
         });
     }
     
-    const progress = (currentQuestionIndex / questions.length) * 100;
-    if (progressFill) {
-        progressFill.style.width = `${progress}%`;
-    }
-    if (progressText) {
-        progressText.textContent = `質問 ${currentQuestionIndex} / ${questions.length}`;
-    }
-    
+    // ボタン表示制御
     if (prevBtn) {
-        if (currentQuestionIndex === 1) {
+        if (currentCategoryIndex === 0) {
             prevBtn.style.visibility = 'hidden';
         } else {
             prevBtn.style.visibility = 'visible';
         }
     }
     
+    if (nextBtn) {
+        if (currentCategoryIndex === categories.length - 1) {
+            nextBtn.textContent = '結果を見る';
+        } else {
+            nextBtn.textContent = '次のカテゴリーへ';
+        }
+    }
+    
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-function nextQuestion() {
-    if (!answers[currentQuestionIndex]) {
-        alert('回答を選択してください。');
-        return;
-    }
+function updateCategoryProgress() {
+    const category = categories[currentCategoryIndex];
+    const answeredCount = category.questions.filter(q => answers[q.questionNumber] !== undefined).length;
+    const categoryProgressText = document.getElementById('category-progress-text');
     
-    currentQuestionIndex++;
-    
-    if (currentQuestionIndex > questions.length) {
-        showResults();
-    } else {
-        renderQuestion();
+    if (categoryProgressText) {
+        categoryProgressText.textContent = `${answeredCount} / ${category.questions.length} 問回答済み`;
     }
 }
 
-function previousQuestion() {
-    if (currentQuestionIndex > 1) {
-        currentQuestionIndex--;
-        renderQuestion();
+function nextCategory() {
+    const category = categories[currentCategoryIndex];
+    const unansweredQuestions = category.questions.filter(q => answers[q.questionNumber] === undefined);
+    
+    if (unansweredQuestions.length > 0) {
+        const firstUnanswered = unansweredQuestions[0].questionNumber;
+        if (!confirm(`未回答の質問が ${unansweredQuestions.length} 問あります。\nスキップして次に進みますか？\n（後で戻って回答できます）`)) {
+            // 最初の未回答質問までスクロール
+            const questionElement = document.querySelector(`.question-item:nth-child(${category.questions.findIndex(q => q.questionNumber === firstUnanswered) + 1})`);
+            if (questionElement) {
+                questionElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            return;
+        }
+    }
+    
+    currentCategoryIndex++;
+    saveTemporaryAnswers();
+    
+    if (currentCategoryIndex >= categories.length) {
+        showResults();
+    } else {
+        renderCategoryQuestions();
+    }
+}
+
+function previousCategory() {
+    if (currentCategoryIndex > 0) {
+        currentCategoryIndex--;
+        saveTemporaryAnswers();
+        renderCategoryQuestions();
     }
 }
 
@@ -191,6 +303,9 @@ function previousQuestion() {
 // 結果表示
 // ============================
 function showResults() {
+    // 一時保存データをクリア
+    clearTemporaryAnswers();
+    
     showPage('results');
     
     const employeeCodeDisplay = document.getElementById('employee-code-display');
@@ -225,31 +340,33 @@ function showResults() {
 }
 
 function calculateCategoryScores() {
-    const categories = {};
+    const categoryScoreMap = {};
     
-    questions.forEach((q, index) => {
-        const questionNumber = index + 1;
-        const answer = answers[questionNumber] || 0;
+    categories.forEach(cat => {
+        let total = 0;
+        let count = 0;
         
-        if (!categories[q.category]) {
-            categories[q.category] = { total: 0, count: 0 };
+        cat.questions.forEach(q => {
+            if (answers[q.questionNumber] !== undefined) {
+                total += answers[q.questionNumber];
+                count++;
+            }
+        });
+        
+        if (count > 0) {
+            const avg = total / count;
+            categoryScoreMap[cat.name] = Math.round(avg * 20);
+        } else {
+            categoryScoreMap[cat.name] = 0;
         }
-        
-        categories[q.category].total += answer;
-        categories[q.category].count += 1;
     });
     
-    const scores = {};
-    for (let cat in categories) {
-        const avg = categories[cat].total / categories[cat].count;
-        scores[cat] = Math.round(avg * 20);
-    }
-    
-    return scores;
+    return categoryScoreMap;
 }
 
 function calculateTotalScore(categoryScores) {
     const values = Object.values(categoryScores);
+    if (values.length === 0) return 0;
     const sum = values.reduce((a, b) => a + b, 0);
     return Math.round(sum / values.length);
 }
@@ -493,10 +610,11 @@ function printResults() {
 
 function completeSurvey() {
     if (confirm('診断を完了してトップページに戻りますか？')) {
-        currentQuestionIndex = 1;
+        currentCategoryIndex = 0;
         answers = {};
         employeeCode = '';
         selectedDepartment = '';
+        clearTemporaryAnswers();
         
         showPage('home');
     }
