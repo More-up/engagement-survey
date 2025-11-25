@@ -4,7 +4,7 @@
 
 let currentQuestionIndex = 0;
 let answers = {};
-let selectedDepartment = ''; // 部署情報を保存
+let selectedDepartment = '';
 
 // ページ要素（初期化後に取得）
 let pages = {};
@@ -93,11 +93,20 @@ function renderQuestion() {
     const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
     document.getElementById('progress-fill').style.width = progress + '%';
     
-    // 前回の回答を復元
-    const savedAnswer = answers[question.id];
+    // ★ まず全ての選択を解除
     document.querySelectorAll('input[name="answer"]').forEach(input => {
-        input.checked = (input.value == savedAnswer);
+        input.checked = false;
     });
+    
+    // ★ 保存された回答がある場合のみ復元
+    const savedAnswer = answers[question.id];
+    if (savedAnswer) {
+        document.querySelectorAll('input[name="answer"]').forEach(input => {
+            if (input.value == savedAnswer) {
+                input.checked = true;
+            }
+        });
+    }
     
     // ボタンの表示制御
     document.getElementById('prev-btn').style.display = currentQuestionIndex === 0 ? 'none' : 'inline-block';
