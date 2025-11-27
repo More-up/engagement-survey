@@ -438,6 +438,20 @@ body {
 /* ============================
    結果ページ - 大幅改善版
 ============================ */
+
+/* 結果ページ専用のタイトル（白色） */
+#results .page-title {
+    font-size: 2.5em;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 40px;
+    color: white;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+    background: none;
+    -webkit-background-clip: unset;
+    -webkit-text-fill-color: unset;
+}
+
 .result-info {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
@@ -822,5 +836,9 @@ body {
 
     .result-actions {
         flex-direction: column;
+    }
+
+    #results .page-title {
+        font-size: 2em;
     }
 }
