@@ -48,6 +48,43 @@ function showPage(pageId) {
 }
 
 // ============================
+// URL管理（結果保持用）
+// ============================
+function getResultIdFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('result');
+}
+
+function setResultIdToURL(resultId) {
+    const url = new URL(window.location);
+    url.searchParams.set('result', resultId);
+    window.history.pushState({}, '', url);
+}
+
+function loadResultFromURL() {
+    const resultId = getResultIdFromURL();
+    if (!resultId) return false;
+    
+    const allResults = JSON.parse(localStorage.getItem('surveyResults')) || [];
+    const result = allResults.find(r => r.resultId === resultId);
+    
+    if (!result) return false;
+    
+    // 結果データを復元
+    employeeCode = result.employeeCode;
+    selectedDepartment = result.department;
+    answers = result.answers;
+    
+    // カテゴリーを準備
+    prepareCategories();
+    
+    // 結果ページを表示
+    showResults();
+    
+    return true;
+}
+
+// ============================
 // オリエンテーション完了
 // ============================
 function completeOrientation() {
@@ -334,7 +371,10 @@ function showResults() {
     displayCategoryScores(categoryScores);
     drawRadarChart(categoryScores);
     displayFeedback(totalScore, categoryScores);
-    saveResultToStorage(totalScore, categoryScores);
+    
+    // 結果を保存してURLに反映
+    const resultId = saveResultToStorage(totalScore, categoryScores);
+    setResultIdToURL(resultId);
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -533,7 +573,11 @@ function displayFeedback(totalScore, categoryScores) {
 function saveResultToStorage(totalScore, categoryScores) {
     const results = JSON.parse(localStorage.getItem('surveyResults')) || [];
     
+    // ユニークなIDを生成
+    const resultId = `${new Date().getTime()}-${employeeCode}`;
+    
     const newResult = {
+        resultId: resultId,
         date: new Date().toISOString(),
         employeeCode: employeeCode,
         department: selectedDepartment,
@@ -544,6 +588,8 @@ function saveResultToStorage(totalScore, categoryScores) {
     
     results.push(newResult);
     localStorage.setItem('surveyResults', JSON.stringify(results));
+    
+    return resultId;
 }
 
 // ============================
@@ -595,6 +641,12 @@ function showHistory() {
             </div>
         `;
         
+        // クリックで結果を再表示
+        historyItem.addEventListener('click', () => {
+            setResultIdToURL(result.resultId);
+            loadResultFromURL();
+        });
+        
         historyContainer.appendChild(historyItem);
     });
     
@@ -616,6 +668,9 @@ function completeSurvey() {
         selectedDepartment = '';
         clearTemporaryAnswers();
         
+        // URLパラメータをクリア
+        window.history.pushState({}, '', window.location.pathname);
+        
         showPage('home');
     }
 }
@@ -625,5 +680,11 @@ function completeSurvey() {
 // ============================
 document.addEventListener('DOMContentLoaded', function() {
     initPages();
-    showPage('home');
+    
+    // URLパラメータから結果を復元
+    const loaded = loadResultFromURL();
+    
+    if (!loaded) {
+        showPage('home');
+    }
 });
