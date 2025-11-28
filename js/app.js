@@ -373,8 +373,9 @@ function showResults() {
     displayFeedback(totalScore, categoryScores);
     
     // 結果を保存してURLに反映
-    const resultId = saveResultToStorage(totalScore, categoryScores);
-    setResultIdToURL(resultId);
+    saveResultToStorage(totalScore, categoryScores).then(resultId => {
+        setResultIdToURL(resultId);
+    });
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -570,7 +571,7 @@ function displayFeedback(totalScore, categoryScores) {
     `;
 }
 
-function saveResultToStorage(totalScore, categoryScores) {
+async function saveResultToStorage(totalScore, categoryScores) {
     const results = JSON.parse(localStorage.getItem('surveyResults')) || [];
     
     // ユニークなIDを生成
@@ -588,6 +589,35 @@ function saveResultToStorage(totalScore, categoryScores) {
     
     results.push(newResult);
     localStorage.setItem('surveyResults', JSON.stringify(results));
+    
+    // Cloudflare Workers APIにデータを送信
+    try {
+        const response = await fetch('https://engagement-api.more-up.workers.dev/api/save-result', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                resultId: resultId,
+                employeeCode: employeeCode,
+                department: selectedDepartment,
+                totalScore: totalScore,
+                surveyDate: new Date().toISOString().split('T')[0],
+                categoryScores: categoryScores,
+                answers: answers
+            })
+        });
+        
+        const result = await response.json();
+        if (result.success) {
+            console.log('✅ データをサーバーに保存しました:', resultId);
+        } else {
+            console.error('❌ サーバー保存エラー:', result.error);
+        }
+    } catch (error) {
+        console.error('❌ サーバー送信エラー:', error);
+        // エラーが出てもLocalStorageには保存されているので続行
+    }
     
     return resultId;
 }
