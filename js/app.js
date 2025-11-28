@@ -1,720 +1,727 @@
-// ============================
+// エンゲージメント診断アプリケーション
+
 // グローバル変数
-// ============================
-let currentPage = 'home';
-let currentCategoryIndex = 0;
+let currentPage = 1;
+let currentCategory = 0;
+const totalPages = 10;
+const questionsPerPage = 10;
 let answers = {};
+let categoryScores = [];
+let totalScore = 0;
+let resultId = '';
 let employeeCode = '';
-let selectedDepartment = '';
-let radarChart = null;
-let categories = [];
+let department = '';
 
-// ============================
-// 従業員コード正規化関数
-// ============================
-function normalizeEmployeeCode(code) {
-    if (!code) return '';
+// カテゴリー定義
+const categories = [
+    { name: '心身の健康', questions: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] },
+    { name: '仕事の充実感', questions: [11, 12, 13, 14, 15, 16, 17, 18, 19, 20] },
+    { name: '成長機会', questions: [21, 22, 23, 24, 25, 26, 27, 28, 29, 30] },
+    { name: '上司のサポート', questions: [31, 32, 33, 34, 35, 36, 37, 38, 39, 40] },
+    { name: '部署内の人間関係', questions: [41, 42, 43, 44, 45, 46, 47, 48, 49, 50] },
+    { name: '評価・処遇', questions: [51, 52, 53, 54, 55, 56, 57, 58, 59, 60] },
+    { name: '会社への信頼', questions: [61, 62, 63, 64, 65, 66, 67, 68, 69, 70] },
+    { name: '働く環境', questions: [71, 72, 73, 74, 75, 76, 77, 78, 79, 80] },
+    { name: '総合満足度', questions: [81, 82, 83, 84, 85, 86, 87, 88, 89, 90] },
+    { name: '離職予防・継続意向', questions: [91, 92, 93, 94, 95, 96, 97, 98, 99, 100] }
+];
+
+// 質問テキスト
+const questions = {
+    1: "心身ともに健康だと感じる",
+    2: "仕事によるストレスは少ない",
+    3: "十分な睡眠がとれている",
+    4: "適度な運動ができている",
+    5: "健康的な食生活を送っている",
+    6: "仕事とプライベートのバランスが取れている",
+    7: "休日に十分リフレッシュできている",
+    8: "メンタル面で不安を感じることは少ない",
+    9: "体調不良で仕事を休むことは少ない",
+    10: "職場の健康支援制度は充実している",
     
-    return code
-        .replace(/[Ａ-Ｚａ-ｚ０-９]/g, function(s) {
-            return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
-        })
-        .replace(/　/g, ' ')
-        .replace(/\s+/g, '')
-        .toUpperCase()
-        .trim();
-}
+    11: "今の仕事にやりがいを感じている",
+    12: "自分の仕事は会社に貢献していると感じる",
+    13: "仕事の目標は明確である",
+    14: "自分の強みを活かせる仕事である",
+    15: "仕事の成果が認められている",
+    16: "業務内容に興味・関心がある",
+    17: "仕事を通じて達成感を得られている",
+    18: "自分の仕事に誇りを持っている",
+    19: "裁量権を持って仕事ができている",
+    20: "新しいチャレンジができる環境である",
+    
+    21: "スキルアップの機会が提供されている",
+    22: "研修制度は充実している",
+    23: "キャリアパスが明確である",
+    24: "自己成長を実感できている",
+    25: "新しいスキルを学ぶ機会がある",
+    26: "昇進・昇格の機会は公平である",
+    27: "メンター制度が活用できている",
+    28: "資格取得の支援がある",
+    29: "他部署との連携で学びがある",
+    30: "将来のキャリアビジョンが描ける",
+    
+    31: "上司は適切な指導をしてくれる",
+    32: "上司とのコミュニケーションは円滑である",
+    33: "上司は私の意見を尊重してくれる",
+    34: "上司からの期待が明確である",
+    35: "上司は適切なフィードバックをくれる",
+    36: "困った時に上司に相談しやすい",
+    37: "上司は公平な評価をしてくれる",
+    38: "上司は私の成長を支援してくれる",
+    39: "上司のマネジメントスタイルに満足している",
+    40: "上司を信頼している",
+    
+    41: "同僚との関係は良好である",
+    42: "チーム内の雰囲気は良い",
+    43: "困った時に助け合える環境である",
+    44: "意見交換が活発に行われている",
+    45: "部署内のコミュニケーションは円滑である",
+    46: "同僚を信頼している",
+    47: "チームワークが機能している",
+    48: "お互いの仕事を尊重し合っている",
+    49: "部署内での情報共有は適切である",
+    50: "新しいメンバーを歓迎する雰囲気がある",
+    
+    51: "給与水準に満足している",
+    52: "評価制度は公平である",
+    53: "評価基準が明確である",
+    54: "頑張りが評価に反映されている",
+    55: "福利厚生は充実している",
+    56: "昇給・賞与は適切である",
+    57: "評価面談は有意義である",
+    58: "報酬と仕事内容のバランスが取れている",
+    59: "インセンティブ制度は魅力的である",
+    60: "処遇に関する不満は少ない",
+    
+    61: "会社の理念・ビジョンに共感している",
+    62: "会社の方針は明確である",
+    63: "経営陣を信頼している",
+    64: "会社の将来性に期待している",
+    65: "会社の意思決定プロセスは透明である",
+    66: "会社は従業員を大切にしている",
+    67: "会社の社会的責任に共感している",
+    68: "会社の経営状態に不安はない",
+    69: "会社の情報開示は十分である",
+    70: "この会社で働くことを誇りに思う",
+    
+    71: "職場環境は快適である",
+    72: "必要な設備・ツールが揃っている",
+    73: "オフィスの立地は良い",
+    74: "リモートワーク環境は整っている",
+    75: "労働時間は適切である",
+    76: "休暇は取得しやすい",
+    77: "残業時間は適正である",
+    78: "職場の安全衛生管理は適切である",
+    79: "通勤環境に満足している",
+    80: "働き方の柔軟性がある",
+    
+    81: "総合的に今の仕事に満足している",
+    82: "会社での勤務を継続したい",
+    83: "友人にこの会社を勧めたい",
+    84: "会社の一員であることに満足している",
+    85: "仕事に対するモチベーションは高い",
+    86: "毎日の仕事が楽しみである",
+    87: "この会社でのキャリアに満足している",
+    88: "会社の制度・仕組みに満足している",
+    89: "職場の雰囲気に満足している",
+    90: "全体として働きやすい環境である",
+    
+    91: "転職を考えることはほとんどない",
+    92: "今の会社で長く働きたい",
+    93: "他社からのオファーがあっても残りたい",
+    94: "家族や友人に今の仕事を辞めたいと相談したことはない",
+    95: "将来もこの会社で働いている姿が想像できる",
+    96: "退職を真剣に考えたことはない",
+    97: "この会社に愛着を感じている",
+    98: "転職サイトを閲覧することはほとんどない",
+    99: "今の仕事を辞める理由は特にない",
+    100: "この会社で定年まで働きたい"
+};
 
-// ============================
-// ページ管理
-// ============================
-function initPages() {
-    const pages = document.querySelectorAll('.page');
-    pages.forEach(page => page.classList.remove('active'));
-}
-
-function showPage(pageId) {
-    const pages = document.querySelectorAll('.page');
-    pages.forEach(page => {
+// ページ表示切り替え
+function showPage(pageName) {
+    document.querySelectorAll('.page').forEach(page => {
         page.classList.remove('active');
     });
-    
-    const targetPage = document.getElementById(pageId);
-    if (targetPage) {
-        targetPage.classList.add('active');
-        currentPage = pageId;
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    document.getElementById(pageName + '-page').classList.add('active');
+}
+
+// 入力ページの初期化
+function initInputPage() {
+    // LocalStorageから一時保存データを読み込む
+    const savedData = localStorage.getItem('surveyTempData');
+    if (savedData) {
+        const data = JSON.parse(savedData);
+        document.getElementById('employee-code').value = data.employeeCode || '';
+        document.getElementById('department').value = data.department || '';
     }
+    
+    // 診断履歴の表示
+    displayHistory();
 }
 
-// ============================
-// URL管理（結果保持用）
-// ============================
-function getResultIdFromURL() {
-    const params = new URLSearchParams(window.location.search);
-    return params.get('result');
-}
-
-function setResultIdToURL(resultId) {
-    const url = new URL(window.location);
-    url.searchParams.set('result', resultId);
-    window.history.pushState({}, '', url);
-}
-
-function loadResultFromURL() {
-    const resultId = getResultIdFromURL();
-    if (!resultId) return false;
+// 診断開始
+function startSurvey() {
+    employeeCode = document.getElementById('employee-code').value.trim();
+    department = document.getElementById('department').value.trim();
     
-    const allResults = JSON.parse(localStorage.getItem('surveyResults')) || [];
-    const result = allResults.find(r => r.resultId === resultId);
-    
-    if (!result) return false;
-    
-    // 結果データを復元
-    employeeCode = result.employeeCode;
-    selectedDepartment = result.department;
-    answers = result.answers;
-    
-    // カテゴリーを準備
-    prepareCategories();
-    
-    // 結果ページを表示
-    showResults();
-    
-    return true;
-}
-
-// ============================
-// オリエンテーション完了
-// ============================
-function completeOrientation() {
-    showPage('department-selection');
-}
-
-// ============================
-// 部署選択・従業員コード保存
-// ============================
-function saveDepartmentAndStart() {
-    const codeInput = document.getElementById('employee-code');
-    const rawCode = codeInput ? codeInput.value.trim() : '';
-    employeeCode = normalizeEmployeeCode(rawCode);
-    
-    if (!employeeCode) {
-        alert('従業員コードを入力してください。');
+    if (!employeeCode || !department) {
+        alert('従業員コードと所属部署を入力してください');
         return;
     }
     
-    const deptSelect = document.getElementById('department');
-    selectedDepartment = deptSelect ? deptSelect.value : '';
+    // 一時保存データをクリア
+    answers = {};
     
-    if (!selectedDepartment) {
-        alert('部署を選択してください。');
-        return;
-    }
-    
-    localStorage.setItem('employeeCode', employeeCode);
-    localStorage.setItem('selectedDepartment', selectedDepartment);
-    
-    // カテゴリーを準備
-    prepareCategories();
-    
-    // 一時保存データを読み込み
-    loadTemporaryAnswers();
-    
-    showPage('survey');
-    renderCategoryQuestions();
-}
-
-// ============================
-// カテゴリー準備
-// ============================
-function prepareCategories() {
-    const categoryMap = {};
-    
-    questions.forEach((q, index) => {
-        if (!categoryMap[q.category]) {
-            categoryMap[q.category] = [];
-        }
-        categoryMap[q.category].push({
-            ...q,
-            questionNumber: index + 1
-        });
-    });
-    
-    categories = Object.keys(categoryMap).map(cat => ({
-        name: cat,
-        questions: categoryMap[cat]
-    }));
-}
-
-// ============================
-// 一時保存機能
-// ============================
-function saveTemporaryAnswers() {
-    const tempData = {
+    // 入力データを一時保存
+    localStorage.setItem('surveyTempData', JSON.stringify({
         employeeCode: employeeCode,
-        department: selectedDepartment,
-        currentCategoryIndex: currentCategoryIndex,
-        answers: answers,
-        timestamp: new Date().toISOString()
-    };
-    localStorage.setItem('tempSurveyData', JSON.stringify(tempData));
+        department: department
+    }));
+    
+    currentPage = 1;
+    currentCategory = 0;
+    displayQuestions();
+    updateProgress();
+    showPage('survey');
 }
 
-function loadTemporaryAnswers() {
-    const tempDataStr = localStorage.getItem('tempSurveyData');
-    if (!tempDataStr) return;
+// 質問表示
+function displayQuestions() {
+    const startQ = (currentPage - 1) * questionsPerPage + 1;
+    const endQ = Math.min(startQ + questionsPerPage - 1, 100);
     
-    const tempData = JSON.parse(tempDataStr);
+    // カテゴリー名の更新
+    document.getElementById('category-name').textContent = categories[currentCategory].name;
     
-    // 同じ従業員コードの一時データのみ復元
-    if (normalizeEmployeeCode(tempData.employeeCode) === employeeCode) {
-        answers = tempData.answers || {};
-        currentCategoryIndex = tempData.currentCategoryIndex || 0;
-    }
-}
-
-function clearTemporaryAnswers() {
-    localStorage.removeItem('tempSurveyData');
-}
-
-// ============================
-// カテゴリー単位の質問表示（カテゴリー名非表示）
-// ============================
-function renderCategoryQuestions() {
-    if (currentCategoryIndex >= categories.length) {
-        showResults();
-        return;
-    }
-    
-    const category = categories[currentCategoryIndex];
-    const progressFill = document.getElementById('progress-fill');
-    const progressText = document.getElementById('progress-text');
-    const sectionHeader = document.getElementById('section-header');
-    const categoryProgressText = document.getElementById('category-progress-text');
+    // 質問の表示
     const questionsContainer = document.getElementById('questions-container');
-    const prevBtn = document.getElementById('prev-btn');
-    const nextBtn = document.getElementById('next-btn');
+    questionsContainer.innerHTML = '';
     
-    // 全体進捗バー
-    const overallProgress = ((currentCategoryIndex + 1) / categories.length) * 100;
-    if (progressFill) {
-        progressFill.style.width = `${overallProgress}%`;
-    }
-    if (progressText) {
-        progressText.textContent = `セクション ${currentCategoryIndex + 1} / ${categories.length}`;
-    }
-    
-    // セクションヘッダー（カテゴリー名を表示しない）
-    if (sectionHeader) {
-        sectionHeader.textContent = `セクション ${currentCategoryIndex + 1} / ${categories.length}`;
-    }
-    
-    // カテゴリー内進捗
-    const answeredCount = category.questions.filter(q => answers[q.questionNumber] !== undefined).length;
-    if (categoryProgressText) {
-        categoryProgressText.textContent = `${answeredCount} / ${category.questions.length} 問回答済み`;
-    }
-    
-    // 質問を表示
-    if (questionsContainer) {
-        questionsContainer.innerHTML = '';
+    for (let i = startQ; i <= endQ; i++) {
+        const questionDiv = document.createElement('div');
+        questionDiv.className = 'question';
         
-        category.questions.forEach(q => {
-            const questionDiv = document.createElement('div');
-            questionDiv.className = 'question-item';
+        const questionText = document.createElement('p');
+        questionText.className = 'question-text';
+        questionText.textContent = `Q${i}. ${questions[i]}`;
+        questionDiv.appendChild(questionText);
+        
+        const optionsDiv = document.createElement('div');
+        optionsDiv.className = 'options';
+        
+        const options = [
+            { value: 5, label: 'とてもそう思う' },
+            { value: 4, label: 'そう思う' },
+            { value: 3, label: 'どちらでもない' },
+            { value: 2, label: 'そう思わない' },
+            { value: 1, label: '全くそう思わない' }
+        ];
+        
+        options.forEach(option => {
+            const label = document.createElement('label');
+            label.className = 'option';
             
-            const questionTitle = document.createElement('div');
-            questionTitle.className = 'question-item-title';
-            questionTitle.textContent = `Q${q.questionNumber}. ${q.question}`;
+            const input = document.createElement('input');
+            input.type = 'radio';
+            input.name = `q${i}`;
+            input.value = option.value;
+            input.required = true;
             
-            const optionsDiv = document.createElement('div');
-            optionsDiv.className = 'question-item-options';
+            // 保存されている回答があれば復元
+            if (answers[i] && answers[i] === option.value) {
+                input.checked = true;
+            }
             
-            const options = [
-                { value: 5, label: '強くそう思う' },
-                { value: 4, label: 'そう思う' },
-                { value: 3, label: 'どちらでもない' },
-                { value: 2, label: 'そう思わない' },
-                { value: 1, label: '全くそう思わない' }
-            ];
-            
-            options.forEach(opt => {
-                const optionLabel = document.createElement('label');
-                optionLabel.className = 'radio-option';
-                
-                const radio = document.createElement('input');
-                radio.type = 'radio';
-                radio.name = `question-${q.questionNumber}`;
-                radio.value = opt.value;
-                
-                if (answers[q.questionNumber] == opt.value) {
-                    radio.checked = true;
-                }
-                
-                radio.addEventListener('change', () => {
-                    answers[q.questionNumber] = parseInt(opt.value);
-                    saveTemporaryAnswers();
-                    updateCategoryProgress();
-                });
-                
-                const span = document.createElement('span');
-                span.textContent = opt.label;
-                
-                optionLabel.appendChild(radio);
-                optionLabel.appendChild(span);
-                optionsDiv.appendChild(optionLabel);
+            input.addEventListener('change', () => {
+                answers[i] = option.value;
+                saveProgress();
             });
             
-            questionDiv.appendChild(questionTitle);
-            questionDiv.appendChild(optionsDiv);
-            questionsContainer.appendChild(questionDiv);
+            const span = document.createElement('span');
+            span.textContent = option.label;
+            
+            label.appendChild(input);
+            label.appendChild(span);
+            optionsDiv.appendChild(label);
         });
+        
+        questionDiv.appendChild(optionsDiv);
+        questionsContainer.appendChild(questionDiv);
     }
     
-    // ボタン表示制御
-    if (prevBtn) {
-        if (currentCategoryIndex === 0) {
-            prevBtn.style.visibility = 'hidden';
-        } else {
-            prevBtn.style.visibility = 'visible';
+    // ボタンの表示制御
+    document.getElementById('prev-btn').style.display = currentPage > 1 ? 'inline-block' : 'none';
+    document.getElementById('next-btn').style.display = currentPage < totalPages ? 'inline-block' : 'none';
+    document.getElementById('submit-btn').style.display = currentPage === totalPages ? 'inline-block' : 'none';
+}
+
+// 進捗表示の更新
+function updateProgress() {
+    const progress = (currentPage / totalPages) * 100;
+    document.getElementById('progress-bar').style.width = progress + '%';
+    document.getElementById('progress-text').textContent = `${currentPage} / ${totalPages}`;
+}
+
+// 一時保存
+function saveProgress() {
+    const tempData = {
+        employeeCode: employeeCode,
+        department: department,
+        currentPage: currentPage,
+        currentCategory: currentCategory,
+        answers: answers
+    };
+    localStorage.setItem('surveyTempData', JSON.stringify(tempData));
+}
+
+// 前のページ
+function previousPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        if ((currentPage - 1) % 1 === 0 && currentPage > 1) {
+            currentCategory--;
+        }
+        displayQuestions();
+        updateProgress();
+        window.scrollTo(0, 0);
+    }
+}
+
+// 次のページ
+function nextPage() {
+    const startQ = (currentPage - 1) * questionsPerPage + 1;
+    const endQ = Math.min(startQ + questionsPerPage - 1, 100);
+    
+    // 現在のページの回答チェック
+    let allAnswered = true;
+    for (let i = startQ; i <= endQ; i++) {
+        if (!answers[i]) {
+            allAnswered = false;
+            break;
         }
     }
     
-    if (nextBtn) {
-        if (currentCategoryIndex === categories.length - 1) {
-            nextBtn.textContent = '結果を見る';
-        } else {
-            nextBtn.textContent = '次のセクションへ';
+    if (!allAnswered) {
+        alert('すべての質問に回答してください');
+        return;
+    }
+    
+    if (currentPage < totalPages) {
+        currentPage++;
+        if ((currentPage - 1) % 1 === 0) {
+            currentCategory++;
         }
-    }
-    
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function updateCategoryProgress() {
-    const category = categories[currentCategoryIndex];
-    const answeredCount = category.questions.filter(q => answers[q.questionNumber] !== undefined).length;
-    const categoryProgressText = document.getElementById('category-progress-text');
-    
-    if (categoryProgressText) {
-        categoryProgressText.textContent = `${answeredCount} / ${category.questions.length} 問回答済み`;
+        displayQuestions();
+        updateProgress();
+        window.scrollTo(0, 0);
     }
 }
 
-function nextCategory() {
-    const category = categories[currentCategoryIndex];
-    const unansweredQuestions = category.questions.filter(q => answers[q.questionNumber] === undefined);
-    
-    if (unansweredQuestions.length > 0) {
-        const firstUnanswered = unansweredQuestions[0].questionNumber;
-        if (!confirm(`未回答の質問が ${unansweredQuestions.length} 問あります。\nスキップして次に進みますか？\n（後で戻って回答できます）`)) {
-            // 最初の未回答質問までスクロール
-            const questionElement = document.querySelector(`.question-item:nth-child(${category.questions.findIndex(q => q.questionNumber === firstUnanswered) + 1})`);
-            if (questionElement) {
-                questionElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
+// 診断提出
+function submitSurvey() {
+    // すべての質問に回答しているかチェック
+    for (let i = 1; i <= 100; i++) {
+        if (!answers[i]) {
+            alert('すべての質問に回答してください');
             return;
         }
     }
     
-    currentCategoryIndex++;
-    saveTemporaryAnswers();
+    // スコア計算
+    calculateScores();
     
-    if (currentCategoryIndex >= categories.length) {
-        showResults();
-    } else {
-        renderCategoryQuestions();
-    }
+    // 結果IDの生成
+    resultId = Date.now() + '-' + employeeCode;
+    
+    // URLパラメータに結果IDを追加
+    const url = new URL(window.location.href);
+    url.searchParams.set('result', resultId);
+    window.history.pushState({}, '', url);
+    
+    // 結果を表示
+    showResults();
 }
 
-function previousCategory() {
-    if (currentCategoryIndex > 0) {
-        currentCategoryIndex--;
-        saveTemporaryAnswers();
-        renderCategoryQuestions();
-    }
-}
-
-// ============================
-// 結果表示
-// ============================
-function showResults() {
-    // 一時保存データをクリア
-    clearTemporaryAnswers();
+// スコア計算
+function calculateScores() {
+    categoryScores = [];
+    totalScore = 0;
     
-    showPage('results');
-    
-    const employeeCodeDisplay = document.getElementById('employee-code-display');
-    const departmentDisplay = document.getElementById('department-display');
-    const surveyDateDisplay = document.getElementById('survey-date-display');
-    
-    if (employeeCodeDisplay) {
-        employeeCodeDisplay.textContent = employeeCode || '未入力';
-    }
-    if (departmentDisplay) {
-        departmentDisplay.textContent = selectedDepartment || '未選択';
-    }
-    if (surveyDateDisplay) {
-        const now = new Date();
-        surveyDateDisplay.textContent = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日`;
-    }
-    
-    const categoryScores = calculateCategoryScores();
-    const totalScore = calculateTotalScore(categoryScores);
-    
-    const totalScoreElement = document.getElementById('total-score');
-    if (totalScoreElement) {
-        totalScoreElement.textContent = totalScore;
-    }
-    
-    displayCategoryScores(categoryScores);
-    drawRadarChart(categoryScores);
-    displayFeedback(totalScore, categoryScores);
-    
-    // 結果を保存してURLに反映
-    saveResultToStorage(totalScore, categoryScores).then(resultId => {
-        setResultIdToURL(resultId);
-    });
-    
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function calculateCategoryScores() {
-    const categoryScoreMap = {};
-    
-    categories.forEach(cat => {
-        let total = 0;
-        let count = 0;
-        
-        cat.questions.forEach(q => {
-            if (answers[q.questionNumber] !== undefined) {
-                total += answers[q.questionNumber];
-                count++;
-            }
+    categories.forEach(category => {
+        let categoryTotal = 0;
+        category.questions.forEach(q => {
+            categoryTotal += parseInt(answers[q]);
         });
-        
-        if (count > 0) {
-            const avg = total / count;
-            categoryScoreMap[cat.name] = Math.round(avg * 20);
-        } else {
-            categoryScoreMap[cat.name] = 0;
-        }
+        const categoryAverage = Math.round(categoryTotal / category.questions.length);
+        categoryScores.push({
+            name: category.name,
+            score: categoryAverage
+        });
+        totalScore += categoryAverage;
     });
     
-    return categoryScoreMap;
+    totalScore = Math.round(totalScore / categories.length);
 }
 
-function calculateTotalScore(categoryScores) {
-    const values = Object.values(categoryScores);
-    if (values.length === 0) return 0;
-    const sum = values.reduce((a, b) => a + b, 0);
-    return Math.round(sum / values.length);
-}
-
-function displayCategoryScores(categoryScores) {
-    const container = document.getElementById('category-scores');
-    if (!container) return;
+// 結果表示
+function showResults() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const resultId = urlParams.get('result');
     
-    container.innerHTML = '';
-    
-    for (let category in categoryScores) {
-        const score = categoryScores[category];
-        
-        const scoreItem = document.createElement('div');
-        scoreItem.className = 'score-item';
-        
-        scoreItem.innerHTML = `
-            <div class="score-row">
-                <span class="score-label">${category}</span>
-                <span class="score-value">${score}点</span>
-            </div>
-            <div class="score-bar">
-                <div class="score-bar-fill" style="width: ${score}%"></div>
-            </div>
-        `;
-        
-        container.appendChild(scoreItem);
+    if (!resultId) {
+        alert('結果が見つかりません');
+        showPage('input');
+        return;
     }
-}
 
-function drawRadarChart(categoryScores) {
-    const canvas = document.getElementById('radar-chart');
-    if (!canvas) return;
+    // LocalStorageから結果を取得
+    const savedResults = JSON.parse(localStorage.getItem('surveyResults') || '[]');
+    const result = savedResults.find(r => r.resultId === resultId);
     
-    const ctx = canvas.getContext('2d');
-    
-    if (radarChart) {
-        radarChart.destroy();
+    if (!result) {
+        alert('指定された結果が見つかりません');
+        showPage('input');
+        return;
     }
-    
-    const labels = Object.keys(categoryScores);
-    const data = Object.values(categoryScores);
-    
-    radarChart = new Chart(ctx, {
-        type: 'radar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'スコア',
-                data: data,
-                backgroundColor: 'rgba(16, 185, 129, 0.2)',
-                borderColor: 'rgba(16, 185, 129, 1)',
-                borderWidth: 2,
-                pointBackgroundColor: 'rgba(245, 158, 11, 1)',
-                pointBorderColor: '#fff',
-                pointRadius: 4
-            }]
-        },
-        options: {
-            scales: {
-                r: {
-                    beginAtZero: true,
-                    max: 100,
-                    ticks: {
-                        stepSize: 20
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false
-                }
-            }
-        }
-    });
-}
 
-function displayFeedback(totalScore, categoryScores) {
-    const feedbackElement = document.getElementById('feedback-text');
-    if (!feedbackElement) return;
-    
-    let feedbackClass = '';
-    let feedbackTitle = '';
-    let feedbackDetail = '';
-    let suggestions = '';
-    
-    if (totalScore >= 80) {
-        feedbackClass = 'feedback-excellent';
-        feedbackTitle = '🎉 素晴らしいです！';
-        feedbackDetail = 'あなたのエンゲージメントは非常に高い水準にあります。<br>現在の働き方や環境に高い満足度を感じており、<br>モチベーション高く業務に取り組めている状態です。';
-        suggestions = 'この良好な状態を維持しながら、<br>さらなる成長やチャレンジの機会を模索してみましょう。';
-    } else if (totalScore >= 70) {
-        feedbackClass = 'feedback-good';
-        feedbackTitle = '👍 良好です';
-        feedbackDetail = '多くの面で満足度が高く、<br>前向きに業務に取り組めている状態です。<br>全体としてバランスの取れた働き方ができています。';
-        
-        const lowCategories = Object.entries(categoryScores)
-            .filter(([cat, score]) => score < 70)
-            .map(([cat, score]) => cat);
-        
-        if (lowCategories.length > 0) {
-            suggestions = `特に「${lowCategories.join('」「')}」の分野で<br>さらなる向上の機会があるかもしれません。`;
-        } else {
-            suggestions = '現在の良好な状態を維持しつつ、<br>さらに充実した働き方を目指しましょう。';
-        }
-    } else if (totalScore >= 60) {
-        feedbackClass = 'feedback-average';
-        feedbackTitle = '📊 平均的です';
-        feedbackDetail = 'エンゲージメントレベルは平均的な水準です。<br>特に問題はありませんが、<br>より充実した働き方を目指す余地があります。';
-        
-        const lowCategories = Object.entries(categoryScores)
-            .filter(([cat, score]) => score < 60)
-            .map(([cat, score]) => cat)
-            .slice(0, 3);
-        
-        if (lowCategories.length > 0) {
-            suggestions = `「${lowCategories.join('」「')}」などの分野で<br>改善の機会を探してみることをお勧めします。`;
-        } else {
-            suggestions = '現状を維持しつつ、<br>さらに満足度を高められる点を探してみましょう。';
-        }
-    } else if (totalScore >= 50) {
-        feedbackClass = 'feedback-caution';
-        feedbackTitle = '📊 改善の余地があります';
-        feedbackDetail = 'エンゲージメントレベルがやや低めです。<br>いくつかの分野で改善が必要かもしれません。<br>現状に不満を感じている点があるかもしれません。';
-        
-        const lowCategories = Object.entries(categoryScores)
-            .filter(([cat, score]) => score < 55)
-            .map(([cat, score]) => cat)
-            .slice(0, 3);
-        
-        if (lowCategories.length > 0) {
-            suggestions = `特に「${lowCategories.join('」「')}」について、<br>具体的な改善策を検討することをお勧めします。<br>上司や人事部門に相談してみましょう。`;
-        } else {
-            suggestions = '職場環境や働き方について、<br>改善できる点を一緒に考えていきましょう。';
-        }
+    // 結果を表示
+    document.getElementById('result-date').textContent = result.surveyDate;
+    document.getElementById('result-employee-code').textContent = result.employeeCode;
+    document.getElementById('result-department').textContent = result.department;
+    document.getElementById('total-score').textContent = result.totalScore;
+
+    // 総合評価の表示
+    const evaluation = document.getElementById('evaluation');
+    if (result.totalScore >= 70) {
+        evaluation.textContent = '非常に高いエンゲージメント状態です';
+        evaluation.className = 'high';
+    } else if (result.totalScore >= 50) {
+        evaluation.textContent = '標準的なエンゲージメント状態です';
+        evaluation.className = 'medium';
     } else {
-        feedbackClass = 'feedback-low';
-        feedbackTitle = '⚠️ 早急な対応が必要です';
-        feedbackDetail = 'エンゲージメントレベルが低い状態にあります。<br>現在の働き方や環境に大きな課題を感じており、<br>モチベーションの維持が難しい状況かもしれません。';
-        
-        const criticalCategories = Object.entries(categoryScores)
-            .filter(([cat, score]) => score < 50)
-            .map(([cat, score]) => cat)
-            .slice(0, 3);
-        
-        if (criticalCategories.length > 0) {
-            suggestions = `「${criticalCategories.join('」「')}」など、<br>複数の分野で深刻な課題が見られます。<br><strong>できるだけ早く上司や人事部門に相談し、<br>具体的なサポートを受けることを強くお勧めします。</strong>`;
-        } else {
-            suggestions = '<strong>早急に上司や人事部門に相談し、<br>働き方の改善について話し合うことをお勧めします。</strong>';
-        }
+        evaluation.textContent = '改善が必要なエンゲージメント状態です';
+        evaluation.className = 'low';
     }
+
+    // カテゴリー別スコアの表示
+    const categoryList = document.getElementById('category-scores');
+    categoryList.innerHTML = '';
     
-    feedbackElement.className = feedbackClass;
-    feedbackElement.innerHTML = `
-        <div style="font-size: 1.3em; font-weight: bold; margin-bottom: 15px;">${feedbackTitle}</div>
-        <div style="line-height: 1.8; margin-bottom: 20px;">${feedbackDetail}</div>
-        <div style="padding: 20px; background: #f8f9fa; border-radius: 10px; line-height: 1.8;">
-            <strong>💡 次のステップ:</strong><br>
-            ${suggestions}
-        </div>
-    `;
+    result.categoryScores.forEach(category => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <span class="category-name">${category.name}</span>
+            <span class="category-score">${category.score}点</span>
+        `;
+        categoryList.appendChild(li);
+    });
+
+    // レーダーチャートの描画
+    drawRadarChart(result.categoryScores);
+
+    // 改善提案の表示
+    displaySuggestions(result.categoryScores);
+
+    // 🔥 重複保存防止: 既に保存済みかチェック
+    const alreadySaved = savedResults.some(r => r.resultId === resultId);
+    
+    if (!alreadySaved) {
+        // まだ保存されていない場合のみ保存
+        saveResultToStorage(
+            resultId,
+            result.employeeCode,
+            result.department,
+            result.totalScore,
+            result.categoryScores,
+            result.answers
+        );
+        console.log('✅ 新規データをD1データベースに保存しました');
+    } else {
+        console.log('ℹ️ 既に保存済みのデータです（重複保存を防止）');
+    }
+
+    showPage('results');
 }
 
-async function saveResultToStorage(totalScore, categoryScores) {
-    const results = JSON.parse(localStorage.getItem('surveyResults')) || [];
+// レーダーチャート描画
+function drawRadarChart(scores) {
+    const canvas = document.getElementById('radar-chart');
+    const ctx = canvas.getContext('2d');
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const radius = Math.min(centerX, centerY) - 60;
     
-    // ユニークなIDを生成
-    const resultId = `${new Date().getTime()}-${employeeCode}`;
+    // キャンバスをクリア
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    const newResult = {
-        resultId: resultId,
-        date: new Date().toISOString(),
-        employeeCode: employeeCode,
-        department: selectedDepartment,
-        totalScore: totalScore,
-        categoryScores: categoryScores,
-        answers: { ...answers }
+    // 背景の同心円を描画
+    ctx.strokeStyle = '#e0e0e0';
+    ctx.lineWidth = 1;
+    for (let i = 1; i <= 5; i++) {
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, (radius / 5) * i, 0, Math.PI * 2);
+        ctx.stroke();
+    }
+    
+    // 軸を描画
+    const angleStep = (Math.PI * 2) / scores.length;
+    scores.forEach((score, i) => {
+        const angle = angleStep * i - Math.PI / 2;
+        const x = centerX + radius * Math.cos(angle);
+        const y = centerY + radius * Math.sin(angle);
+        
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(x, y);
+        ctx.strokeStyle = '#e0e0e0';
+        ctx.stroke();
+        
+        // ラベルを描画
+        const labelX = centerX + (radius + 40) * Math.cos(angle);
+        const labelY = centerY + (radius + 40) * Math.sin(angle);
+        
+        ctx.fillStyle = '#333';
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        // 長いラベルは改行
+        const words = score.name.split('・');
+        if (words.length > 1) {
+            ctx.fillText(words[0], labelX, labelY - 8);
+            ctx.fillText(words[1], labelX, labelY + 8);
+        } else {
+            ctx.fillText(score.name, labelX, labelY);
+        }
+    });
+    
+    // データポリゴンを描画
+    ctx.beginPath();
+    scores.forEach((score, i) => {
+        const angle = angleStep * i - Math.PI / 2;
+        const value = score.score / 5; // 5点満点に正規化
+        const x = centerX + radius * value * Math.cos(angle);
+        const y = centerY + radius * value * Math.sin(angle);
+        
+        if (i === 0) {
+            ctx.moveTo(x, y);
+        } else {
+            ctx.lineTo(x, y);
+        }
+    });
+    ctx.closePath();
+    
+    ctx.fillStyle = 'rgba(74, 144, 226, 0.3)';
+    ctx.fill();
+    ctx.strokeStyle = '#4a90e2';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    
+    // データポイントを描画
+    scores.forEach((score, i) => {
+        const angle = angleStep * i - Math.PI / 2;
+        const value = score.score / 5;
+        const x = centerX + radius * value * Math.cos(angle);
+        const y = centerY + radius * value * Math.sin(angle);
+        
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fillStyle = '#4a90e2';
+        ctx.fill();
+    });
+}
+
+// 改善提案の表示
+function displaySuggestions(scores) {
+    const suggestionsContainer = document.getElementById('suggestions');
+    suggestionsContainer.innerHTML = '';
+    
+    // スコアが低い順にソート
+    const sortedScores = [...scores].sort((a, b) => a.score - b.score);
+    
+    // 下位3つの改善提案を表示
+    sortedScores.slice(0, 3).forEach((category, index) => {
+        const suggestionDiv = document.createElement('div');
+        suggestionDiv.className = 'suggestion-item';
+        
+        const title = document.createElement('h4');
+        title.textContent = `${index + 1}. ${category.name}（${category.score}点）`;
+        suggestionDiv.appendChild(title);
+        
+        const text = document.createElement('p');
+        text.textContent = getSuggestionText(category.name);
+        suggestionDiv.appendChild(text);
+        
+        suggestionsContainer.appendChild(suggestionDiv);
+    });
+}
+
+// 改善提案テキスト
+function getSuggestionText(categoryName) {
+    const suggestions = {
+        '心身の健康': 'ワークライフバランスの改善や、健康管理プログラムの活用をお勧めします。定期的な休息とストレス管理を心がけましょう。',
+        '仕事の充実感': '自身の強みを活かせる業務への挑戦や、新しいプロジェクトへの参加を検討してみてください。上司との対話を通じて、やりがいのある仕事の機会を探りましょう。',
+        '成長機会': '研修制度の活用やスキルアップの機会を積極的に求めましょう。メンターとの対話やキャリア面談を通じて、成長の道筋を明確にすることが重要です。',
+        '上司のサポート': '上司との定期的な1on1ミーティングを提案し、期待値や目標を明確にすることをお勧めします。フィードバックを求め、コミュニケーションを強化しましょう。',
+        '部署内の人間関係': 'チームビルディング活動への参加や、同僚との積極的なコミュニケーションを心がけましょう。信頼関係の構築には時間と effort が必要です。',
+        '評価・処遇': '評価基準の理解を深め、目標達成に向けた具体的なアクションプランを作成しましょう。評価面談での積極的な対話が重要です。',
+        '会社への信頼': '会社の理念やビジョンへの理解を深め、経営陣との対話の機会があれば積極的に参加しましょう。会社の方向性と自身のキャリアの整合性を確認することが大切です。',
+        '働く環境': '働き方の改善提案や、必要なリソースについて上司に相談することをお勧めします。快適な職場環境の実現には、積極的な発信が重要です。',
+        '総合満足度': '各カテゴリーの改善提案を参考に、優先順位をつけて取り組むことをお勧めします。小さな改善の積み重ねが、全体的な満足度向上につながります。',
+        '離職予防・継続意向': 'キャリアの方向性について、上司やメンターと率直に話し合うことをお勧めします。会社での将来像を明確にし、具体的なキャリアプランを立てることが重要です。'
     };
     
-    results.push(newResult);
-    localStorage.setItem('surveyResults', JSON.stringify(results));
+    return suggestions[categoryName] || '継続的な改善と成長を目指しましょう。';
+}
+
+// 結果保存
+async function saveResultToStorage(resultId, employeeCode, department, totalScore, categoryScores, answers) {
+    const surveyDate = new Date().toLocaleDateString('ja-JP');
     
-    // Cloudflare Workers APIにデータを送信
+    const result = {
+        resultId: resultId,
+        employeeCode: employeeCode,
+        department: department,
+        totalScore: totalScore,
+        surveyDate: surveyDate,
+        categoryScores: categoryScores,
+        answers: answers
+    };
+    
+    // LocalStorageに保存
+    const savedResults = JSON.parse(localStorage.getItem('surveyResults') || '[]');
+    savedResults.push(result);
+    localStorage.setItem('surveyResults', JSON.stringify(savedResults));
+    
+    // Workers APIに送信
     try {
         const response = await fetch('https://engagement-api.more-up.workers.dev/api/save-result', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                resultId: resultId,
-                employeeCode: employeeCode,
-                department: selectedDepartment,
-                totalScore: totalScore,
-                surveyDate: new Date().toISOString().split('T')[0],
-                categoryScores: categoryScores,
-                answers: answers
-            })
+            body: JSON.stringify(result)
         });
         
-        const result = await response.json();
-        if (result.success) {
-            console.log('✅ データをサーバーに保存しました:', resultId);
-        } else {
-            console.error('❌ サーバー保存エラー:', result.error);
+        if (!response.ok) {
+            console.error('データ保存エラー:', response.statusText);
         }
     } catch (error) {
-        console.error('❌ サーバー送信エラー:', error);
-        // エラーが出てもLocalStorageには保存されているので続行
+        console.error('API接続エラー:', error);
     }
     
-    return resultId;
+    // 一時保存データをクリア
+    localStorage.removeItem('surveyTempData');
 }
 
-// ============================
-// 履歴表示
-// ============================
-function showHistory() {
-    showPage('history');
-    
+// 診断履歴の表示
+function displayHistory() {
     const historyContainer = document.getElementById('history-list');
-    if (!historyContainer) return;
+    const savedResults = JSON.parse(localStorage.getItem('surveyResults') || '[]');
     
-    const currentCode = normalizeEmployeeCode(localStorage.getItem('employeeCode') || '');
-    
-    if (!currentCode) {
-        historyContainer.innerHTML = '<p style="text-align:center; color:#666;">従業員コードが設定されていません。</p>';
+    if (savedResults.length === 0) {
+        historyContainer.innerHTML = '<p class="no-history">診断履歴はありません</p>';
         return;
     }
-    
-    const allResults = JSON.parse(localStorage.getItem('surveyResults')) || [];
-    
-    const myResults = allResults.filter(result => {
-        const resultCode = normalizeEmployeeCode(result.employeeCode || '');
-        return resultCode === currentCode;
-    });
-    
-    if (myResults.length === 0) {
-        historyContainer.innerHTML = '<p style="text-align:center; color:#666;">診断履歴がありません。</p>';
-        return;
-    }
-    
-    myResults.sort((a, b) => new Date(b.date) - new Date(a.date));
     
     historyContainer.innerHTML = '';
     
-    myResults.forEach((result, index) => {
-        const date = new Date(result.date);
-        const dateStr = `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日`;
-        
+    // 新しい順にソート
+    savedResults.sort((a, b) => {
+        return new Date(b.surveyDate) - new Date(a.surveyDate);
+    });
+    
+    savedResults.forEach(result => {
         const historyItem = document.createElement('div');
         historyItem.className = 'history-item';
-        historyItem.innerHTML = `
-            <div class="history-header">
-                <span class="history-date">📅 ${dateStr}</span>
-                <span class="history-score">総合スコア: ${result.totalScore}点</span>
-            </div>
-            <div class="history-detail">
-                <span>従業員コード: ${result.employeeCode}</span>
-                <span>部署: ${result.department}</span>
-            </div>
-        `;
         
-        // クリックで結果を再表示
-        historyItem.addEventListener('click', () => {
-            setResultIdToURL(result.resultId);
-            loadResultFromURL();
-        });
+        let scoreClass = '';
+        if (result.totalScore >= 70) {
+            scoreClass = 'high';
+        } else if (result.totalScore >= 50) {
+            scoreClass = 'medium';
+        } else {
+            scoreClass = 'low';
+        }
+        
+        historyItem.innerHTML = `
+            <div class="history-info">
+                <div class="history-date">${result.surveyDate}</div>
+                <div class="history-details">
+                    <span>従業員コード: ${result.employeeCode}</span>
+                    <span>部署: ${result.department}</span>
+                </div>
+            </div>
+            <div class="history-score ${scoreClass}">${result.totalScore}点</div>
+            <button onclick="viewResult('${result.resultId}')" class="view-result-btn">結果を見る</button>
+        `;
         
         historyContainer.appendChild(historyItem);
     });
-    
-    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ============================
-// その他の機能
-// ============================
+// 結果表示（履歴から）
+function viewResult(resultId) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('result', resultId);
+    window.location.href = url.toString();
+}
+
+// 新しい診断を開始
+function startNewSurvey() {
+    // URLパラメータをクリア
+    const url = new URL(window.location.href);
+    url.searchParams.delete('result');
+    window.history.pushState({}, '', url);
+    
+    // フォームをリセット
+    document.getElementById('employee-code').value = '';
+    document.getElementById('department').value = '';
+    
+    // 入力ページを表示
+    showPage('input');
+}
+
+// 印刷
 function printResults() {
     window.print();
 }
 
-function completeSurvey() {
-    if (confirm('診断を完了してトップページに戻りますか？')) {
-        currentCategoryIndex = 0;
-        answers = {};
-        employeeCode = '';
-        selectedDepartment = '';
-        clearTemporaryAnswers();
-        
-        // URLパラメータをクリア
-        window.history.pushState({}, '', window.location.pathname);
-        
-        showPage('home');
-    }
-}
-
-// ============================
-// 初期化
-// ============================
-document.addEventListener('DOMContentLoaded', function() {
-    initPages();
+// ページ読み込み時の処理
+window.addEventListener('DOMContentLoaded', () => {
+    // URLパラメータをチェック
+    const urlParams = new URLSearchParams(window.location.search);
+    const resultId = urlParams.get('result');
     
-    // URLパラメータから結果を復元
-    const loaded = loadResultFromURL();
-    
-    if (!loaded) {
-        showPage('home');
+    if (resultId) {
+        // 結果ページを表示
+        showResults();
+    } else {
+        // 一時保存データの確認
+        const savedData = localStorage.getItem('surveyTempData');
+        if (savedData) {
+            const data = JSON.parse(savedData);
+            if (data.currentPage && data.answers && Object.keys(data.answers).length > 0) {
+                // 診断途中のデータがある場合、確認ダイアログを表示
+                if (confirm('前回の診断が途中です。続きから始めますか？')) {
+                    employeeCode = data.employeeCode;
+                    department = data.department;
+                    currentPage = data.currentPage;
+                    currentCategory = data.currentCategory;
+                    answers = data.answers;
+                    
+                    displayQuestions();
+                    updateProgress();
+                    showPage('survey');
+                    return;
+                }
+            }
+        }
+        
+        // 入力ページを表示
+        initInputPage();
+        showPage('input');
     }
 });
