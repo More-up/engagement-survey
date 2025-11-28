@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理者ダッシュボード - Engagement Survey</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* ログイン画面 */
+        .login-page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .login-box {
+            background: white;
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+
+        .login-box h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .login-box p {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            margin-bottom: 20px;
+            transition: border-color 0.3s;
+        }
+
+        .login-box input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .login-box button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .login-box button:hover {
+            transform: translateY(-2px);
+        }
+
+        .error-message {
+            color: #e74c3c;
+            margin-top: 15px;
+            display: none;
+        }
+
+        /* ダッシュボード */
+        .dashboard {
+            display: none;
+        }
+
+        .dashboard.active {
+            display: block;
+        }
+
+        .dashboard-header {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dashboard-header h1 {
+            color: #667eea;
+            font-size: 2em;
+        }
+
+        .logout-btn {
+            padding: 12px 30px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #c0392b;
+        }
+
+        /* フィルター */
+        .filters {
+            background: white;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-group label {
+            display: block;
+            color: #666;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .filter-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* 統計カード */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 3em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-card .stat-label {
+            color: #999;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        /* チャートセクション */
+        .chart-section {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .chart-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+        }
+
+        /* データテーブル */
+        .data-table {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow-x: auto;
+        }
+
+        .data-table h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        thead th {
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid #e0e0e0;
+            transition: background 0.2s;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        tbody td {
+            padding: 15px;
+            color: #333;
+        }
+
+        .score-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .score-excellent { background: #10b981; }
+        .score-good { background: #3b82f6; }
+        .score-average { background: #f59e0b; }
+        .score-low { background: #ef4444; }
+
+        .view-btn {
+            padding: 8px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .view-btn:hover {
+            background: #764ba2;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 50px;
+            color: #999;
+            font-size: 1.2em;
+        }
+
+        /* レスポンシブ */
+        @media (max-width: 768px) {
+            .dashboard-header {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .filters {
+                flex-direction: column;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                font-size: 14px;
+            }
+
+            thead th, tbody td {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- ログイン画面 -->
+    <div class="login-page" id="login-page">
+        <div class="login-box">
+            <h1>🔐 管理者ログイン</h1>
+            <p>Engagement Survey 管理ダッシュボード</p>
+            <input type="password" id="password-input" placeholder="パスワードを入力" />
+            <button onclick="login()">ログイン</button>
+            <p class="error-message" id="error-message">パスワードが正しくありません</p>
+        </div>
+    </div>
+
+    <!-- ダッシュボード -->
+    <div class="dashboard" id="dashboard">
+        <div class="container">
+            <!-- ヘッダー -->
+            <div class="dashboard-header">
+                <div>
+                    <h1>📊 管理者ダッシュボード</h1>
+                    <p style="color: #666; margin-top: 5px;">Engagement Survey - 株式会社モアップ</p>
+                </div>
+                <button class="logout-btn" onclick="logout()">ログアウト</button>
+            </div>
+
+            <!-- フィルター -->
+            <div class="filters">
+                <div class="filter-group">
+                    <label>企業でフィルター</label>
+                    <select id="company-filter" onchange="applyFilters()">
+                        <option value="all">すべての企業</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>部署でフィルター</label>
+                    <select id="department-filter" onchange="applyFilters()">
+                        <option value="all">すべての部署</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 統計カード -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>総診断数</h3>
+                    <div class="stat-value" id="total-surveys">0</div>
+                    <div class="stat-label">件</div>
+                </div>
+                <div class="stat-card">
+                    <h3>平均スコア</h3>
+                    <div class="stat-value" id="average-score">0</div>
+                    <div class="stat-label">点</div>
+                </div>
+                <div class="stat-card">
+                    <h3>企業数</h3>
+                    <div class="stat-value" id="company-count">0</div>
+                    <div class="stat-label">社</div>
+                </div>
+                <div class="stat-card">
+                    <h3>最新診断日</h3>
+                    <div class="stat-value" id="latest-date" style="font-size: 1.5em;">-</div>
+                </div>
+            </div>
+
+            <!-- チャート -->
+            <div class="chart-section">
+                <h2>📈 データ分析</h2>
+                <div class="charts-grid">
+                    <div>
+                        <h3 style="color: #666; margin-bottom: 15px;">企業別平均スコア</h3>
+                        <div class="chart-container">
+                            <canvas id="company-chart"></canvas>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 style="color: #666; margin-bottom: 15px;">カテゴリ別平均スコア</h3>
+                        <div class="chart-container">
+                            <canvas id="category-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- データテーブル -->
+            <div class="data-table">
+                <h2>📋 診断データ一覧</h2>
+                <div id="table-container">
+                    <p class="no-data">データを読み込んでいます...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================
+        // グローバル変数
+        // ============================
+        let allData = [];
+        let filteredData = [];
+        let companyChart = null;
+        let categoryChart = null;
+
+        // 管理者パスワード（本番環境では環境変数などで管理してください）
+        const ADMIN_PASSWORD = 'moreup2024';
+
+        // ============================
+        // ログイン機能
+        // ============================
+        function login() {
+            const password = document.getElementById('password-input').value;
+            const errorMessage = document.getElementById('error-message');
+
+            if (password === ADMIN_PASSWORD) {
+                document.getElementById('login-page').style.display = 'none';
+                document.getElementById('dashboard').classList.add('active');
+                localStorage.setItem('adminLoggedIn', 'true');
+                loadDashboardData();
+            } else {
+                errorMessage.style.display = 'block';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('adminLoggedIn');
+            document.getElementById('login-page').style.display = 'flex';
+            document.getElementById('dashboard').classList.remove('active');
+        }
+
+        // ページロード時にログイン状態をチェック
+        window.addEventListener('DOMContentLoaded', function() {
+            const isLoggedIn = localStorage.getItem('adminLoggedIn');
+            if (isLoggedIn === 'true') {
+                document.getElementById('login-page').style.display = 'none';
+                document.getElementById('dashboard').classList.add('active');
+                loadDashboardData();
+            }
+
+            // Enterキーでログイン
+            document.getElementById('password-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    login();
+                }
+            });
+        });
+
+        // ============================
+        // データ読み込み
+        // ============================
+        async function loadDashboardData() {
+            try {
+                // Workers APIからデータを取得
+                const response = await fetch('https://engagement-api.more-up.workers.dev/api/results');
+                const result = await response.json();
+
+                if (result.success) {
+                    allData = result.data;
+                    filteredData = allData;
+                    
+                    updateFilters();
+                    updateStats();
+                    updateCharts();
+                    updateTable();
+                } else {
+                    console.error('データ取得エラー:', result.error);
+                    document.getElementById('table-container').innerHTML = 
+                        '<p class="no-data">データの取得に失敗しました</p>';
+                }
+            } catch (error) {
+                console.error('API接続エラー:', error);
+                document.getElementById('table-container').innerHTML = 
+                    '<p class="no-data">サーバーに接続できません</p>';
+            }
+        }
+
+        // ============================
+        // フィルター更新
+        // ============================
+        function updateFilters() {
+            // ユニークな企業リストを取得（従業員コードの先頭文字で判定）
+            const companies = new Set();
+            const departments = new Set();
+
+            allData.forEach(item => {
+                // 企業名は従業員コードから推定（仮実装）
+                // 実際には company_id カラムを追加する方が良い
+                companies.add(item.employee_code.substring(0, 3));
+                departments.add(item.department);
+            });
+
+            // 企業フィルターを更新
+            const companyFilter = document.getElementById('company-filter');
+            companyFilter.innerHTML = '<option value="all">すべての企業</option>';
+            Array.from(companies).sort().forEach(company => {
+                const option = document.createElement('option');
+                option.value = company;
+                option.textContent = `企業 ${company}`;
+                companyFilter.appendChild(option);
+            });
+
+            // 部署フィルターを更新
+            const departmentFilter = document.getElementById('department-filter');
+            departmentFilter.innerHTML = '<option value="all">すべての部署</option>';
+            Array.from(departments).sort().forEach(dept => {
+                const option = document.createElement('option');
+                option.value = dept;
+                option.textContent = dept;
+                departmentFilter.appendChild(option);
+            });
+        }
+
+        function applyFilters() {
+            const companyFilter = document.getElementById('company-filter').value;
+            const departmentFilter = document.getElementById('department-filter').value;
+
+            filteredData = allData.filter(item => {
+                const companyMatch = companyFilter === 'all' || 
+                    item.employee_code.startsWith(companyFilter);
+                const departmentMatch = departmentFilter === 'all' || 
+                    item.department === departmentFilter;
+                
+                return companyMatch && departmentMatch;
+            });
+
+            updateStats();
+            updateCharts();
+            updateTable();
+        }
+
+        // ============================
+        // 統計情報更新
+        // ============================
+        function updateStats() {
+            const totalSurveys = filteredData.length;
+            const avgScore = totalSurveys > 0 
+                ? Math.round(filteredData.reduce((sum, item) => sum + item.total_score, 0) / totalSurveys)
+                : 0;
+            
+            const companies = new Set(filteredData.map(item => item.employee_code.substring(0, 3)));
+            const companyCount = companies.size;
+
+            const latestDate = totalSurveys > 0
+                ? new Date(filteredData[0].survey_date).toLocaleDateString('ja-JP')
+                : '-';
+
+            document.getElementById('total-surveys').textContent = totalSurveys;
+            document.getElementById('average-score').textContent = avgScore;
+            document.getElementById('company-count').textContent = companyCount;
+            document.getElementById('latest-date').textContent = latestDate;
+        }
+
+        // ============================
+        // チャート更新
+        // ============================
+        function updateCharts() {
+            updateCompanyChart();
+            updateCategoryChart();
+        }
+
+        function updateCompanyChart() {
+            const ctx = document.getElementById('company-chart');
+            
+            // 企業別の平均スコアを計算
+            const companyScores = {};
+            filteredData.forEach(item => {
+                const company = item.employee_code.substring(0, 3);
+                if (!companyScores[company]) {
+                    companyScores[company] = { total: 0, count: 0 };
+                }
+                companyScores[company].total += item.total_score;
+                companyScores[company].count += 1;
+            });
+
+            const labels = Object.keys(companyScores).sort();
+            const data = labels.map(company => 
+                Math.round(companyScores[company].total / companyScores[company].count)
+            );
+
+            if (companyChart) {
+                companyChart.destroy();
+            }
+
+            companyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels.map(c => `企業 ${c}`),
+                    datasets: [{
+                        label: '平均スコア',
+                        data: data,
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateCategoryChart() {
+            const ctx = document.getElementById('category-chart');
+            
+            // カテゴリ別の平均スコアを計算
+            // 注: 実際のカテゴリスコアはcategory_scoresテーブルから取得する必要があります
+            // ここでは簡略化のため、ダミーデータを使用
+            const categories = [
+                '心身の健康', '仕事の充実感', '成長機会', 
+                '上司のサポート', '部署内の関係', '評価と報酬',
+                '会社への信頼', '働く環境', '総合的な満足度'
+            ];
+
+            // ダミーデータ（実際にはAPIから取得）
+            const data = categories.map(() => 
+                Math.round(Math.random() * 30 + 50)
+            );
+
+            if (categoryChart) {
+                categoryChart.destroy();
+            }
+
+            categoryChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: categories,
+                    datasets: [{
+                        label: '平均スコア',
+                        data: data,
+                        backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(118, 75, 162, 1)',
+                        pointBorderColor: '#fff',
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                stepSize: 20
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // ============================
+        // テーブル更新
+        // ============================
+        function updateTable() {
+            const container = document.getElementById('table-container');
+
+            if (filteredData.length === 0) {
+                container.innerHTML = '<p class="no-data">データがありません</p>';
+                return;
+            }
+
+            let tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>診断日</th>
+                            <th>従業員コード</th>
+                            <th>部署</th>
+                            <th>総合スコア</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            filteredData.forEach(item => {
+                const date = new Date(item.survey_date).toLocaleDateString('ja-JP');
+                const scoreClass = 
+                    item.total_score >= 80 ? 'score-excellent' :
+                    item.total_score >= 70 ? 'score-good' :
+                    item.total_score >= 60 ? 'score-average' : 'score-low';
+
+                tableHTML += `
+                    <tr>
+                        <td>${date}</td>
+                        <td>${item.employee_code}</td>
+                        <td>${item.department}</td>
+                        <td>
+                            <span class="score-badge ${scoreClass}">
+                                ${item.total_score}点
+                            </span>
+                        </td>
+                        <td>
+                            <button class="view-btn" onclick="viewDetail('${item.result_id}')">
+                                詳細を見る
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+
+            container.innerHTML = tableHTML;
+        }
+
+        function viewDetail(resultId) {
+            // 診断結果ページを新しいタブで開く
+            window.open(`/?result=${resultId}`, '_blank');
+        }
+    </script>
+</body>
+</html>
