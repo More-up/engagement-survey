@@ -432,7 +432,7 @@
         let categoryChart = null;
 
         // 管理者パスワード（本番環境では環境変数などで管理してください）
-        const ADMIN_PASSWORD = 'moreup2024';
+        const ADMIN_PASSWORD = 'moreup-japan';
 
         // ============================
         // ログイン機能
@@ -635,21 +635,35 @@
             });
         }
 
-        function updateCategoryChart() {
+                function updateCategoryChart() {
             const ctx = document.getElementById('category-chart');
             
-            // カテゴリ別の平均スコアを計算
-            // 注: 実際のカテゴリスコアはcategory_scoresテーブルから取得する必要があります
-            // ここでは簡略化のため、ダミーデータを使用
-            const categories = [
-                '心身の健康', '仕事の充実感', '成長機会', 
-                '上司のサポート', '部署内の関係', '評価と報酬',
-                '会社への信頼', '働く環境', '総合的な満足度'
-            ];
+            if (filteredData.length === 0) {
+                if (categoryChart) {
+                    categoryChart.destroy();
+                    categoryChart = null;
+                }
+                return;
+            }
 
-            // ダミーデータ（実際にはAPIから取得）
-            const data = categories.map(() => 
-                Math.round(Math.random() * 30 + 50)
+            // カテゴリ別の平均スコアを計算
+            const categoryScoreMap = {};
+            
+            filteredData.forEach(item => {
+                if (item.categoryScores) {
+                    for (const [categoryName, score] of Object.entries(item.categoryScores)) {
+                        if (!categoryScoreMap[categoryName]) {
+                            categoryScoreMap[categoryName] = { total: 0, count: 0 };
+                        }
+                        categoryScoreMap[categoryName].total += score;
+                        categoryScoreMap[categoryName].count += 1;
+                    }
+                }
+            });
+
+            const categories = Object.keys(categoryScoreMap).sort();
+            const data = categories.map(cat => 
+                Math.round(categoryScoreMap[cat].total / categoryScoreMap[cat].count)
             );
 
             if (categoryChart) {
