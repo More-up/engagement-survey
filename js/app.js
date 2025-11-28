@@ -149,15 +149,12 @@ function showPage(pageName) {
 
 // 入力ページの初期化
 function initInputPage() {
-    // LocalStorageから一時保存データを読み込む
     const savedData = localStorage.getItem('surveyTempData');
     if (savedData) {
         const data = JSON.parse(savedData);
         document.getElementById('employee-code').value = data.employeeCode || '';
         document.getElementById('department').value = data.department || '';
     }
-    
-    // 診断履歴の表示
     displayHistory();
 }
 
@@ -171,10 +168,7 @@ function startSurvey() {
         return;
     }
     
-    // 一時保存データをクリア
     answers = {};
-    
-    // 入力データを一時保存
     localStorage.setItem('surveyTempData', JSON.stringify({
         employeeCode: employeeCode,
         department: department
@@ -192,10 +186,8 @@ function displayQuestions() {
     const startQ = (currentPage - 1) * questionsPerPage + 1;
     const endQ = Math.min(startQ + questionsPerPage - 1, 100);
     
-    // カテゴリー名の更新
     document.getElementById('category-name').textContent = categories[currentCategory].name;
     
-    // 質問の表示
     const questionsContainer = document.getElementById('questions-container');
     questionsContainer.innerHTML = '';
     
@@ -229,7 +221,6 @@ function displayQuestions() {
             input.value = option.value;
             input.required = true;
             
-            // 保存されている回答があれば復元
             if (answers[i] && answers[i] === option.value) {
                 input.checked = true;
             }
@@ -251,7 +242,6 @@ function displayQuestions() {
         questionsContainer.appendChild(questionDiv);
     }
     
-    // ボタンの表示制御
     document.getElementById('prev-btn').style.display = currentPage > 1 ? 'inline-block' : 'none';
     document.getElementById('next-btn').style.display = currentPage < totalPages ? 'inline-block' : 'none';
     document.getElementById('submit-btn').style.display = currentPage === totalPages ? 'inline-block' : 'none';
@@ -294,7 +284,6 @@ function nextPage() {
     const startQ = (currentPage - 1) * questionsPerPage + 1;
     const endQ = Math.min(startQ + questionsPerPage - 1, 100);
     
-    // 現在のページの回答チェック
     let allAnswered = true;
     for (let i = startQ; i <= endQ; i++) {
         if (!answers[i]) {
@@ -321,7 +310,6 @@ function nextPage() {
 
 // 診断提出
 function submitSurvey() {
-    // すべての質問に回答しているかチェック
     for (let i = 1; i <= 100; i++) {
         if (!answers[i]) {
             alert('すべての質問に回答してください');
@@ -329,18 +317,13 @@ function submitSurvey() {
         }
     }
     
-    // スコア計算
     calculateScores();
-    
-    // 結果IDの生成
     resultId = Date.now() + '-' + employeeCode;
     
-    // URLパラメータに結果IDを追加
     const url = new URL(window.location.href);
     url.searchParams.set('result', resultId);
     window.history.pushState({}, '', url);
     
-    // 結果を表示
     showResults();
 }
 
@@ -376,7 +359,6 @@ function showResults() {
         return;
     }
 
-    // LocalStorageから結果を取得
     const savedResults = JSON.parse(localStorage.getItem('surveyResults') || '[]');
     const result = savedResults.find(r => r.resultId === resultId);
     
@@ -386,13 +368,11 @@ function showResults() {
         return;
     }
 
-    // 結果を表示
     document.getElementById('result-date').textContent = result.surveyDate;
     document.getElementById('result-employee-code').textContent = result.employeeCode;
     document.getElementById('result-department').textContent = result.department;
     document.getElementById('total-score').textContent = result.totalScore;
 
-    // 総合評価の表示
     const evaluation = document.getElementById('evaluation');
     if (result.totalScore >= 70) {
         evaluation.textContent = '非常に高いエンゲージメント状態です';
@@ -405,7 +385,6 @@ function showResults() {
         evaluation.className = 'low';
     }
 
-    // カテゴリー別スコアの表示
     const categoryList = document.getElementById('category-scores');
     categoryList.innerHTML = '';
     
@@ -418,17 +397,12 @@ function showResults() {
         categoryList.appendChild(li);
     });
 
-    // レーダーチャートの描画
     drawRadarChart(result.categoryScores);
-
-    // 改善提案の表示
     displaySuggestions(result.categoryScores);
 
-    // 🔥 重複保存防止: 既に保存済みかチェック
     const alreadySaved = savedResults.some(r => r.resultId === resultId);
     
     if (!alreadySaved) {
-        // まだ保存されていない場合のみ保存
         saveResultToStorage(
             resultId,
             result.employeeCode,
@@ -453,10 +427,8 @@ function drawRadarChart(scores) {
     const centerY = canvas.height / 2;
     const radius = Math.min(centerX, centerY) - 60;
     
-    // キャンバスをクリア
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // 背景の同心円を描画
     ctx.strokeStyle = '#e0e0e0';
     ctx.lineWidth = 1;
     for (let i = 1; i <= 5; i++) {
@@ -465,7 +437,6 @@ function drawRadarChart(scores) {
         ctx.stroke();
     }
     
-    // 軸を描画
     const angleStep = (Math.PI * 2) / scores.length;
     scores.forEach((score, i) => {
         const angle = angleStep * i - Math.PI / 2;
@@ -478,7 +449,6 @@ function drawRadarChart(scores) {
         ctx.strokeStyle = '#e0e0e0';
         ctx.stroke();
         
-        // ラベルを描画
         const labelX = centerX + (radius + 40) * Math.cos(angle);
         const labelY = centerY + (radius + 40) * Math.sin(angle);
         
@@ -487,7 +457,6 @@ function drawRadarChart(scores) {
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         
-        // 長いラベルは改行
         const words = score.name.split('・');
         if (words.length > 1) {
             ctx.fillText(words[0], labelX, labelY - 8);
@@ -497,11 +466,10 @@ function drawRadarChart(scores) {
         }
     });
     
-    // データポリゴンを描画
     ctx.beginPath();
     scores.forEach((score, i) => {
         const angle = angleStep * i - Math.PI / 2;
-        const value = score.score / 5; // 5点満点に正規化
+        const value = score.score / 5;
         const x = centerX + radius * value * Math.cos(angle);
         const y = centerY + radius * value * Math.sin(angle);
         
@@ -519,7 +487,6 @@ function drawRadarChart(scores) {
     ctx.lineWidth = 2;
     ctx.stroke();
     
-    // データポイントを描画
     scores.forEach((score, i) => {
         const angle = angleStep * i - Math.PI / 2;
         const value = score.score / 5;
@@ -538,10 +505,8 @@ function displaySuggestions(scores) {
     const suggestionsContainer = document.getElementById('suggestions');
     suggestionsContainer.innerHTML = '';
     
-    // スコアが低い順にソート
     const sortedScores = [...scores].sort((a, b) => a.score - b.score);
     
-    // 下位3つの改善提案を表示
     sortedScores.slice(0, 3).forEach((category, index) => {
         const suggestionDiv = document.createElement('div');
         suggestionDiv.className = 'suggestion-item';
@@ -590,12 +555,10 @@ async function saveResultToStorage(resultId, employeeCode, department, totalScor
         answers: answers
     };
     
-    // LocalStorageに保存
     const savedResults = JSON.parse(localStorage.getItem('surveyResults') || '[]');
     savedResults.push(result);
     localStorage.setItem('surveyResults', JSON.stringify(savedResults));
     
-    // Workers APIに送信
     try {
         const response = await fetch('https://engagement-api.more-up.workers.dev/api/save-result', {
             method: 'POST',
@@ -612,7 +575,6 @@ async function saveResultToStorage(resultId, employeeCode, department, totalScor
         console.error('API接続エラー:', error);
     }
     
-    // 一時保存データをクリア
     localStorage.removeItem('surveyTempData');
 }
 
@@ -628,7 +590,6 @@ function displayHistory() {
     
     historyContainer.innerHTML = '';
     
-    // 新しい順にソート
     savedResults.sort((a, b) => {
         return new Date(b.surveyDate) - new Date(a.surveyDate);
     });
@@ -671,16 +632,13 @@ function viewResult(resultId) {
 
 // 新しい診断を開始
 function startNewSurvey() {
-    // URLパラメータをクリア
     const url = new URL(window.location.href);
     url.searchParams.delete('result');
     window.history.pushState({}, '', url);
     
-    // フォームをリセット
     document.getElementById('employee-code').value = '';
     document.getElementById('department').value = '';
     
-    // 入力ページを表示
     showPage('input');
 }
 
@@ -691,20 +649,16 @@ function printResults() {
 
 // ページ読み込み時の処理
 window.addEventListener('DOMContentLoaded', () => {
-    // URLパラメータをチェック
     const urlParams = new URLSearchParams(window.location.search);
     const resultId = urlParams.get('result');
     
     if (resultId) {
-        // 結果ページを表示
         showResults();
     } else {
-        // 一時保存データの確認
         const savedData = localStorage.getItem('surveyTempData');
         if (savedData) {
             const data = JSON.parse(savedData);
             if (data.currentPage && data.answers && Object.keys(data.answers).length > 0) {
-                // 診断途中のデータがある場合、確認ダイアログを表示
                 if (confirm('前回の診断が途中です。続きから始めますか？')) {
                     employeeCode = data.employeeCode;
                     department = data.department;
@@ -720,7 +674,6 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        // 入力ページを表示
         initInputPage();
         showPage('input');
     }
