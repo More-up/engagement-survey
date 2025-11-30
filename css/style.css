@@ -19,7 +19,7 @@ body {
   padding: 20px;
 }
 
-/* ページ表示制御 */
+/* ページ表示制御 - 重要な修正 */
 .page {
   display: none;
   background: white;
@@ -30,7 +30,7 @@ body {
 }
 
 .page.active {
-  display: block;
+  display: block !important; /* !important を追加 */
 }
 
 @keyframes fadeIn {
@@ -56,6 +56,7 @@ body {
   background: linear-gradient(135deg, #667eea, #764ba2);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: 20px;
 }
 
@@ -256,6 +257,7 @@ body {
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.3s ease;
+  display: block;
 }
 
 .answer-option:hover {
