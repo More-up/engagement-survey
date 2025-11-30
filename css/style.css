@@ -1,4 +1,6 @@
-/* 全体のリセット */
+/* =====================================
+   グローバル設定
+   ===================================== */
 * {
     margin: 0;
     padding: 0;
@@ -9,69 +11,110 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
     line-height: 1.6;
     color: #333;
-    background-color: #f0f2f5;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
 }
 
 .container {
-    max-width: 900px;
+    max-width: 1000px;
     margin: 0 auto;
     padding: 20px;
 }
 
-/* ページ表示制御 */
+/* =====================================
+   ページ切り替え
+   ===================================== */
 .page {
     display: none;
-    animation: fadeIn 0.3s ease-in;
 }
 
 .page.active {
     display: block;
 }
 
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
-}
-
-/* ヒーローセクション */
+/* =====================================
+   トップページ - ヒーローセクション
+   ===================================== */
 .hero {
     text-align: center;
-    padding: 80px 20px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border-radius: 20px;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 15px;
     margin-bottom: 40px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
 }
 
 .main-title {
     font-size: 3em;
     font-weight: 700;
     margin-bottom: 10px;
-    letter-spacing: 2px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .subtitle {
-    font-size: 1.3em;
+    font-size: 1.2em;
+    color: #666;
     margin-bottom: 30px;
-    opacity: 0.95;
-    font-weight: 300;
 }
 
 .hero-text {
-    font-size: 1.8em;
+    font-size: 2em;
     margin: 30px 0 15px;
-    font-weight: 500;
-    line-height: 1.4;
+    color: #333;
+    font-weight: 600;
 }
 
 .hero-subtext {
-    font-size: 1.2em;
+    font-size: 1.3em;
+    color: #666;
     margin-bottom: 40px;
-    opacity: 0.9;
 }
 
-/* ボタン */
+/* =====================================
+   特徴カード（3列横並び）
+   ===================================== */
+.features {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.feature-card {
+    background: white;
+    padding: 40px 30px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-10px);
+}
+
+.feature-icon {
+    font-size: 4em;
+    margin-bottom: 20px;
+}
+
+.feature-card h3 {
+    font-size: 1.4em;
+    margin-bottom: 15px;
+    color: #333;
+}
+
+.feature-card p {
+    color: #666;
+    line-height: 1.6;
+}
+
+/* =====================================
+   ボタン
+   ===================================== */
 .btn {
     display: inline-block;
     padding: 15px 40px;
@@ -82,17 +125,17 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     text-decoration: none;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
 }
 
 .btn-primary {
-    background: white;
-    color: #667eea;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
 }
 
 .btn-primary:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
 }
 
 .btn-secondary {
@@ -110,56 +153,23 @@ body {
     font-size: 1.3em;
 }
 
-/* 特徴カード */
-.features {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 25px;
-    margin-bottom: 50px;
-}
-
-.feature-card {
-    background: white;
-    padding: 35px 25px;
-    border-radius: 15px;
-    text-align: center;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-    transition: all 0.3s ease;
-}
-
-.feature-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-}
-
-.feature-icon {
-    font-size: 3.5em;
-    margin-bottom: 20px;
-}
-
-.feature-card h3 {
-    margin-bottom: 12px;
-    color: #667eea;
-    font-size: 1.3em;
-}
-
-.feature-card p {
-    color: #666;
-    line-height: 1.6;
-}
-
-/* コンテンツカード */
+/* =====================================
+   コンテンツカード（白背景）
+   ===================================== */
 .orientation-content,
 .department-content {
     background: white;
     padding: 50px;
-    border-radius: 20px;
-    box-shadow: 0 5px 25px rgba(0,0,0,0.1);
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
 }
 
 .page-title {
     text-align: center;
-    color: #667eea;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     margin-bottom: 40px;
     font-size: 2.5em;
     font-weight: 700;
@@ -172,7 +182,7 @@ body {
 .orientation-section h3 {
     color: #667eea;
     margin-bottom: 12px;
-    font-size: 1.3em;
+    font-size: 1.4em;
 }
 
 .orientation-section p {
@@ -183,7 +193,7 @@ body {
 .note {
     color: #888;
     font-size: 0.95em;
-    margin-top: 8px;
+    margin-top: 10px;
     padding-left: 15px;
     border-left: 3px solid #667eea;
 }
@@ -196,7 +206,9 @@ body {
     gap: 15px;
 }
 
-/* フォーム */
+/* =====================================
+   フォーム
+   ===================================== */
 .form-description {
     text-align: center;
     color: #666;
@@ -213,22 +225,20 @@ body {
     margin-bottom: 10px;
     font-weight: 600;
     color: #333;
-    font-size: 1.05em;
 }
 
 .required {
     color: #e74c3c;
-    margin-left: 5px;
 }
 
 .form-group input,
 .form-group select {
     width: 100%;
-    padding: 14px 18px;
-    border: 2px solid #e0e0e0;
-    border-radius: 10px;
-    font-size: 1.05em;
-    transition: border-color 0.3s ease;
+    padding: 12px 15px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1em;
+    transition: border-color 0.3s;
 }
 
 .form-group input:focus,
@@ -240,45 +250,46 @@ body {
 .input-note {
     font-size: 0.9em;
     color: #888;
-    margin-top: 8px;
+    margin-top: 5px;
 }
 
-/* 進捗バー */
+/* =====================================
+   進捗バー
+   ===================================== */
 .progress-container {
-    margin-bottom: 35px;
+    margin-bottom: 30px;
 }
 
 .progress-bar {
     width: 100%;
-    height: 24px;
-    background-color: #e8eaf6;
-    border-radius: 12px;
+    height: 20px;
+    background-color: #e0e0e0;
+    border-radius: 10px;
     overflow: hidden;
-    margin-bottom: 12px;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 10px;
 }
 
 .progress-fill {
     height: 100%;
     background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-    transition: width 0.4s ease;
-    border-radius: 12px;
+    transition: width 0.3s ease;
 }
 
 .progress-text {
     text-align: center;
     color: #667eea;
     font-weight: 600;
-    font-size: 1.05em;
 }
 
-/* カテゴリーカード */
+/* =====================================
+   診断ページ
+   ===================================== */
 .category-card {
     background: white;
     padding: 40px;
-    border-radius: 20px;
-    box-shadow: 0 5px 25px rgba(0,0,0,0.1);
-    margin-bottom: 25px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
 }
 
 .category-progress {
@@ -324,44 +335,37 @@ body {
 
 /* 質問 */
 .questions-container {
-    margin-bottom: 25px;
+    margin-bottom: 20px;
 }
 
 .question-item {
-    margin-bottom: 35px;
-    padding: 25px;
-    background: #fafbfc;
-    border-radius: 12px;
-    border-left: 5px solid #667eea;
-    transition: all 0.3s ease;
-}
-
-.question-item:hover {
-    background: #f5f7fa;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 10px;
+    border-left: 4px solid #667eea;
 }
 
 .question-text {
-    font-size: 1.15em;
-    margin-bottom: 18px;
+    font-size: 1.1em;
+    margin-bottom: 15px;
     font-weight: 500;
-    color: #2c3e50;
-    line-height: 1.6;
+    color: #333;
 }
 
 .options {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 }
 
 .option-label {
     display: flex;
     align-items: center;
-    padding: 14px 18px;
+    padding: 12px;
     background: white;
-    border: 2px solid #e8eaf6;
-    border-radius: 10px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
     cursor: pointer;
     transition: all 0.2s ease;
 }
@@ -369,219 +373,188 @@ body {
 .option-label:hover {
     border-color: #667eea;
     background-color: #f0f4ff;
-    transform: translateX(5px);
 }
 
 .option-label input[type="radio"] {
-    margin-right: 12px;
-    cursor: pointer;
-    width: 18px;
-    height: 18px;
+    margin-right: 10px;
 }
 
-.option-label span {
-    font-size: 1.05em;
-}
-
-.option-label input[type="radio"]:checked ~ span {
-    font-weight: 600;
+.option-label input[type="radio"]:checked + span {
+    font-weight: bold;
     color: #667eea;
 }
 
-/* ナビゲーションボタン */
+/* ナビゲーション */
 .nav-buttons {
     display: flex;
     justify-content: space-between;
     gap: 15px;
-    margin-top: 30px;
 }
 
-/* 結果ページ */
+/* =====================================
+   結果ページ
+   ===================================== */
 .result-info {
     background: white;
-    padding: 25px;
-    border-radius: 15px;
-    margin-bottom: 25px;
-    box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
 .result-info p {
-    margin-bottom: 12px;
-    font-size: 1.05em;
+    margin-bottom: 10px;
 }
 
 .total-score-card {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     padding: 50px;
-    border-radius: 20px;
+    border-radius: 15px;
     text-align: center;
-    margin-bottom: 35px;
-    box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4);
+    margin-bottom: 30px;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.5);
 }
 
 .total-score-card h3 {
-    margin-bottom: 25px;
     font-size: 1.8em;
-    font-weight: 600;
+    margin-bottom: 20px;
 }
 
 .total-score {
     font-size: 5em;
     font-weight: 700;
-    margin: 25px 0;
-    text-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    margin: 20px 0;
 }
 
 .score-description {
     font-size: 1.3em;
-    opacity: 0.95;
 }
 
-/* カテゴリー別スコア */
 .category-scores-section {
     background: white;
-    padding: 35px;
-    border-radius: 20px;
-    margin-bottom: 35px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    padding: 30px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
 .category-scores-section h3 {
     color: #667eea;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
     font-size: 1.6em;
 }
 
 .category-score-item {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: 18px 20px;
-    margin-bottom: 12px;
-    background: #fafbfc;
-    border-radius: 10px;
-    border-left: 5px solid #667eea;
-    transition: all 0.2s ease;
-}
-
-.category-score-item:hover {
-    background: #f0f4ff;
-    transform: translateX(5px);
+    padding: 15px;
+    margin-bottom: 10px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
 }
 
 .category-name {
     font-weight: 500;
-    font-size: 1.05em;
 }
 
 .category-score {
     font-weight: 700;
     color: #667eea;
-    font-size: 1.3em;
+    font-size: 1.2em;
 }
 
-/* チャート */
 .chart-section {
     background: white;
-    padding: 35px;
-    border-radius: 20px;
-    margin-bottom: 35px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    padding: 30px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
 .chart-section h3 {
     color: #667eea;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
     font-size: 1.6em;
 }
 
-/* フィードバック */
 .feedback-section {
     background: white;
-    padding: 35px;
-    border-radius: 20px;
-    margin-bottom: 35px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    padding: 30px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
 .feedback-section h3 {
     color: #667eea;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
     font-size: 1.6em;
 }
 
 .feedback-text p {
-    margin-bottom: 18px;
+    margin-bottom: 15px;
     line-height: 1.8;
-    font-size: 1.05em;
-    color: #555;
 }
 
-/* アクションボタン */
 .result-actions {
     display: flex;
     justify-content: center;
-    gap: 20px;
+    gap: 15px;
     flex-wrap: wrap;
 }
 
-/* 履歴 */
+/* =====================================
+   履歴
+   ===================================== */
 .history-list {
     background: white;
-    padding: 35px;
-    border-radius: 20px;
-    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
-    margin-bottom: 25px;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
 }
 
 .history-item {
-    padding: 25px;
-    margin-bottom: 18px;
-    background: #fafbfc;
-    border-radius: 12px;
-    border-left: 5px solid #667eea;
+    padding: 20px;
+    margin-bottom: 15px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
 }
 
 .history-item h4 {
     color: #667eea;
-    margin-bottom: 12px;
-    font-size: 1.3em;
-}
-
-.history-item p {
-    margin-bottom: 8px;
-    color: #555;
+    margin-bottom: 10px;
 }
 
 .history-actions {
     display: flex;
     justify-content: center;
-    margin-top: 25px;
 }
 
-/* レスポンシブ */
+/* =====================================
+   レスポンシブ
+   ===================================== */
 @media (max-width: 768px) {
+    .features {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
     .main-title {
-        font-size: 2.2em;
+        font-size: 2em;
     }
 
     .hero {
-        padding: 50px 20px;
-    }
-
-    .hero-text {
-        font-size: 1.4em;
+        padding: 40px 20px;
     }
 
     .orientation-content,
     .department-content,
     .category-card {
         padding: 30px 20px;
-    }
-
-    .page-title {
-        font-size: 2em;
     }
 
     .orientation-actions,
@@ -609,28 +582,5 @@ body {
 
     .instruction-text {
         font-size: 0.9em;
-    }
-}
-
-/* 印刷 */
-@media print {
-    body {
-        background: white;
-    }
-
-    .nav-buttons,
-    .result-actions,
-    .btn {
-        display: none;
-    }
-
-    .page {
-        display: block;
-    }
-
-    .hero {
-        background: #667eea;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
     }
 }
