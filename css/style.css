@@ -254,8 +254,8 @@ body {
 
 .answer-option {
   flex: 1;
-  min-width: 130px;
-  padding: 15px 12px;
+  min-width: 140px;
+  padding: 15px 8px;
   text-align: center;
   background: #f9f9f9;
   border: 2px solid #ddd;
@@ -276,22 +276,22 @@ body {
 }
 
 .answer-option input[type="radio"]:checked + span {
-  display: block;
+  display: inline-block;
   color: white;
   background: linear-gradient(135deg, #667eea, #764ba2);
-  padding: 10px 12px;
+  padding: 10px 8px;
   border-radius: 8px;
   font-weight: bold;
   white-space: nowrap;
-  width: 100%;
+  min-width: 100%;
   box-sizing: border-box;
 }
 
 .answer-option span {
   display: block;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   white-space: nowrap;
-  padding: 5px;
+  padding: 5px 2px;
 }
 
 /* ナビゲーションボタン */
