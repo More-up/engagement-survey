@@ -279,9 +279,12 @@ body {
   display: block;
   color: white;
   background: linear-gradient(135deg, #667eea, #764ba2);
-  padding: 10px;
+  padding: 10px 12px;
   border-radius: 8px;
   font-weight: bold;
+  white-space: nowrap;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .answer-option span {
