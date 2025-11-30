@@ -247,22 +247,24 @@ body {
 .answer-options {
   display: flex;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
   margin-top: 15px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 .answer-option {
-  flex: 1;
-  min-width: 140px;
-  padding: 15px 8px;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 12px 6px;
   text-align: center;
   background: #f9f9f9;
   border: 2px solid #ddd;
   border-radius: 10px;
   cursor: pointer;
   transition: all 0.3s ease;
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .answer-option:hover {
@@ -275,23 +277,20 @@ body {
   display: none;
 }
 
+.answer-option span {
+  font-size: 0.75rem;
+  white-space: nowrap;
+  line-height: 1.3;
+}
+
 .answer-option input[type="radio"]:checked + span {
-  display: inline-block;
   color: white;
   background: linear-gradient(135deg, #667eea, #764ba2);
-  padding: 10px 8px;
+  padding: 8px 6px;
   border-radius: 8px;
   font-weight: bold;
   white-space: nowrap;
-  min-width: 100%;
-  box-sizing: border-box;
-}
-
-.answer-option span {
-  display: block;
-  font-size: 0.8rem;
-  white-space: nowrap;
-  padding: 5px 2px;
+  display: inline-block;
 }
 
 /* ナビゲーションボタン */
@@ -398,5 +397,9 @@ body {
 
   .answer-option {
     min-width: 100%;
+  }
+
+  .answer-option span {
+    font-size: 1rem;
   }
 }
