@@ -19,7 +19,7 @@ body {
   padding: 20px;
 }
 
-/* ページ表示制御 - 重要な修正 */
+/* ページ表示制御 */
 .page {
   display: none;
   background: white;
@@ -30,7 +30,7 @@ body {
 }
 
 .page.active {
-  display: block !important; /* !important を追加 */
+  display: block !important;
 }
 
 @keyframes fadeIn {
@@ -243,16 +243,21 @@ body {
   margin-bottom: 20px;
 }
 
-/* 回答オプション（縦並び） */
+/* 回答オプション：横一列表示 */
 .answer-options {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
   gap: 10px;
+  margin-top: 15px;
+  flex-wrap: wrap;
 }
 
 .answer-option {
-  padding: 15px;
-  background: white;
+  flex: 1;
+  min-width: 100px;
+  padding: 15px 10px;
+  text-align: center;
+  background: #f9f9f9;
   border: 2px solid #ddd;
   border-radius: 10px;
   cursor: pointer;
@@ -263,11 +268,25 @@ body {
 .answer-option:hover {
   background: #e8f4ff;
   border-color: #667eea;
-  transform: translateX(5px);
+  transform: translateY(-3px);
 }
 
 .answer-option input[type="radio"] {
-  margin-right: 10px;
+  display: none;
+}
+
+.answer-option input[type="radio"]:checked + span {
+  display: block;
+  color: white;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  padding: 10px;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+.answer-option span {
+  display: block;
+  font-size: 0.9rem;
 }
 
 /* ナビゲーションボタン */
@@ -367,58 +386,11 @@ body {
   .nav-buttons {
     flex-direction: column;
   }
-}
-/* 回答オプション：横一列表示 */
-.answer-options {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 15px;
-  flex-wrap: wrap;
-}
 
-.answer-option {
-  flex: 1;
-  min-width: 100px;
-  padding: 15px 10px;
-  text-align: center;
-  background: #f9f9f9;
-  border: 2px solid #ddd;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.answer-option:hover {
-  background: #e8f4ff;
-  border-color: #667eea;
-  transform: translateY(-3px);
-}
-
-.answer-option input[type="radio"] {
-  display: none;
-}
-
-.answer-option input[type="radio"]:checked + span {
-  display: block;
-  color: white;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  padding: 10px;
-  border-radius: 8px;
-  font-weight: bold;
-}
-
-.answer-option span {
-  display: block;
-  font-size: 0.9rem;
-}
-
-/* レスポンシブ：スマホでは縦並び */
-@media (max-width: 768px) {
   .answer-options {
     flex-direction: column;
   }
-  
+
   .answer-option {
     min-width: 100%;
   }
