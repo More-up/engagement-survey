@@ -254,7 +254,7 @@ body {
 
 .answer-option {
   flex: 1;
-  min-width: 100px;
+  min-width: 120px;
   padding: 15px 10px;
   text-align: center;
   background: #f9f9f9;
@@ -286,7 +286,7 @@ body {
 
 .answer-option span {
   display: block;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   white-space: nowrap;
   padding: 5px;
 }
