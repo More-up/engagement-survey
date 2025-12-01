@@ -68,8 +68,8 @@ body {
 .feature-card {
     background: white;
     border-radius: 12px;
-    padding: 35px 30px;
-    flex: 110;
+    padding: 30px 25px;
+    flex: 1 1 0;
     min-width: 200px;
     max-width: 320px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
@@ -84,6 +84,7 @@ body {
     font-size: 3rem;
     margin-bottom: 15px;
 }
+
 .feature-card h3 {
     font-size: 2rem;
     color: #4A90A4;
@@ -91,16 +92,10 @@ body {
     font-weight: 700;
     line-height: 1.3;
 }
-.feature-card h3 {
-    font-size: 1.15rem;
-    color: #4A90A4;
-    margin-bottom: 12px;
-}
 
 .feature-card p {
     display: none;
 }
-    
 
 /* ===================================
    ボタン
