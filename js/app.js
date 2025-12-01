@@ -1,383 +1,375 @@
+// ===================================
+// カテゴリー定義と質問データ
+// ===================================
+const categories = [
+    { id: 1, name: "心身の健康" },
+    { id: 2, name: "仕事の充実感" },
+    { id: 3, name: "人間関係" },
+    { id: 4, name: "成長機会" },
+    { id: 5, name: "組織への信頼" },
+    { id: 6, name: "ワークライフバランス" },
+    { id: 7, name: "評価と報酬" },
+    { id: 8, name: "職場環境" },
+    { id: 9, name: "キャリア展望" },
+    { id: 10, name: "組織文化" }
+];
+
+const questions = [
+    // カテゴリー1: 心身の健康 (Q1-Q10)
+    { id: 1, category: 1, text: "仕事のストレスは適切に管理できていると感じる" },
+    { id: 2, category: 1, text: "十分な休息が取れていると感じる" },
+    { id: 3, category: 1, text: "仕事とプライベートのバランスが取れている" },
+    { id: 4, category: 1, text: "心身ともに健康だと感じる" },
+    { id: 5, category: 1, text: "職場で心理的な安全性を感じる" },
+    { id: 6, category: 1, text: "業務量は適切だと感じる" },
+    { id: 7, category: 1, text: "職場の人間関係によるストレスは少ない" },
+    { id: 8, category: 1, text: "健康面でのサポートが十分にある" },
+    { id: 9, category: 1, text: "疲労感を感じることは少ない" },
+    { id: 10, category: 1, text: "仕事による不安は少ない" },
+
+    // カテゴリー2: 仕事の充実感 (Q11-Q20)
+    { id: 11, category: 2, text: "自分の仕事に誇りを持っている" },
+    { id: 12, category: 2, text: "仕事にやりがいを感じている" },
+    { id: 13, category: 2, text: "自分の仕事が組織に貢献していると感じる" },
+    { id: 14, category: 2, text: "日々の業務に意義を見出せている" },
+    { id: 15, category: 2, text: "仕事を通じて達成感を得られている" },
+    { id: 16, category: 2, text: "自分のスキルが仕事で活かされている" },
+    { id: 17, category: 2, text: "仕事の目標が明確である" },
+    { id: 18, category: 2, text: "仕事の成果が見える形で現れている" },
+    { id: 19, category: 2, text: "仕事を通じて自己実現ができている" },
+    { id: 20, category: 2, text: "毎日の仕事に意欲的に取り組んでいる" },
+
+    // カテゴリー3: 人間関係 (Q21-Q30)
+    { id: 21, category: 3, text: "上司との関係は良好である" },
+    { id: 22, category: 3, text: "同僚との関係は良好である" },
+    { id: 23, category: 3, text: "チーム内でのコミュニケーションは円滑である" },
+    { id: 24, category: 3, text: "困ったときに相談できる人がいる" },
+    { id: 25, category: 3, text: "職場の雰囲気は良いと感じる" },
+    { id: 26, category: 3, text: "他部署との連携はスムーズである" },
+    { id: 27, category: 3, text: "意見を自由に言える環境がある" },
+    { id: 28, category: 3, text: "職場で孤立していると感じることはない" },
+    { id: 29, category: 3, text: "チームメンバーを信頼している" },
+    { id: 30, category: 3, text: "職場での人間関係にストレスは少ない" },
+
+    // カテゴリー4: 成長機会 (Q31-Q40)
+    { id: 31, category: 4, text: "新しいスキルを学ぶ機会がある" },
+    { id: 32, category: 4, text: "研修や教育プログラムが充実している" },
+    { id: 33, category: 4, text: "仕事を通じて成長できている" },
+    { id: 34, category: 4, text: "挑戦的な業務に取り組む機会がある" },
+    { id: 35, category: 4, text: "上司からのフィードバックが適切である" },
+    { id: 36, category: 4, text: "自己啓発の時間が確保できている" },
+    { id: 37, category: 4, text: "キャリアアップの道筋が見えている" },
+    { id: 38, category: 4, text: "専門性を高める環境が整っている" },
+    { id: 39, category: 4, text: "自分の能力を伸ばすサポートがある" },
+    { id: 40, category: 4, text: "成長を実感できる機会が多い" },
+
+    // カテゴリー5: 組織への信頼 (Q41-Q50)
+    { id: 41, category: 5, text: "経営陣の方針に共感できる" },
+    { id: 42, category: 5, text: "組織の将来性に期待が持てる" },
+    { id: 43, category: 5, text: "組織のビジョンが明確である" },
+    { id: 44, category: 5, text: "組織の意思決定プロセスは透明である" },
+    { id: 45, category: 5, text: "組織の価値観に共感できる" },
+    { id: 46, category: 5, text: "経営陣を信頼している" },
+    { id: 47, category: 5, text: "組織の変革に前向きである" },
+    { id: 48, category: 5, text: "組織の方向性に納得している" },
+    { id: 49, category: 5, text: "組織の情報共有は適切である" },
+    { id: 50, category: 5, text: "組織の一員であることに誇りを持っている" },
+
+    // カテゴリー6: ワークライフバランス (Q51-Q60)
+    { id: 51, category: 6, text: "労働時間は適切である" },
+    { id: 52, category: 6, text: "残業は少ない" },
+    { id: 53, category: 6, text: "休暇を取りやすい環境である" },
+    { id: 54, category: 6, text: "プライベートの時間が確保できている" },
+    { id: 55, category: 6, text: "柔軟な働き方ができている" },
+    { id: 56, category: 6, text: "家族との時間を大切にできている" },
+    { id: 57, category: 6, text: "趣味の時間が持てている" },
+    { id: 58, category: 6, text: "仕事とプライベートの切り替えができている" },
+    { id: 59, category: 6, text: "リモートワークなどの制度が活用できている" },
+    { id: 60, category: 6, text: "ワークライフバランスに満足している" },
+
+    // カテゴリー7: 評価と報酬 (Q61-Q70)
+    { id: 61, category: 7, text: "給与に満足している" },
+    { id: 62, category: 7, text: "評価制度は公平である" },
+    { id: 63, category: 7, text: "自分の成果が適切に評価されている" },
+    { id: 64, category: 7, text: "昇進・昇給の基準が明確である" },
+    { id: 65, category: 7, text: "福利厚生が充実している" },
+    { id: 66, category: 7, text: "報酬は業界水準と比べて適切である" },
+    { id: 67, category: 7, text: "インセンティブ制度が適切である" },
+    { id: 68, category: 7, text: "努力が報われる環境である" },
+    { id: 69, category: 7, text: "評価面談は有意義である" },
+    { id: 70, category: 7, text: "報酬体系に納得している" },
+
+    // カテゴリー8: 職場環境 (Q71-Q80)
+    { id: 71, category: 8, text: "オフィスの設備は充実している" },
+    { id: 72, category: 8, text: "働きやすい物理的環境である" },
+    { id: 73, category: 8, text: "ITツールやシステムは使いやすい" },
+    { id: 74, category: 8, text: "必要な業務リソースが揃っている" },
+    { id: 75, category: 8, text: "職場の清潔さが保たれている" },
+    { id: 76, category: 8, text: "騒音や温度など環境面で快適である" },
+    { id: 77, category: 8, text: "集中できる環境が整っている" },
+    { id: 78, category: 8, text: "安全性が確保されている" },
+    { id: 79, category: 8, text: "業務効率を高める環境が整っている" },
+    { id: 80, category: 8, text: "職場環境の改善提案が受け入れられる" },
+
+    // カテゴリー9: キャリア展望 (Q81-Q90)
+    { id: 81, category: 9, text: "この会社で長く働きたいと思う" },
+    { id: 82, category: 9, text: "キャリアパスが明確である" },
+    { id: 83, category: 9, text: "将来のキャリアに希望が持てる" },
+    { id: 84, category: 9, text: "異動や配置転換の機会がある" },
+    { id: 85, category: 9, text: "自分のキャリア目標が達成できそうである" },
+    { id: 86, category: 9, text: "社内でのキャリア相談ができる" },
+    { id: 87, category: 9, text: "多様なキャリアの選択肢がある" },
+    { id: 88, category: 9, text: "将来のポジションが想像できる" },
+    { id: 89, category: 9, text: "この会社でのキャリアに満足している" },
+    { id: 90, category: 9, text: "長期的に働ける環境である" },
+
+    // カテゴリー10: 組織文化 (Q91-Q100)
+    { id: 91, category: 10, text: "組織の文化や風土に共感できる" },
+    { id: 92, category: 10, text: "イノベーションが奨励されている" },
+    { id: 93, category: 10, text: "多様性が尊重されている" },
+    { id: 94, category: 10, text: "失敗を恐れずチャレンジできる" },
+    { id: 95, category: 10, text: "オープンなコミュニケーション文化がある" },
+    { id: 96, category: 10, text: "組織の価値観が浸透している" },
+    { id: 97, category: 10, text: "協力的な文化が根付いている" },
+    { id: 98, category: 10, text: "顧客志向の文化がある" },
+    { id: 99, category: 10, text: "継続的改善の文化がある" },
+    { id: 100, category: 10, text: "組織文化に誇りを持っている" }
+];
+
+// ===================================
 // グローバル変数
+// ===================================
 let currentSection = 0;
 let answers = {};
-let employeeCode = '';
-let department = '';
+let userInfo = {};
 
-// カテゴリーの定義
-const categories = [
-    { id: 1, name: '心身の健康' },
-    { id: 2, name: '仕事の充実感' },
-    { id: 3, name: '成長機会' },
-    { id: 4, name: '上司のサポート' },
-    { id: 5, name: '部署内の人間関係' },
-    { id: 6, name: '評価・処遇' },
-    { id: 7, name: '会社への信頼' },
-    { id: 8, name: '働く環境' },
-    { id: 9, name: '総合満足度' },
-    { id: 10, name: '会社への愛着・帰属意識' }
-];
-
-// 質問データ（100問）
-const questions = [
-    // カテゴリー1: 心身の健康 (Q1-10)
-    { id: 1, category: 1, text: '毎日、疲れが少ない気持ちで働けている' },
-    { id: 2, category: 1, text: '仕事のストレスをうまく管理できている' },
-    { id: 3, category: 1, text: '毎日、十分な睡眠をとれている' },
-    { id: 4, category: 1, text: '仕事とプライベートの時間配分に満足している' },
-    { id: 5, category: 1, text: '必要な時に休暇を取得できている' },
-    { id: 6, category: 1, text: '休日にしっかりリフレッシュできている' },
-    { id: 7, category: 1, text: '職場で業務や悩みを相談できる人がいる' },
-    { id: 8, category: 1, text: '失敗や苦手なことを恐れず上司や同僚に相談できる' },
-    { id: 9, category: 1, text: '体調不良や疲労が蓄積していない' },
-    { id: 10, category: 1, text: '自分の価値観や考え方が職場で受け入れられている' },
-
-    // カテゴリー2: 仕事の充実感 (Q11-20)
-    { id: 11, category: 2, text: '今の仕事にやりがいを感じている' },
-    { id: 12, category: 2, text: '自分の仕事が会社の目標達成に貢献していると感じる' },
-    { id: 13, category: 2, text: '業務をやり終えた時に達成感を感じている' },
-    { id: 14, category: 2, text: '自分の強みを活かして仕事ができている' },
-    { id: 15, category: 2, text: '担当業務の内容に興味を持って取り組めている' },
-    { id: 16, category: 2, text: '担当している業務の目的や意義を理解している' },
-    { id: 17, category: 2, text: '自分の判断で業務を進められる範囲がある' },
-    { id: 18, category: 2, text: '担当業務の範囲や責任が明確である' },
-    { id: 19, category: 2, text: '毎日の仕事に前向きに取り組めている' },
-    { id: 20, category: 2, text: '自分の仕事が顧客や社会に役立っていると感じている' },
-
-    // カテゴリー3: 成長機会 (Q21-30)
-    { id: 21, category: 3, text: '昨年と比べて、自分のスキルや知識が向上していると感じる' },
-    { id: 22, category: 3, text: '業務に役立つ研修や勉強会に参加できている' },
-    { id: 23, category: 3, text: '業務時間内に学習やスキルアップの時間を確保できている' },
-    { id: 24, category: 3, text: '業務を通じて実践的なスキルを身につけられている' },
-    { id: 25, category: 3, text: '会社は資格取得や学習を支援してくれている' },
-    { id: 26, category: 3, text: '会社は将来どのように成長できるか示してくれている' },
-    { id: 27, category: 3, text: '自分の希望するキャリアを会社で実現できると思う' },
-    { id: 28, category: 3, text: '自分の成長につながる新しい仕事を任されている' },
-    { id: 29, category: 3, text: '上司や先輩から業務について教えてもらえている' },
-    { id: 30, category: 3, text: '失敗を恐れず挑戦することを後押ししてくれる職場である' },
-
-    // カテゴリー4: 上司のサポート (Q31-40)
-    { id: 31, category: 4, text: '上司は私の意見を聞いてくれている' },
-    { id: 32, category: 4, text: '上司から業務改善につながる具体的なフィードバックを受けている' },
-    { id: 33, category: 4, text: '上司は私の成長を支援してくれている' },
-    { id: 34, category: 4, text: '上司とのコミュニケーションは円滑である' },
-    { id: 35, category: 4, text: '上司は全員に公平に接している' },
-    { id: 36, category: 4, text: '上司に相談しやすい雰囲気がある' },
-    { id: 37, category: 4, text: '上司は私の仕事の進め方に自主性を認めている' },
-    { id: 38, category: 4, text: '上司から期待される役割や成果が明確に伝えられている' },
-    { id: 39, category: 4, text: '上司の指示は具体的で理解しやすい' },
-    { id: 40, category: 4, text: '上司は私の業務負荷を理解してくれている' },
-
-    // カテゴリー5: 部署内の人間関係 (Q41-50)
-    { id: 41, category: 5, text: '自部署のメンバーを信頼している' },
-    { id: 42, category: 5, text: '自部署で協力して仕事を進められている' },
-    { id: 43, category: 5, text: '自部署でお互いに助け合う文化がある' },
-    { id: 44, category: 5, text: '自部署内で情報共有がスムーズである' },
-    { id: 45, category: 5, text: '自部署で自由に意見を言える雰囲気がある' },
-    { id: 46, category: 5, text: '他部署との連携がスムーズである' },
-    { id: 47, category: 5, text: '自部署のメンバーの役割分担が明確である' },
-    { id: 48, category: 5, text: '自部署の目標がメンバー間で共有されている' },
-    { id: 49, category: 5, text: '自部署内では、お互いの意見や人格を尊重し合えている' },
-    { id: 50, category: 5, text: '自部署で孤立感を感じることがない' },
-
-    // カテゴリー6: 評価・処遇 (Q51-60)
-    { id: 51, category: 6, text: '人事評価基準が明確である' },
-    { id: 52, category: 6, text: '人事評価は公平に行われている' },
-    { id: 53, category: 6, text: '人事評価面談で前向きな話し合いができている' },
-    { id: 54, category: 6, text: '自分への人事評価に納得できている' },
-    { id: 55, category: 6, text: '給与や待遇は自分の働きに見合っている' },
-    { id: 56, category: 6, text: '成果や努力が給与・昇進に反映されている' },
-    { id: 57, category: 6, text: '昇進・昇格の機会は公平である' },
-    { id: 58, category: 6, text: '福利厚生制度が生活に役立っている' },
-    { id: 59, category: 6, text: '上司や同僚から感謝の言葉をもらえている' },
-    { id: 60, category: 6, text: '自分の努力や成果が周囲に認められていると感じる' },
-
-    // カテゴリー7: 会社への信頼 (Q61-70)
-    { id: 61, category: 7, text: '会社のMission・Vision・Valueを理解している' },
-    { id: 62, category: 7, text: '会社のMission・Vision・Valueに共感している' },
-    { id: 63, category: 7, text: '会社は法令や倫理を守って経営していると感じる' },
-    { id: 64, category: 7, text: 'この会社の未来に期待できる' },
-    { id: 65, category: 7, text: '経営層から会社方針や業績の情報が定期的に共有されている' },
-    { id: 66, category: 7, text: '会社の意思決定の理由を理解できている' },
-    { id: 67, category: 7, text: '会社の意思決定プロセスが透明である' },
-    { id: 68, category: 7, text: '会社の仕事が社会に役立っていると感じている' },
-    { id: 69, category: 7, text: '会社は従業員の意見を聞く体制がある' },
-    { id: 70, category: 7, text: '会社の変革や改善の取り組みを信頼できる' },
-
-    // カテゴリー8: 働く環境 (Q71-80)
-    { id: 71, category: 8, text: 'オフィスの設備や環境は快適である' },
-    { id: 72, category: 8, text: '業務に必要な設備・ツールが揃っている' },
-    { id: 73, category: 8, text: '安全で衛生的な職場環境である' },
-    { id: 74, category: 8, text: '在宅勤務など柔軟な働き方ができている' },
-    { id: 75, category: 8, text: '業務に集中できる環境が整っている' },
-    { id: 76, category: 8, text: '業務に必要な情報やデータにアクセスしやすい' },
-    { id: 77, category: 8, text: '業務で使用するITシステムやツールは使いやすい' },
-    { id: 78, category: 8, text: '社内の手続きは分かりやすく効率的である' },
-    { id: 79, category: 8, text: '会議は目的が明確で効率的に進められている' },
-    { id: 80, category: 8, text: '育児や介護など、ライフイベントに配慮した支援制度がある' },
-
-    // カテゴリー9: 総合満足度 (Q81-90)
-    { id: 81, category: 9, text: '今の会社で働くことに満足している' },
-    { id: 82, category: 9, text: '仕事に取り組む時に前向きな気持ちを持てている' },
-    { id: 83, category: 9, text: '仕事を通じて充実感を得られている' },
-    { id: 84, category: 9, text: '今の業務量は適切だと思う' },
-    { id: 85, category: 9, text: '会社の方針に納得できている' },
-    { id: 86, category: 9, text: '自分の能力を十分に発揮できている' },
-    { id: 87, category: 9, text: '今後のキャリア形成に期待できている' },
-    { id: 88, category: 9, text: '残業時間は妥当な範囲に収まっている' },
-    { id: 89, category: 9, text: '業務の優先順位が明確になっている' },
-    { id: 90, category: 9, text: '過度なプレッシャーを感じることなく働けている' },
-
-    // カテゴリー10: 会社への愛着・帰属意識 (Q91-100)
-    { id: 91, category: 10, text: 'この会社の働き方は自分に合っている' },
-    { id: 92, category: 10, text: 'この会社で自分の居場所を持てている' },
-    { id: 93, category: 10, text: 'この会社の文化や価値観に共感している' },
-    { id: 94, category: 10, text: 'この会社で働くことを家族や友人に前向きに話している' },
-    { id: 95, category: 10, text: 'この会社で働くことに安心感を持てている' },
-    { id: 96, category: 10, text: 'この会社はこれからも存続していくと思える' },
-    { id: 97, category: 10, text: 'この会社の一員であることに誇りを持っている' },
-    { id: 98, category: 10, text: 'この会社を入社前の自分に勧めたいと思う' },
-    { id: 99, category: 10, text: 'この会社では自分の個性を活かして働ける' },
-    { id: 100, category: 10, text: 'この会社で長く働き続けたいと思う' }
-];
-
-// ページ切り替え
+// ===================================
+// ページ遷移
+// ===================================
 function showPage(pageId) {
-    document.querySelectorAll('.page').forEach(page => {
-        page.classList.remove('active');
-    });
-    document.getElementById(pageId + '-page').classList.add('active');
+    const pages = document.querySelectorAll('.page');
+    pages.forEach(page => page.classList.remove('active'));
     
-    // ページ最上部にスクロール
+    const targetPage = document.getElementById(pageId);
+    
+    if (!targetPage) {
+        console.error(`ページが見つかりません: ${pageId}`);
+        console.log('利用可能なページID:', Array.from(pages).map(p => p.id));
+        return;
+    }
+    
+    targetPage.classList.add('active');
     window.scrollTo(0, 0);
 }
 
-// 部署選択と診断開始
+// ===================================
+// 基本情報の保存と診断開始
+// ===================================
 function saveDepartmentAndStart() {
-    employeeCode = document.getElementById('employee-code').value.trim();
-    department = document.getElementById('department').value;
+    const employeeCode = document.getElementById('employee-code').value;
+    const department = document.getElementById('department').value;
 
     if (!employeeCode || !department) {
-        alert('社員コードと所属部署を入力してください');
+        alert('すべての項目を入力してください');
         return;
     }
 
-    currentSection = 0;
-    showPage('survey');
-    renderSection();
-}
-
-// セクション表示（10問まとめて）
-function renderSection() {
-    const sectionQuestions = questions.filter(q => q.category === currentSection + 1);
-
-    let content = `<div class="section-container">`;
-    
-    // 10問を縦に並べる
-    sectionQuestions.forEach((question) => {
-        content += `
-            <div class="question-block" id="question-${question.id}">
-                <p class="question-text">${question.text}</p>
-                <div class="answer-options">
-                    <label class="answer-option">
-                        <input type="radio" name="q${question.id}" value="5" onchange="handleAnswer(${question.id}, 5)">
-                        <span>とてもそう思う</span>
-                    </label>
-                    <label class="answer-option">
-                        <input type="radio" name="q${question.id}" value="4" onchange="handleAnswer(${question.id}, 4)">
-                        <span>そう思う</span>
-                    </label>
-                    <label class="answer-option">
-                        <input type="radio" name="q${question.id}" value="3" onchange="handleAnswer(${question.id}, 3)">
-                        <span>どちらともいえない</span>
-                    </label>
-                    <label class="answer-option">
-                        <input type="radio" name="q${question.id}" value="2" onchange="handleAnswer(${question.id}, 2)">
-                        <span>そう思わない</span>
-                    </label>
-                    <label class="answer-option">
-                        <input type="radio" name="q${question.id}" value="1" onchange="handleAnswer(${question.id}, 1)">
-                        <span>全くそう思わない</span>
-                    </label>
-                </div>
-            </div>
-        `;
-    });
-
-    content += `</div>`;
-    
-    // ナビゲーションボタン
-    content += `<div class="nav-buttons">`;
-    if (currentSection > 0) {
-        content += `<button onclick="prevSection()" class="btn-secondary">前のセクションへ</button>`;
-    }
-    if (currentSection < 9) {
-        content += `<button onclick="nextSection()" class="btn-primary">次のセクションへ</button>`;
-    } else {
-        content += `<button onclick="submitSurvey()" class="btn-primary">診断結果を見る</button>`;
-    }
-    content += `</div>`;
-
-    document.getElementById('survey-content').innerHTML = content;
-    updateProgress();
-
-    // ページ最上部にスクロール
-    window.scrollTo(0, 0);
-
-    // 既存の回答を復元
-    sectionQuestions.forEach(question => {
-        const savedAnswer = answers[question.id];
-        if (savedAnswer) {
-            const radio = document.querySelector(`input[name="q${question.id}"][value="${savedAnswer}"]`);
-            if (radio) radio.checked = true;
-        }
-    });
-}
-
-// 回答処理と自動スクロール
-function handleAnswer(questionId, value) {
-    answers[questionId] = value;
-    updateProgress();
-    
-    // 次の質問に自動スクロール
-    setTimeout(() => {
-        const nextQuestionId = questionId + 1;
-        const nextQuestionElement = document.getElementById(`question-${nextQuestionId}`);
-        
-        if (nextQuestionElement) {
-            nextQuestionElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-    }, 300);
-}
-
-// 進捗バーの更新（%表示付き）
-function updateProgress() {
-    const answeredCount = Object.keys(answers).length;
-    const progress = (answeredCount / 100) * 100;
-
-    document.getElementById('progress-fill').style.width = progress + '%';
-    document.getElementById('progress-percentage').textContent = Math.round(progress) + '%';
-}
-
-// 前のセクションへ
-function prevSection() {
-    saveCurrentSection();
-    currentSection--;
-    renderSection();
-}
-
-// 次のセクションへ
-function nextSection() {
-    saveCurrentSection();
-    
-    const sectionQuestions = questions.filter(q => q.category === currentSection + 1);
-    let allAnswered = true;
-    
-    for (let q of sectionQuestions) {
-        if (!answers[q.id]) {
-            allAnswered = false;
-            break;
-        }
-    }
-    
-    if (!allAnswered) {
-        alert('このセクションの全ての質問に回答してください');
-        return;
-    }
-    
-    currentSection++;
-    renderSection();
-}
-
-// 現在のセクションの回答を保存
-function saveCurrentSection() {
-    const sectionQuestions = questions.filter(q => q.category === currentSection + 1);
-    
-    sectionQuestions.forEach(question => {
-        const selectedAnswer = document.querySelector(`input[name="q${question.id}"]:checked`);
-        if (selectedAnswer) {
-            answers[question.id] = parseInt(selectedAnswer.value);
-        }
-    });
-}
-
-// 診断提出
-function submitSurvey() {
-    saveCurrentSection();
-    
-    const sectionQuestions = questions.filter(q => q.category === currentSection + 1);
-    let allAnswered = true;
-    
-    for (let q of sectionQuestions) {
-        if (!answers[q.id]) {
-            allAnswered = false;
-            break;
-        }
-    }
-    
-    if (!allAnswered) {
-        alert('このセクションの全ての質問に回答してください');
-        return;
-    }
-    
-    calculateResults();
-}
-
-// 結果計算
-function calculateResults() {
-    showPage('result');
-
-    const categoryScores = {};
-    let totalScore = 0;
-    let answeredCount = 0;
-
-    categories.forEach(cat => {
-        const catQuestions = questions.filter(q => q.category === cat.id);
-        let catTotal = 0;
-        let catAnswered = 0;
-
-        catQuestions.forEach(q => {
-            if (answers[q.id]) {
-                catTotal += answers[q.id];
-                catAnswered++;
-            }
-        });
-
-        const catAverage = catAnswered > 0 ? (catTotal / catAnswered) : 0;
-        categoryScores[cat.id] = {
-            name: cat.name,
-            score: catAverage,
-            answeredCount: catAnswered,
-            totalCount: catQuestions.length
-        };
-
-        totalScore += catTotal;
-        answeredCount += catAnswered;
-    });
-
-    const overallAverage = answeredCount > 0 ? (totalScore / answeredCount).toFixed(1) : 0;
-
-    document.getElementById('total-score').textContent = overallAverage;
-
-    displayChart(categoryScores);
-    displayCategoryScores(categoryScores);
-    displayFeedback(overallAverage, categoryScores);
-
-    saveResult({
-        date: new Date().toISOString(),
+    userInfo = {
         employeeCode: employeeCode,
         department: department,
-        totalScore: overallAverage,
-        categoryScores: categoryScores,
-        answeredCount: answeredCount
-    });
+        timestamp: new Date().toISOString()
+    };
+
+    localStorage.setItem('userInfo', JSON.stringify(userInfo));
+    
+    currentSection = 0;
+    renderSection();
+    showPage('survey-page');
 }
 
-// チャート表示
-function displayChart(categoryScores) {
-    const ctx = document.getElementById('result-chart').getContext('2d');
-    const labels = categories.map(cat => cat.name);
-    const data = categories.map(cat => categoryScores[cat.id].score);
+// ===================================
+// セクション描画（10問まとめて表示）
+// ===================================
+function renderSection() {
+    const startIdx = currentSection * 10;
+    const endIdx = startIdx + 10;
+    const sectionQuestions = questions.slice(startIdx, endIdx);
+
+    const container = document.getElementById('questions-container');
+    container.innerHTML = '';
+
+    sectionQuestions.forEach(question => {
+        const questionBlock = document.createElement('div');
+        questionBlock.className = 'question-block';
+        questionBlock.id = `question-${question.id}`;
+        
+        questionBlock.innerHTML = `
+            <div class="question-text">${question.text}</div>
+            <div class="answer-options">
+                ${[5, 4, 3, 2, 1].map(value => `
+                    <label class="answer-option">
+                        <input type="radio" name="q${question.id}" value="${value}" 
+                               ${answers[question.id] === value ? 'checked' : ''}
+                               onchange="saveAnswer(${question.id}, ${value})">
+                        <span>${getAnswerLabel(value)}</span>
+                    </label>
+                `).join('')}
+            </div>
+        `;
+        
+        container.appendChild(questionBlock);
+    });
+
+    updateProgress();
+    updateNavigationButtons();
+}
+
+// ===================================
+// 回答ラベル
+// ===================================
+function getAnswerLabel(value) {
+    const labels = {
+        5: 'とてもそう思う',
+        4: 'そう思う',
+        3: 'どちらともいえない',
+        2: 'そう思わない',
+        1: '全くそう思わない'
+    };
+    return labels[value];
+}
+
+// ===================================
+// 回答の保存と自動スクロール
+// ===================================
+function saveAnswer(questionId, value) {
+    answers[questionId] = value;
+    localStorage.setItem('surveyAnswers', JSON.stringify(answers));
+    
+    // 自動スクロール（次の質問へ）
+    setTimeout(() => {
+        const nextQuestionId = questionId + 1;
+        const nextQuestion = document.getElementById(`question-${nextQuestionId}`);
+        
+        if (nextQuestion) {
+            nextQuestion.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }, 400);
+}
+
+// ===================================
+// 進捗表示の更新
+// ===================================
+function updateProgress() {
+    const answeredCount = Object.keys(answers).length;
+    const totalQuestions = questions.length;
+    const percentage = Math.round((answeredCount / totalQuestions) * 100);
+    
+    document.getElementById('progress-fill').style.width = `${percentage}%`;
+    document.getElementById('progress-percentage').textContent = `${percentage}%`;
+}
+
+// ===================================
+// ナビゲーションボタンの更新
+// ===================================
+function updateNavigationButtons() {
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    
+    prevBtn.style.display = currentSection > 0 ? 'inline-block' : 'none';
+    nextBtn.textContent = currentSection === 9 ? '結果を見る' : '次のセクション';
+}
+
+// ===================================
+// 次のセクションへ
+// ===================================
+function nextSection() {
+    const startIdx = currentSection * 10;
+    const endIdx = startIdx + 10;
+    const sectionQuestions = questions.slice(startIdx, endIdx);
+    
+    const unanswered = sectionQuestions.filter(q => !answers[q.id]);
+    
+    if (unanswered.length > 0) {
+        alert('このセクションの全ての質問に回答してください');
+        return;
+    }
+
+    if (currentSection < 9) {
+        currentSection++;
+        renderSection();
+        window.scrollTo(0, 0);
+    } else {
+        calculateResults();
+    }
+}
+
+// ===================================
+// 前のセクションへ
+// ===================================
+function previousSection() {
+    if (currentSection > 0) {
+        currentSection--;
+        renderSection();
+        window.scrollTo(0, 0);
+    }
+}
+
+// ===================================
+// 結果計算
+// ===================================
+function calculateResults() {
+    const categoryScores = {};
+    
+    categories.forEach(cat => {
+        const catQuestions = questions.filter(q => q.category === cat.id);
+        const catAnswers = catQuestions.map(q => answers[q.id] || 0);
+        const total = catAnswers.reduce((sum, val) => sum + val, 0);
+        
+        categoryScores[cat.id] = {
+            name: cat.name,
+            score: total,
+            maxScore: catQuestions.length * 5,
+            percentage: Math.round((total / (catQuestions.length * 5)) * 100)
+        };
+    });
+
+    const totalScore = Object.values(categoryScores).reduce((sum, cat) => sum + cat.score, 0);
+    const maxScore = questions.length * 5;
+
+    displayResults(totalScore, maxScore, categoryScores);
+    showPage('result-page');
+}
+
+// ===================================
+// 結果表示
+// ===================================
+function displayResults(totalScore, maxScore, categoryScores) {
+    document.getElementById('total-score').textContent = totalScore;
+
+    const categoryResultsHtml = Object.values(categoryScores).map(cat => `
+        <div class="category-score-item">
+            <h3>${cat.name}</h3>
+            <div class="score-bar">
+                <div class="score-fill" style="width: ${cat.percentage}%"></div>
+            </div>
+            <p>${cat.score} / ${cat.maxScore} 点（${cat.percentage}%）</p>
+        </div>
+    `).join('');
+    
+    document.getElementById('category-results').innerHTML = categoryResultsHtml;
+
+    renderRadarChart(categoryScores);
+    generateFeedback(totalScore, maxScore, categoryScores);
+}
+
+// ===================================
+// レーダーチャート描画
+// ===================================
+function renderRadarChart(categoryScores) {
+    const ctx = document.getElementById('radarChart').getContext('2d');
+    
+    const labels = Object.values(categoryScores).map(cat => cat.name);
+    const data = Object.values(categoryScores).map(cat => cat.percentage);
 
     new Chart(ctx, {
         type: 'radar',
@@ -386,73 +378,66 @@ function displayChart(categoryScores) {
             datasets: [{
                 label: 'あなたのスコア',
                 data: data,
-                backgroundColor: 'rgba(135, 206, 250, 0.2)',
-                borderColor: 'rgba(135, 206, 250, 1)',
-                pointBackgroundColor: 'rgba(135, 206, 250, 1)',
-                pointBorderColor: '#fff',
-                pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: 'rgba(135, 206, 250, 1)'
+                backgroundColor: 'rgba(93, 173, 226, 0.2)',
+                borderColor: 'rgba(93, 173, 226, 1)',
+                borderWidth: 2
             }]
         },
         options: {
             scales: {
                 r: {
                     beginAtZero: true,
-                    max: 5,
-                    ticks: { stepSize: 1 }
+                    max: 100
                 }
             }
         }
     });
 }
 
-// カテゴリー別スコア表示
-function displayCategoryScores(categoryScores) {
-    let html = '<div class="category-results">';
-    categories.forEach(cat => {
-        const score = categoryScores[cat.id];
-        html += `
-            <div class="category-score-item">
-                <h3>${score.name}</h3>
-                <div class="score-bar">
-                    <div class="score-fill" style="width: ${(score.score / 5) * 100}%"></div>
-                </div>
-                <p>${score.score.toFixed(1)} / 5.0 (回答数: ${score.answeredCount}/${score.totalCount})</p>
-            </div>
-        `;
-    });
-    html += '</div>';
-    document.getElementById('category-scores').innerHTML = html;
-}
-
-// フィードバック表示
-function displayFeedback(totalScore, categoryScores) {
-    let feedback = '<div class="feedback-section"><h2>📊 診断結果の解説</h2>';
-
-    if (totalScore >= 4.0) {
-        feedback += '<p class="feedback-good">✨ 素晴らしいエンゲージメントレベルです！</p>';
-    } else if (totalScore >= 3.0) {
-        feedback += '<p class="feedback-normal">👍 良好なエンゲージメントレベルです</p>';
+// ===================================
+// フィードバック生成
+// ===================================
+function generateFeedback(totalScore, maxScore, categoryScores) {
+    const percentage = Math.round((totalScore / maxScore) * 100);
+    
+    let overallFeedback = '';
+    if (percentage >= 80) {
+        overallFeedback = '<span class="feedback-good">非常に良好</span>です！高いエンゲージメントを維持されています。';
+    } else if (percentage >= 60) {
+        overallFeedback = '<span class="feedback-normal">良好</span>です。さらなる改善の余地があります。';
     } else {
-        feedback += '<p class="feedback-warning">⚠️ 改善の余地があります</p>';
+        overallFeedback = '<span class="feedback-warning">改善が必要</span>です。いくつかの領域で課題があります。';
     }
 
-    const sortedCategories = Object.entries(categoryScores)
-        .sort((a, b) => a[1].score - b[1].score)
-        .slice(0, 3);
+    const sortedCategories = Object.values(categoryScores).sort((a, b) => a.percentage - b.percentage);
+    const weakCategories = sortedCategories.slice(0, 3);
 
-    feedback += '<h3>🔍 改善ポイント</h3><ul>';
-    sortedCategories.forEach(([id, data]) => {
-        feedback += `<li><strong>${data.name}</strong>: ${data.score.toFixed(1)}点</li>`;
-    });
-    feedback += '</ul></div>';
-
-    document.getElementById('feedback').innerHTML = feedback;
+    const feedbackHtml = `
+        <h2>📊 総合評価</h2>
+        <p>あなたの総合的なエンゲージメントレベルは${overallFeedback}</p>
+        
+        <h3>🔍 改善が推奨される領域</h3>
+        <ul>
+            ${weakCategories.map(cat => `
+                <li><strong>${cat.name}</strong>: ${cat.percentage}% - この領域に注力することをお勧めします</li>
+            `).join('')}
+        </ul>
+    `;
+    
+    document.getElementById('feedback-section').innerHTML = feedbackHtml;
 }
 
-// 結果保存
-function saveResult(result) {
-    let history = JSON.parse(localStorage.getItem('surveyHistory') || '[]');
-    history.push(result);
-    localStorage.setItem('surveyHistory', JSON.stringify(history));
-}
+// ===================================
+// 初期化
+// ===================================
+document.addEventListener('DOMContentLoaded', function() {
+    const savedAnswers = localStorage.getItem('surveyAnswers');
+    if (savedAnswers) {
+        answers = JSON.parse(savedAnswers);
+    }
+
+    const savedUserInfo = localStorage.getItem('userInfo');
+    if (savedUserInfo) {
+        userInfo = JSON.parse(savedUserInfo);
+    }
+});
