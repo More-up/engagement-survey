@@ -169,20 +169,16 @@ function saveDepartmentAndStart() {
     renderSection();
 }
 
-// セクション表示（10問まとめて）
+// セクション表示（10問まとめて、質問番号なし）
 function renderSection() {
     const sectionQuestions = questions.filter(q => q.category === currentSection + 1);
-    const startQuestionNumber = (currentSection * 10) + 1;
-    const endQuestionNumber = (currentSection * 10) + 10;
 
     let content = `<div class="section-container">`;
     
-    // 10問を縦に並べる
-    sectionQuestions.forEach((question, index) => {
-        const questionNumber = startQuestionNumber + index;
+    // 10問を縦に並べる（質問番号なし）
+    sectionQuestions.forEach((question) => {
         content += `
             <div class="question-block">
-                <h3 class="question-number">質問 ${questionNumber}/100</h3>
                 <p class="question-text">${question.text}</p>
                 <div class="answer-options">
                     <label class="answer-option">
@@ -227,6 +223,9 @@ function renderSection() {
     document.getElementById('survey-content').innerHTML = content;
     updateProgress();
 
+    // ページ最上部にスクロール
+    document.getElementById('survey-page').scrollIntoView({ behavior: 'instant', block: 'start' });
+
     // 既存の回答を復元
     sectionQuestions.forEach(question => {
         const savedAnswer = answers[question.id];
@@ -252,7 +251,6 @@ function prevSection() {
     saveCurrentSection();
     currentSection--;
     renderSection();
-    window.scrollTo(0, 0);
 }
 
 // 次のセクションへ
@@ -276,7 +274,6 @@ function nextSection() {
     
     currentSection++;
     renderSection();
-    window.scrollTo(0, 0);
 }
 
 // 現在のセクションの回答を保存
