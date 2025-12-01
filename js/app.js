@@ -1,8 +1,10 @@
 // グローバル変数
 let currentSection = 0;
+let currentQuestionInSection = 0;
 let answers = {};
 let employeeCode = '';
 let department = '';
+let autoSlideEnabled = true; // 自動スライド機能
 
 // カテゴリーの定義
 const categories = [
@@ -165,149 +167,103 @@ function saveDepartmentAndStart() {
     }
 
     currentSection = 0;
+    currentQuestionInSection = 0;
     showPage('survey');
-    renderSection();
+    renderQuestion();
 }
 
-// セクション表示（10問まとめて、質問番号なし）
-function renderSection() {
+// 1問ずつ表示する関数
+function renderQuestion() {
     const sectionQuestions = questions.filter(q => q.category === currentSection + 1);
+    const question = sectionQuestions[currentQuestionInSection];
 
-    let content = `<div class="section-container">`;
-    
-    // 10問を縦に並べる（質問番号なし）
-    sectionQuestions.forEach((question) => {
-        content += `
-            <div class="question-block">
-                <p class="question-text">${question.text}</p>
-                <div class="answer-options">
-                    <label class="answer-option">
-                        <input type="radio" name="q${question.id}" value="5">
-                        <span>とてもそう思う</span>
-                    </label>
-                    <label class="answer-option">
-                        <input type="radio" name="q${question.id}" value="4">
-                        <span>そう思う</span>
-                    </label>
-                    <label class="answer-option">
-                        <input type="radio" name="q${question.id}" value="3">
-                        <span>どちらともいえない</span>
-                    </label>
-                    <label class="answer-option">
-                        <input type="radio" name="q${question.id}" value="2">
-                        <span>そう思わない</span>
-                    </label>
-                    <label class="answer-option">
-                        <input type="radio" name="q${question.id}" value="1">
-                        <span>全くそう思わない</span>
-                    </label>
-                </div>
+    const content = `
+        <div class="question-container">
+            <p class="question-text">${question.text}</p>
+            
+            <div class="answer-options">
+                <label class="answer-option">
+                    <input type="radio" name="q${question.id}" value="5" onchange="handleAnswer(${question.id}, 5)">
+                    <span>とてもそう思う</span>
+                </label>
+                <label class="answer-option">
+                    <input type="radio" name="q${question.id}" value="4" onchange="handleAnswer(${question.id}, 4)">
+                    <span>そう思う</span>
+                </label>
+                <label class="answer-option">
+                    <input type="radio" name="q${question.id}" value="3" onchange="handleAnswer(${question.id}, 3)">
+                    <span>どちらともいえない</span>
+                </label>
+                <label class="answer-option">
+                    <input type="radio" name="q${question.id}" value="2" onchange="handleAnswer(${question.id}, 2)">
+                    <span>そう思わない</span>
+                </label>
+                <label class="answer-option">
+                    <input type="radio" name="q${question.id}" value="1" onchange="handleAnswer(${question.id}, 1)">
+                    <span>全くそう思わない</span>
+                </label>
             </div>
-        `;
-    });
-
-    content += `</div>`;
-    
-    // ナビゲーションボタン
-    content += `<div class="nav-buttons">`;
-    if (currentSection > 0) {
-        content += `<button onclick="prevSection()" class="btn-secondary">前のセクションへ</button>`;
-    }
-    if (currentSection < 9) {
-        content += `<button onclick="nextSection()" class="btn-primary">次のセクションへ</button>`;
-    } else {
-        content += `<button onclick="submitSurvey()" class="btn-primary">診断結果を見る</button>`;
-    }
-    content += `</div>`;
+        </div>
+        
+        <div class="nav-buttons">
+            ${currentQuestionInSection > 0 || currentSection > 0 ? '<button onclick="prevQuestion()" class="btn-secondary">前へ</button>' : ''}
+        </div>
+    `;
 
     document.getElementById('survey-content').innerHTML = content;
     updateProgress();
 
-    // ページ最上部にスクロール
-    document.getElementById('survey-page').scrollIntoView({ behavior: 'instant', block: 'start' });
-
     // 既存の回答を復元
-    sectionQuestions.forEach(question => {
-        const savedAnswer = answers[question.id];
-        if (savedAnswer) {
-            const radio = document.querySelector(`input[name="q${question.id}"][value="${savedAnswer}"]`);
-            if (radio) radio.checked = true;
-        }
-    });
+    const savedAnswer = answers[question.id];
+    if (savedAnswer) {
+        const radio = document.querySelector(`input[name="q${question.id}"][value="${savedAnswer}"]`);
+        if (radio) radio.checked = true;
+    }
 }
 
-// 進捗バーの更新
+// 回答処理と自動スライド
+function handleAnswer(questionId, value) {
+    answers[questionId] = value;
+    
+    if (autoSlideEnabled) {
+        setTimeout(() => {
+            autoAdvance();
+        }, 400); // 0.4秒後に自動で次へ
+    }
+}
+
+// 自動で次の質問へ
+function autoAdvance() {
+    if (currentQuestionInSection < 9) {
+        currentQuestionInSection++;
+        renderQuestion();
+    } else if (currentSection < 9) {
+        currentSection++;
+        currentQuestionInSection = 0;
+        renderQuestion();
+    } else {
+        calculateResults();
+    }
+}
+
+// 進捗バーの更新（%表示付き）
 function updateProgress() {
-    const progress = ((currentSection + 1) / 10) * 100;
-    const startQ = (currentSection * 10) + 1;
-    const endQ = (currentSection * 10) + 10;
+    const totalQuestionNumber = (currentSection * 10) + currentQuestionInSection + 1;
+    const progress = (totalQuestionNumber / 100) * 100;
 
     document.getElementById('progress-fill').style.width = progress + '%';
-    document.getElementById('progress-text').textContent = `セクション ${currentSection + 1}/10 | 質問 ${startQ}～${endQ}`;
+    document.getElementById('progress-percentage').textContent = Math.round(progress) + '%';
 }
 
-// 前のセクションへ
-function prevSection() {
-    saveCurrentSection();
-    currentSection--;
-    renderSection();
-}
-
-// 次のセクションへ
-function nextSection() {
-    saveCurrentSection();
-    
-    const sectionQuestions = questions.filter(q => q.category === currentSection + 1);
-    let allAnswered = true;
-    
-    for (let q of sectionQuestions) {
-        if (!answers[q.id]) {
-            allAnswered = false;
-            break;
-        }
+// 前の質問へ
+function prevQuestion() {
+    if (currentQuestionInSection > 0) {
+        currentQuestionInSection--;
+    } else if (currentSection > 0) {
+        currentSection--;
+        currentQuestionInSection = 9;
     }
-    
-    if (!allAnswered) {
-        alert('このセクションの全ての質問に回答してください');
-        return;
-    }
-    
-    currentSection++;
-    renderSection();
-}
-
-// 現在のセクションの回答を保存
-function saveCurrentSection() {
-    const sectionQuestions = questions.filter(q => q.category === currentSection + 1);
-    
-    sectionQuestions.forEach(question => {
-        const selectedAnswer = document.querySelector(`input[name="q${question.id}"]:checked`);
-        if (selectedAnswer) {
-            answers[question.id] = parseInt(selectedAnswer.value);
-        }
-    });
-}
-
-// 診断提出
-function submitSurvey() {
-    saveCurrentSection();
-    
-    const sectionQuestions = questions.filter(q => q.category === currentSection + 1);
-    let allAnswered = true;
-    
-    for (let q of sectionQuestions) {
-        if (!answers[q.id]) {
-            allAnswered = false;
-            break;
-        }
-    }
-    
-    if (!allAnswered) {
-        alert('このセクションの全ての質問に回答してください');
-        return;
-    }
-    
-    calculateResults();
+    renderQuestion();
 }
 
 // 結果計算
