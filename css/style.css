@@ -67,10 +67,10 @@ body {
 .feature-card {
     background: white;
     border-radius: 12px;
-    padding: 30px 20px;
+    padding: 30px 25px;
     flex: 1;
-    min-width: 220px;
-    max-width: 280px;
+    min-width: 250px;
+    max-width: 320px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     transition: transform 0.3s ease;
 }
@@ -93,7 +93,9 @@ body {
 .feature-card p {
     font-size: 0.95rem;
     color: #718096;
-    line-height: 1.5;
+    line-height: 1.6;
+    word-break: keep-all;
+    overflow-wrap: break-word;
 }
 
 /* ===================================
