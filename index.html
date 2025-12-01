@@ -3,36 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>エンゲージメント・ナビ</title>
+    <title>エンゲージメント・ナビ - スマートに可視化する</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="container">
-        <!-- トップページ -->
-        <div id="top-page" class="page active">
+    <!-- トップページ -->
+    <div id="top-page" class="page active">
+        <div class="container">
             <h1>エンゲージメント・ナビ</h1>
             <p>スマートに可視化する</p>
-            
+
             <div class="features">
-    <div class="feature-card">
-        <div class="feature-icon">📊</div>
-        <h3>10の視点から診断</h3>
-    </div>
-    <div class="feature-card">
-        <div class="feature-icon">⏱️</div>
-        <h3>約15～20分で完了</h3>
-    </div>
-    <div class="feature-card">
-        <div class="feature-icon">📈</div>
-        <h3>フィードバック</h3>
-    </div>
-</div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>10の視点から診断</h3>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⏱️</div>
+                    <h3>約15～20分で完了</h3>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📈</div>
+                    <h3>フィードバック</h3>
+                </div>
+            </div>
 
-<button class="btn-primary" onclick="showPage('orientation-page')">診断を開始する</button>
+            <button class="btn-primary" onclick="showPage('orientation-page')">診断を開始する</button>
+        </div>
+    </div>
 
-        <!-- オリエンテーション＋基本情報入力ページ（統合） -->
-        <div id="orientation-page" class="page">
+    <!-- オリエンテーション＋基本情報入力ページ（統合） -->
+    <div id="orientation-page" class="page">
+        <div class="container">
             <h1>診断を始める前に</h1>
             
             <div class="orientation-content">
@@ -86,49 +89,49 @@
                 <button type="button" onclick="saveDepartmentAndStart()" class="btn-primary">診断を開始</button>
             </form>
         </div>
+    </div>
 
-        <!-- 診断ページ -->
-        <div id="survey-page" class="page">
-            <!-- 進捗バー（%表示付き） -->
-            <div id="progress-bar-container">
-                <div id="progress-bar">
-                    <div id="progress-fill"></div>
-                    <div id="progress-percentage">0%</div>
-                </div>
+    <!-- 診断ページ -->
+    <div id="survey-page" class="page">
+        <!-- 進捗バー -->
+        <div id="progress-bar-container">
+            <div id="progress-bar">
+                <div id="progress-fill"></div>
+                <div id="progress-percentage">0%</div>
             </div>
-
-            <!-- 質問コンテンツ -->
-            <div id="survey-content"></div>
         </div>
 
-        <!-- 結果ページ -->
-        <div id="result-page" class="page">
+        <!-- 質問コンテンツ -->
+        <div id="survey-content">
+            <div class="section-container" id="questions-container"></div>
+            
+            <div class="nav-buttons">
+                <button id="prev-btn" class="btn-secondary" onclick="previousSection()" style="display:none;">前のセクション</button>
+                <button id="next-btn" class="btn-primary" onclick="nextSection()">次のセクション</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 結果ページ -->
+    <div id="result-page" class="page">
+        <div class="container">
             <h1>診断結果</h1>
             
             <div class="result-summary">
-                <h2>総合スコア</h2>
-                <div class="total-score" id="total-score"></div>
+                <h2>あなたの総合スコア</h2>
+                <div class="total-score" id="total-score">0</div>
+                <p>（500点満点）</p>
             </div>
 
             <div class="chart-container">
-                <canvas id="result-chart"></canvas>
+                <canvas id="radarChart"></canvas>
             </div>
 
-            <div id="category-scores"></div>
+            <div class="category-results" id="category-results"></div>
 
-            <div id="feedback"></div>
+            <div class="feedback-section" id="feedback-section"></div>
 
-            <button onclick="showPage('history')" class="btn-primary">履歴を見る</button>
-            <button onclick="location.reload()" class="btn-secondary">最初に戻る</button>
-        </div>
-
-        <!-- 履歴ページ -->
-        <div id="history-page" class="page">
-            <h1>診断履歴</h1>
-            <div id="history-content">
-                <p>過去の診断結果はまだありません</p>
-            </div>
-            <button onclick="showPage('top')" class="btn-secondary">トップに戻る</button>
+            <button class="btn-primary" onclick="location.reload()">もう一度診断する</button>
         </div>
     </div>
 
