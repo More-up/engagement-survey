@@ -67,10 +67,10 @@ body {
 .feature-card {
     background: white;
     border-radius: 12px;
-    padding: 30px 25px;
+    padding: 35px 30px;
     flex: 1;
-    min-width: 250px;
-    max-width: 320px;
+    min-width: 280px;
+    max-width: 350px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     transition: transform 0.3s ease;
 }
@@ -83,20 +83,23 @@ body {
     font-size: 3rem;
     margin-bottom: 15px;
 }
-
 .feature-card h3 {
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     color: #4A90A4;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+.feature-card h3 {
+    font-size: 1.15rem;
+    color: #4A90A4;
+    margin-bottom: 12px;
 }
 
 .feature-card p {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     color: #718096;
-    line-height: 1.6;
-    word-break: keep-all;
-    overflow-wrap: break-word;
-}
+    line-height: 1.7;
+    
 
 /* ===================================
    ボタン
