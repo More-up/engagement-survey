@@ -403,3 +403,32 @@ body {
     font-size: 1rem;
   }
 }
+/* 質問ブロックのスタイル */
+.section-container {
+    margin-bottom: 30px;
+}
+
+.question-block {
+    background: white;
+    padding: 25px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.question-text {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 20px;
+    color: #2d3748;
+    line-height: 1.6;
+}
+
+/* ページ切り替え時のスクロール制御 */
+#survey-page {
+    scroll-margin-top: 0;
+}
+
+.page {
+    scroll-behavior: auto;
+}
