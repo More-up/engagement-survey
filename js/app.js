@@ -163,7 +163,7 @@ function showPage(pageId) {
 }
 
 // ===================================
-// 基本情報の保存と診断開始
+// 基本情報の保存と診断開始（従業員コード別）
 // ===================================
 function saveDepartmentAndStart() {
     const employeeCode = document.getElementById('employee-code').value;
@@ -180,7 +180,17 @@ function saveDepartmentAndStart() {
         timestamp: new Date().toISOString()
     };
 
-    localStorage.setItem('userInfo', JSON.stringify(userInfo));
+    // 従業員コード別に保存
+    localStorage.setItem(`userInfo_${employeeCode}`, JSON.stringify(userInfo));
+    localStorage.setItem('currentEmployeeCode', employeeCode);
+    
+    // この従業員コードの既存回答を読み込む（途中から再開）
+    const savedAnswers = localStorage.getItem(`surveyAnswers_${employeeCode}`);
+    if (savedAnswers) {
+        answers = JSON.parse(savedAnswers);
+    } else {
+        answers = {};  // 新規開始
+    }
     
     currentSection = 0;
     renderSection();
@@ -239,11 +249,12 @@ function getAnswerLabel(value) {
 }
 
 // ===================================
-// 回答の保存と自動スクロール
+// 回答の保存と自動スクロール（従業員コード別）
 // ===================================
 function saveAnswer(questionId, value) {
     answers[questionId] = value;
-    localStorage.setItem('surveyAnswers', JSON.stringify(answers));
+    const employeeCode = localStorage.getItem('currentEmployeeCode');
+    localStorage.setItem(`surveyAnswers_${employeeCode}`, JSON.stringify(answers));
     
     // 自動スクロール（次の質問へ）
     setTimeout(() => {
@@ -428,16 +439,21 @@ function generateFeedback(totalScore, maxScore, categoryScores) {
 }
 
 // ===================================
-// 初期化
+// 初期化（従業員コード別に復元）
 // ===================================
 document.addEventListener('DOMContentLoaded', function() {
-    const savedAnswers = localStorage.getItem('surveyAnswers');
-    if (savedAnswers) {
-        answers = JSON.parse(savedAnswers);
-    }
+    const currentEmployeeCode = localStorage.getItem('currentEmployeeCode');
+    
+    if (currentEmployeeCode) {
+        // 従業員コード別に復元
+        const savedAnswers = localStorage.getItem(`surveyAnswers_${currentEmployeeCode}`);
+        if (savedAnswers) {
+            answers = JSON.parse(savedAnswers);
+        }
 
-    const savedUserInfo = localStorage.getItem('userInfo');
-    if (savedUserInfo) {
-        userInfo = JSON.parse(savedUserInfo);
+        const savedUserInfo = localStorage.getItem(`userInfo_${currentEmployeeCode}`);
+        if (savedUserInfo) {
+            userInfo = JSON.parse(savedUserInfo);
+        }
     }
 });
