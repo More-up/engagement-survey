@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>エンゲージメント診断</title>
+    <title>エンゲージメント・ナビ</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -11,33 +11,34 @@
     <div class="container">
         <!-- トップページ -->
         <div id="top-page" class="page active">
-            <h1>エンゲージメント診断</h1>
-            <p>あなたの職場への関わり方を診断します</p>
+            <h1>エンゲージメント・ナビ</h1>
+            <p>スマートに可視化する</p>
             
             <div class="features">
                 <div class="feature-card">
                     <div class="feature-icon">📊</div>
                     <h3>10の視点から診断</h3>
-                    <p>エンゲージメントを多角的に測定</p>
+                    <p>多角的にエンゲージメントを測定</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">⏱️</div>
                     <h3>約15～20分で完了</h3>
-                    <p>簡単な質問に答えるだけ</p>
+                    <p>シンプルな質問に直感で答えるだけでOK</p>
                 </div>
                 <div class="feature-card">
                     <div class="feature-icon">📈</div>
-                    <h3>詳細なフィードバック</h3>
-                    <p>改善ポイントを具体的に提示</p>
+                    <h3>あなた専用のフィードバック</h3>
+                    <p>次の一歩が見えるヒントをお届け</p>
                 </div>
             </div>
 
             <button onclick="showPage('orientation')" class="btn-primary">診断を開始する</button>
         </div>
 
-        <!-- オリエンテーションページ -->
+        <!-- オリエンテーション＋基本情報入力ページ（統合） -->
         <div id="orientation-page" class="page">
-            <h1>診断の流れ</h1>
+            <h1>診断を始める前に</h1>
+            
             <div class="orientation-content">
                 <h2>📋 診断について</h2>
                 <p><strong>全100問（10のセクションに分類）</strong></p>
@@ -60,12 +61,10 @@
                 <p>深く考えすぎず、直感で答えてください</p>
             </div>
 
-            <button onclick="completeOrientation()" class="btn-primary">次へ進む</button>
-        </div>
+            <div class="divider"></div>
 
-        <!-- 社員コード・部署入力ページ -->
-        <div id="department-selection-page" class="page">
-            <h1>基本情報の入力</h1>
+            <!-- 基本情報入力 -->
+            <h2>👤 基本情報の入力</h2>
             <form id="department-form">
                 <div class="form-group">
                     <label for="employee-code">社員コード</label>
@@ -74,7 +73,18 @@
 
                 <div class="form-group">
                     <label for="department">所属部署</label>
-                    <input type="text" id="department" required placeholder="例: 営業部">
+                    <select id="department" required>
+                        <option value="">選択してください</option>
+                        <option value="経営企画">経営企画</option>
+                        <option value="営業部">営業部</option>
+                        <option value="マーケティング部">マーケティング部</option>
+                        <option value="開発部">開発部</option>
+                        <option value="人事部">人事部</option>
+                        <option value="総務部">総務部</option>
+                        <option value="経理部">経理部</option>
+                        <option value="カスタマーサポート">カスタマーサポート</option>
+                        <option value="その他">その他</option>
+                    </select>
                 </div>
 
                 <button type="button" onclick="saveDepartmentAndStart()" class="btn-primary">診断を開始</button>
