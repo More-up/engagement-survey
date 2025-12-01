@@ -133,75 +133,112 @@ body {
 }
 
 /* ===================================
-   オリエンテーションページ（統合版）
+   オリエンテーションページ（統合版・スタイリッシュ）
 =================================== */
 #orientation-page {
+    background: linear-gradient(135deg, #87CEEB 0%, #B0E0E6 100%);
+    min-height: 100vh;
+    padding: 60px 20px;
+}
+
+#orientation-page .container {
     background: white;
-    border-radius: 12px;
-    padding: 40px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-radius: 20px;
+    padding: 50px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    max-width: 900px;
 }
 
 #orientation-page h1 {
     color: #4A90A4;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
     text-align: center;
-    font-size: 2rem;
+    font-size: 2.5rem;
+    font-weight: 700;
 }
 
 #orientation-page h2 {
     color: #4A90A4;
-    margin-top: 25px;
-    margin-bottom: 15px;
-    font-size: 1.3rem;
+    margin-top: 35px;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .orientation-content {
-    margin-bottom: 30px;
+    margin-bottom: 40px;
+    line-height: 1.8;
 }
 
-.orientation-content ul {
-    margin-left: 25px;
+.orientation-content p {
+    color: #4a5568;
+    font-size: 1.05rem;
     margin-bottom: 15px;
 }
 
+.orientation-content ul {
+    margin-left: 30px;
+    margin-bottom: 20px;
+}
+
 .orientation-content li {
-    margin-bottom: 8px;
+    margin-bottom: 12px;
+    color: #4a5568;
+    font-size: 1.05rem;
 }
 
 /* 区切り線 */
 .divider {
-    height: 2px;
+    height: 3px;
     background: linear-gradient(90deg, transparent, #87CEEB, transparent);
-    margin: 40px 0;
+    margin: 50px 0;
 }
 
 /* フォーム */
 .form-group {
-    margin-bottom: 25px;
+    margin-bottom: 30px;
 }
 
 .form-group label {
     display: block;
-    font-weight: 600;
-    color: #4a5568;
-    margin-bottom: 8px;
+    font-weight: 700;
+    color: #2d3748;
+    margin-bottom: 12px;
+    font-size: 1.1rem;
 }
 
 .form-group input,
 .form-group select {
     width: 100%;
-    padding: 12px;
+    padding: 15px;
     border: 2px solid #e2e8f0;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: border-color 0.3s ease;
+    border-radius: 10px;
+    font-size: 1.05rem;
+    transition: all 0.3s ease;
+    background: #f7fafc;
 }
 
 .form-group input:focus,
 .form-group select:focus {
     outline: none;
     border-color: #5DADE2;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(93, 173, 226, 0.1);
+}
+
+/* 基本情報セクション */
+#orientation-page form {
+    background: #f7fafc;
+    padding: 40px;
+    border-radius: 15px;
+    margin-top: 30px;
+}
+
+#orientation-page form h2 {
+    margin-top: 0;
 }
 
 /* ===================================
@@ -506,6 +543,26 @@ body {
         max-width: 100%;
     }
 
+    #orientation-page {
+        padding: 30px 15px;
+    }
+
+    #orientation-page .container {
+        padding: 30px 25px;
+    }
+
+    #orientation-page h1 {
+        font-size: 2rem;
+    }
+
+    #orientation-page h2 {
+        font-size: 1.3rem;
+    }
+
+    #orientation-page form {
+        padding: 25px 20px;
+    }
+
     #progress-bar-container {
         padding: 15px 20px;
     }
@@ -542,7 +599,6 @@ body {
         white-space: normal;
     }
 
-    #orientation-page,
     #result-page,
     #history-page {
         padding: 25px 20px;
