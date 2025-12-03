@@ -387,51 +387,102 @@ body {
     text-align: center;
 }
 
+/* ===================================
+   回答ボタン（丸型・サイズ差）
+=================================== */
 .answer-options {
     display: flex;
-    justify-content: space-between;
-    gap: 15px;
-    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-top: 20px;
 }
 
 .answer-option {
-    flex: 1;
-    min-width: 140px;
-    text-align: center;
-    padding: 15px 10px;
-    background: #f8f9fa;
-    border: 2px solid #dfe6e9;
-    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.answer-option:hover {
-    background: #e3f2fd;
-    border-color: #5dade2;
-    transform: translateY(-2px);
 }
 
 .answer-option input[type="radio"] {
     display: none;
 }
 
-.answer-option input[type="radio"]:checked + span {
-    color: white;
+.answer-option span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #f8f9fa;
+    border: 3px solid #dfe6e9;
+    color: #34495e;
+    font-weight: bold;
+    transition: all 0.3s ease;
 }
 
-.answer-option:has(input[type="radio"]:checked) {
+/* サイズ差: ①と⑤が大きい、②と④が中、③が小 */
+.answer-option:nth-child(1) span, /* ① */
+.answer-option:nth-child(5) span  /* ⑤ */ {
+    width: 60px;
+    height: 60px;
+    font-size: 1.4rem;
+}
+
+.answer-option:nth-child(2) span, /* ② */
+.answer-option:nth-child(4) span  /* ④ */ {
+    width: 52px;
+    height: 52px;
+    font-size: 1.2rem;
+}
+
+.answer-option:nth-child(3) span  /* ③ */ {
+    width: 44px;
+    height: 44px;
+    font-size: 1rem;
+}
+
+/* ホバー効果 */
+.answer-option:hover span {
+    background: #e3f2fd;
+    border-color: #5dade2;
+    transform: scale(1.1);
+}
+
+/* 選択時のスタイル */
+.answer-option input[type="radio"]:checked + span {
     background: linear-gradient(135deg, #5dade2, #3498db);
     border-color: #3498db;
     color: white;
-    transform: scale(1.05);
+    transform: scale(1.15);
+    box-shadow: 0 4px 15px rgba(93, 173, 226, 0.4);
 }
 
-.answer-option span {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #34495e;
-    transition: color 0.3s ease;
+/* スマホ対応 */
+@media (max-width: 768px) {
+    .answer-options {
+        gap: 12px;
+    }
+    
+    .answer-option:nth-child(1) span,
+    .answer-option:nth-child(5) span {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+    }
+    
+    .answer-option:nth-child(2) span,
+    .answer-option:nth-child(4) span {
+        width: 44px;
+        height: 44px;
+        font-size: 1.1rem;
+    }
+    
+    .answer-option:nth-child(3) span {
+        width: 38px;
+        height: 38px;
+        font-size: 0.9rem;
+    }
 }
 
 /* ===================================
