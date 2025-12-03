@@ -15,7 +15,7 @@ const categories = [
 ];
 
 // ===================================
-// 質問データ（全100問）- 最終確定版
+// 質問データ(全100問)
 // ===================================
 const questions = [
     // カテゴリー1: 心身の健康 (Q1-10)
@@ -174,7 +174,6 @@ function saveDepartmentAndStart() {
     localStorage.setItem('employeeCode', code);
     localStorage.setItem('department', dept);
     
-    // 前回の回答を復元
     const saved = localStorage.getItem(`answers_${employeeCode}`);
     if (saved) {
         answers = JSON.parse(saved);
@@ -185,7 +184,7 @@ function saveDepartmentAndStart() {
 }
 
 // ===================================
-// セクション描画（10問ずつ）
+// セクション描画(10問ずつ)
 // ===================================
 function renderSection() {
     const container = document.getElementById('questions-container');
@@ -203,11 +202,9 @@ function renderSection() {
     const categoryId = sectionQuestions[0].categoryId;
     const category = categories.find(c => c.id === categoryId);
     
-    // 🔥 固定ヘッダーのカテゴリータイトルを更新
     document.querySelector('#category-header-fixed h2').textContent = 
         `カテゴリー${categoryId}: ${category.name}`;
     
-    // カテゴリー5の場合、説明文を表示
     if (categoryId === 5) {
         const note = document.createElement('div');
         note.className = 'category-note';
@@ -215,7 +212,7 @@ function renderSection() {
         container.appendChild(note);
     }
     
-        sectionQuestions.forEach(q => {
+    sectionQuestions.forEach(q => {
         const block = document.createElement('div');
         block.className = 'question-block';
         block.innerHTML = `
@@ -232,7 +229,6 @@ function renderSection() {
         `;
         container.appendChild(block);
         
-        // 🔥 イベントリスナーを追加
         const radios = block.querySelectorAll('input[type="radio"]');
         radios.forEach(radio => {
             radio.addEventListener('change', function() {
@@ -240,7 +236,6 @@ function renderSection() {
             });
         });
     });
-
     
     updateNavButtons();
     updateProgressBar();
@@ -254,11 +249,9 @@ function saveAnswer(questionId, value) {
     answers[questionId] = value;
     localStorage.setItem(`answers_${employeeCode}`, JSON.stringify(answers));
     
-    // 🔥 ボタン状態を更新
     updateNavButtons();
     updateProgressBar();
     
-    // 自動的に次の質問へスクロール
     const allQuestions = Array.from(document.querySelectorAll('.question-block'));
     const currentIndex = allQuestions.findIndex(block => 
         block.querySelector(`input[name="q${questionId}"]`)
@@ -340,12 +333,10 @@ function nextSection() {
 // 結果計算と表示
 // ===================================
 function calculateResults() {
-    // 100点満点に換算
     const totalScore = Object.values(answers).reduce((sum, val) => sum + val, 0);
-    const maxScore = questions.length * 5; // 500点満点
+    const maxScore = questions.length * 5;
     const normalizedScore = Math.round((totalScore / maxScore) * 100);
     
-    // カテゴリー別スコア
     const categoryScores = categories.map(cat => {
         const catQuestions = questions.filter(q => q.categoryId === cat.id);
         const catAnswers = catQuestions.map(q => answers[q.id] || 0);
@@ -366,19 +357,15 @@ function calculateResults() {
 function displayResults(totalScore, categoryScores) {
     showPage('result-page');
     window.scrollTo(0, 0);
-    // 総合スコア表示
+    
     document.getElementById('total-score').textContent = totalScore;
     
-    // ゲージアニメーション
     const gaugeFill = document.getElementById('gauge-fill');
     setTimeout(() => {
         gaugeFill.style.width = `${totalScore}%`;
     }, 300);
     
-    // レーダーチャート描画
     drawRadarChart(categoryScores);
-    
-    // フィードバック生成
     generateFeedback(totalScore, categoryScores);
 }
 
@@ -394,7 +381,7 @@ function drawRadarChart(categoryScores) {
     
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // 背景の円(WEVOX風カラー)
+    // 背景の同心円を描画
     for (let i = 1; i <= 5; i++) {
         ctx.beginPath();
         ctx.arc(centerX, centerY, (radius / 5) * i, 0, Math.PI * 2);
@@ -403,7 +390,7 @@ function drawRadarChart(categoryScores) {
         ctx.stroke();
     }
     
-    // 軸の描画
+    // 軸とカテゴリー名を描画
     const angleStep = (Math.PI * 2) / categoryScores.length;
     categoryScores.forEach((cat, i) => {
         const angle = angleStep * i - Math.PI / 2;
@@ -417,7 +404,6 @@ function drawRadarChart(categoryScores) {
         ctx.lineWidth = 2;
         ctx.stroke();
         
-        // ラベル(カテゴリー名)
         const labelDistance = radius + 50;
         const labelX = centerX + labelDistance * Math.cos(angle);
         const labelY = centerY + labelDistance * Math.sin(angle);
@@ -428,7 +414,7 @@ function drawRadarChart(categoryScores) {
         ctx.fillText(cat.name, labelX, labelY);
     });
     
-    // データのプロット(WEVOX風カラー)
+    // データポリゴンを描画
     ctx.beginPath();
     categoryScores.forEach((cat, i) => {
         const angle = angleStep * i - Math.PI / 2;
@@ -444,14 +430,14 @@ function drawRadarChart(categoryScores) {
     });
     ctx.closePath();
     
-    // グラデーション塗りつぶし(濃くする)
+    // 塗りつぶし
     const fillGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
     fillGradient.addColorStop(0, 'rgba(233, 30, 99, 0.5)');
     fillGradient.addColorStop(1, 'rgba(156, 39, 176, 0.3)');
     ctx.fillStyle = fillGradient;
     ctx.fill();
     
-    // 線のグラデーション
+    // 線の描画
     const lineGradient = ctx.createLinearGradient(centerX - radius, centerY, centerX + radius, centerY);
     lineGradient.addColorStop(0, '#e91e63');
     lineGradient.addColorStop(1, '#9c27b0');
@@ -459,43 +445,37 @@ function drawRadarChart(categoryScores) {
     ctx.lineWidth = 4;
     ctx.stroke();
     
-    // プロット点を描画(すべて同じサイズ) + スコア数字をプロット点のそばに配置
+    // データポイントとスコア表示を描画
     categoryScores.forEach((cat, i) => {
         const angle = angleStep * i - Math.PI / 2;
         const distance = (cat.score / 100) * radius;
         const pointX = centerX + distance * Math.cos(angle);
         const pointY = centerY + distance * Math.sin(angle);
         
-        // ポイントのグラデーション
         const gradient = ctx.createRadialGradient(pointX, pointY, 0, pointX, pointY, 10);
         gradient.addColorStop(0, '#ff4081');
         gradient.addColorStop(1, '#e91e63');
         
-        // ポイント本体(塗りつぶし)
         ctx.beginPath();
         ctx.arc(pointX, pointY, 8, 0, Math.PI * 2);
         ctx.fillStyle = gradient;
         ctx.fill();
         
-        // ポイントの白い縁取り(別パスで描画)
         ctx.beginPath();
         ctx.arc(pointX, pointY, 8, 0, Math.PI * 2);
         ctx.strokeStyle = 'white';
         ctx.lineWidth = 3;
         ctx.stroke();
         
-        // 🔥 スコア数字をプロット点のすぐそばに表示
-        const scoreDistance = distance + 25; // プロット点から25px外側
+        const scoreDistance = distance + 25;
         const scoreX = centerX + scoreDistance * Math.cos(angle);
         const scoreY = centerY + scoreDistance * Math.sin(angle);
         
-        // スコアの背景円(ピンク色のバッジ)
         ctx.fillStyle = '#e91e63';
         ctx.beginPath();
         ctx.arc(scoreX, scoreY, 14, 0, Math.PI * 2);
         ctx.fill();
         
-        // スコアテキスト
         ctx.fillStyle = 'white';
         ctx.font = 'bold 11px sans-serif';
         ctx.textAlign = 'center';
@@ -504,72 +484,12 @@ function drawRadarChart(categoryScores) {
     });
 }
 
-    
-    // データのプロット（WEVOX風カラー）
-    ctx.beginPath();
-    categoryScores.forEach((cat, i) => {
-        const angle = angleStep * i - Math.PI / 2;
-        const distance = (cat.score / 100) * radius;
-        const x = centerX + distance * Math.cos(angle);
-        const y = centerY + distance * Math.sin(angle);
-        
-        if (i === 0) {
-            ctx.moveTo(x, y);
-        } else {
-            ctx.lineTo(x, y);
-        }
-    });
-    ctx.closePath();
-    
-    // グラデーション塗りつぶし(濃くする)
-    const fillGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
-    fillGradient.addColorStop(0, 'rgba(233, 30, 99, 0.5)');
-    fillGradient.addColorStop(1, 'rgba(156, 39, 176, 0.3)');
-    ctx.fillStyle = fillGradient;
-    ctx.fill();
-    
-    // 線のグラデーション
-    const lineGradient = ctx.createLinearGradient(centerX - radius, centerY, centerX + radius, centerY);
-    lineGradient.addColorStop(0, '#e91e63');
-    lineGradient.addColorStop(1, '#9c27b0');
-    ctx.strokeStyle = lineGradient;
-    ctx.lineWidth = 4;
-    ctx.stroke();
-    
-        // プロット点を描画(すべて同じサイズ)
-    categoryScores.forEach((cat, i) => {
-        const angle = angleStep * i - Math.PI / 2;
-        const distance = (cat.score / 100) * radius;
-        const pointX = centerX + distance * Math.cos(angle);
-        const pointY = centerY + distance * Math.sin(angle);
-        
-        // ポイントのグラデーション
-        const gradient = ctx.createRadialGradient(pointX, pointY, 0, pointX, pointY, 10);
-        gradient.addColorStop(0, '#ff4081');
-        gradient.addColorStop(1, '#e91e63');
-        
-        // 🔥 ポイント本体(塗りつぶし)
-        ctx.beginPath();
-        ctx.arc(pointX, pointY, 8, 0, Math.PI * 2);
-        ctx.fillStyle = gradient;
-        ctx.fill();
-        
-        // 🔥 ポイントの白い縁取り(別パスで描画)
-        ctx.beginPath();
-        ctx.arc(pointX, pointY, 8, 0, Math.PI * 2);
-        ctx.strokeStyle = 'white';
-        ctx.lineWidth = 3;
-        ctx.stroke();
-    });
-}  // ← drawRadarChart() 関数の閉じ括弧
-
 // ===================================
 // フィードバック生成(詳細版)
 // ===================================
 function generateFeedback(totalScore, categoryScores) {
     const feedbackDiv = document.getElementById('feedback-content');
     
-    // 総合評価
     let overallMessage = '';
     let messageClass = '';
     
@@ -584,11 +504,9 @@ function generateFeedback(totalScore, categoryScores) {
         messageClass = 'warning';
     }
     
-    // 最高/最低カテゴリー
     const highest = categoryScores.reduce((max, cat) => cat.score > max.score ? cat : max);
     const lowest = categoryScores.reduce((min, cat) => cat.score < min.score ? cat : min);
     
-    // 改善提案生成
     const suggestions = generateDetailedSuggestions(lowest, totalScore);
     
     feedbackDiv.innerHTML = `
@@ -627,7 +545,7 @@ function generateFeedback(totalScore, categoryScores) {
             </ul>
         </div>
     `;
-}  // ← generateFeedback() 関数の閉じ括弧(これが抜けていた!)
+}
 
 // ===================================
 // 詳細な改善提案生成
@@ -708,5 +626,5 @@ function generateDetailedSuggestions(lowestCategory, totalScore) {
 // 初期化
 // ===================================
 window.onload = function() {
-    // 毎回空欄で開始
+    // 空の関数(必要に応じて初期化処理を追加)
 };
