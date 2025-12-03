@@ -366,19 +366,14 @@ function calculateResults() {
 function displayResults(totalScore, categoryScores) {
     showPage('result-page');
     
+    // 総合スコア表示
     document.getElementById('total-score').textContent = totalScore;
     
-    // カテゴリー別スコア表示
-    const categoryContainer = document.getElementById('category-scores');
-    categoryContainer.innerHTML = categoryScores.map(cat => `
-        <div class="category-score-item">
-            <h3>${cat.name}</h3>
-            <div class="score-bar">
-                <div class="score-fill" style="width: ${cat.score}%"></div>
-            </div>
-            <p>${cat.score}点 / 100点</p>
-        </div>
-    `).join('');
+    // ゲージアニメーション
+    const gaugeFill = document.getElementById('gauge-fill');
+    setTimeout(() => {
+        gaugeFill.style.width = `${totalScore}%`;
+    }, 300);
     
     // レーダーチャート描画
     drawRadarChart(categoryScores);
@@ -388,22 +383,23 @@ function displayResults(totalScore, categoryScores) {
 }
 
 // ===================================
-// レーダーチャート描画
+// レーダーチャート描画（WEVOX風・スコア表示付き）
 // ===================================
 function drawRadarChart(categoryScores) {
     const canvas = document.getElementById('radar-chart');
     const ctx = canvas.getContext('2d');
     const centerX = canvas.width / 2;
     const centerY = canvas.height / 2;
-    const radius = 150;
+    const radius = 200;
     
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // 背景の円
+    // 背景の円（WEVOX風カラー）
     for (let i = 1; i <= 5; i++) {
         ctx.beginPath();
         ctx.arc(centerX, centerY, (radius / 5) * i, 0, Math.PI * 2);
-        ctx.strokeStyle = '#e0e0e0';
+        ctx.strokeStyle = i === 5 ? '#e1bee7' : '#f3e5f5';
+        ctx.lineWidth = 2;
         ctx.stroke();
     }
     
@@ -417,19 +413,38 @@ function drawRadarChart(categoryScores) {
         ctx.beginPath();
         ctx.moveTo(centerX, centerY);
         ctx.lineTo(x, y);
-        ctx.strokeStyle = '#e0e0e0';
+        ctx.strokeStyle = '#f3e5f5';
+        ctx.lineWidth = 2;
         ctx.stroke();
         
         // ラベル
-        const labelX = centerX + (radius + 30) * Math.cos(angle);
-        const labelY = centerY + (radius + 30) * Math.sin(angle);
-        ctx.fillStyle = '#2c3e50';
-        ctx.font = '12px sans-serif';
+        const labelDistance = radius + 60;
+        const labelX = centerX + labelDistance * Math.cos(angle);
+        const labelY = centerY + labelDistance * Math.sin(angle);
+        ctx.fillStyle = '#4a148c';
+        ctx.font = 'bold 15px sans-serif';
         ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
         ctx.fillText(cat.name, labelX, labelY);
+        
+        // スコア表示（WEVOX風カラー）
+        const scoreDistance = radius + 85;
+        const scoreX = centerX + scoreDistance * Math.cos(angle);
+        const scoreY = centerY + scoreDistance * Math.sin(angle);
+        
+        // スコアの背景円
+        ctx.fillStyle = '#e91e63';
+        ctx.beginPath();
+        ctx.arc(scoreX, scoreY, 20, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // スコアテキスト
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 14px sans-serif';
+        ctx.fillText(`${cat.score}`, scoreX, scoreY);
     });
     
-    // データのプロット
+    // データのプロット（WEVOX風カラー）
     ctx.beginPath();
     categoryScores.forEach((cat, i) => {
         const angle = angleStep * i - Math.PI / 2;
@@ -442,45 +457,178 @@ function drawRadarChart(categoryScores) {
         } else {
             ctx.lineTo(x, y);
         }
+        
+        // ポイントを描画
+        const gradient = ctx.createRadialGradient(x, y, 0, x, y, 8);
+        gradient.addColorStop(0, '#e91e63');
+        gradient.addColorStop(1, '#9c27b0');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(x, y, 8, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // ポイントの白い縁取り
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 3;
+        ctx.stroke();
     });
     ctx.closePath();
-    ctx.fillStyle = 'rgba(93, 173, 226, 0.3)';
+    
+    // グラデーション塗りつぶし
+    const fillGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+    fillGradient.addColorStop(0, 'rgba(233, 30, 99, 0.3)');
+    fillGradient.addColorStop(1, 'rgba(156, 39, 176, 0.1)');
+    ctx.fillStyle = fillGradient;
     ctx.fill();
-    ctx.strokeStyle = '#5DADE2';
-    ctx.lineWidth = 2;
+    
+    // 線のグラデーション
+    const lineGradient = ctx.createLinearGradient(centerX - radius, centerY, centerX + radius, centerY);
+    lineGradient.addColorStop(0, '#e91e63');
+    lineGradient.addColorStop(1, '#9c27b0');
+    ctx.strokeStyle = lineGradient;
+    ctx.lineWidth = 4;
     ctx.stroke();
 }
 
 // ===================================
-// フィードバック生成
+// フィードバック生成（詳細版）
 // ===================================
 function generateFeedback(totalScore, categoryScores) {
-    const feedbackDiv = document.getElementById('feedback-text');
+    const feedbackDiv = document.getElementById('feedback-content');
     
-    let feedback = `<h3>総合評価: ${totalScore}点</h3>`;
+    // 総合評価
+    let overallMessage = '';
+    let messageClass = '';
     
     if (totalScore >= 80) {
-        feedback += '<p class="feedback-good">素晴らしいエンゲージメント状態です！</p>';
+        overallMessage = '素晴らしいエンゲージメント状態です!組織全体が非常に良好な状態にあり、従業員の満足度が高いレベルで維持されています。この状態を継続しながら、さらなる高みを目指しましょう。';
+        messageClass = 'excellent';
     } else if (totalScore >= 60) {
-        feedback += '<p class="feedback-normal">良好な状態ですが、改善の余地があります。</p>';
+        overallMessage = '概ね良好な状態ですが、さらなる改善の余地があります。特定の領域に焦点を当てた取り組みにより、さらに高いエンゲージメントを実現できる可能性があります。';
+        messageClass = 'good';
     } else {
-        feedback += '<p class="feedback-warning">改善が必要な項目が多く見られます。</p>';
+        overallMessage = '改善が必要な領域が複数見られます。優先的に取り組むべき課題を明確にし、具体的なアクションプランを立てることをお勧めします。組織全体で改善に取り組むことで、エンゲージメント向上が期待できます。';
+        messageClass = 'warning';
     }
     
-    feedback += '<h3>カテゴリー別コメント</h3>';
+    // 最高/最低カテゴリー
+    const highest = categoryScores.reduce((max, cat) => cat.score > max.score ? cat : max);
+    const lowest = categoryScores.reduce((min, cat) => cat.score < min.score ? cat : min);
     
-    const lowest = categoryScores.reduce((min, cat) => 
-        cat.score < min.score ? cat : min
-    );
-    const highest = categoryScores.reduce((max, cat) => 
-        cat.score > max.score ? cat : max
-    );
+    // 改善提案生成
+    const suggestions = generateDetailedSuggestions(lowest, totalScore);
     
-    feedback += `<p><strong>最も高い項目:</strong> ${highest.name} (${highest.score}点)</p>`;
-    feedback += `<p><strong>最も低い項目:</strong> ${lowest.name} (${lowest.score}点)</p>`;
-    feedback += `<p>「${lowest.name}」の改善に取り組むことをお勧めします。</p>`;
+    feedbackDiv.innerHTML = `
+        <div class="feedback-overall">
+            <div class="feedback-score-text">総合評価: ${totalScore}点 / 100点</div>
+            <div class="feedback-message ${messageClass}">${overallMessage}</div>
+        </div>
+        
+        <div class="category-highlights">
+            <div class="highlight-card best">
+                <div class="highlight-label">
+                    <span class="highlight-icon">🌟</span>
+                    <span>最も高い項目</span>
+                </div>
+                <div class="highlight-category">${highest.name}</div>
+                <div class="highlight-score">${highest.score}点</div>
+            </div>
+            
+            <div class="highlight-card worst">
+                <div class="highlight-label">
+                    <span class="highlight-icon">⚠️</span>
+                    <span>最も低い項目</span>
+                </div>
+                <div class="highlight-category">${lowest.name}</div>
+                <div class="highlight-score">${lowest.score}点</div>
+            </div>
+        </div>
+        
+        <div class="improvement-suggestions">
+            <div class="improvement-title">
+                <span>💡</span>
+                <span>「${lowest.name}」改善のための具体的アクション</span>
+            </div>
+            <ul class="improvement-list">
+                ${suggestions.map(s => `<li>${s}</li>`).join('')}
+            </ul>
+        </div>
+    `;
+}
+
+// ===================================
+// 詳細な改善提案生成
+// ===================================
+function generateDetailedSuggestions(lowestCategory, totalScore) {
+    const suggestions = {
+        '心身の健康': [
+            '定期的な1on1ミーティングを実施し、従業員の心身の状態を丁寧に把握する仕組みを構築しましょう。管理職は傾聴のスキルを磨き、早期に課題を発見できる体制を整えることが重要です。',
+            'フレックスタイム制度や在宅勤務制度の導入を検討し、個人のライフスタイルに合わせた柔軟な働き方を実現しましょう。ワークライフバランスの改善は、長期的な生産性向上にもつながります。',
+            'メンタルヘルス相談窓口の設置や、ストレスチェックの定期実施を行い、従業員が安心して相談できる環境を整備しましょう。外部の専門家との連携も効果的です。',
+            '休暇取得を推奨する文化を醸成し、管理職が率先して休暇を取得する姿勢を示すことで、組織全体に休息の重要性を浸透させましょう。計画的な休暇取得を促進する制度設計も有効です。'
+        ],
+        '仕事の充実感': [
+            '従業員一人ひとりに対して、担当業務が会社の目標達成にどのように貢献しているかを具体的に説明し、仕事の意義を実感できるようにしましょう。定期的なキックオフミーティングで全体像を共有することが効果的です。',
+            '定期的なキャリア面談を実施し、個人の強みや興味関心を深く理解した上で、それを活かせる業務アサインを心がけましょう。適材適所の配置は、個人と組織の双方にメリットをもたらします。',
+            '業務プロセスの改善提案制度を導入し、現場の声を積極的に取り入れる仕組みを作りましょう。従業員の創意工夫を評価・表彰することで、主体的な業務改善を促進できます。',
+            '成功事例の共有会や顧客からの感謝の声を伝える機会を定期的に設け、業務の社会的意義や顧客への貢献を実感できる場を提供しましょう。モチベーション向上に大きく寄与します。'
+        ],
+        '成長機会': [
+            '年間の研修計画を体系的に策定し、階層別・職種別に必要なスキルを習得できる機会を提供しましょう。オンライン研修と対面研修を組み合わせることで、学習効果を最大化できます。',
+            'メンター制度を導入し、経験豊富な社員が若手や中堅社員の成長をサポートする体制を整えましょう。定期的な面談を通じて、キャリア形成を支援することが重要です。',
+            '資格取得支援制度や書籍購入補助制度を整備し、従業員の自己啓発を積極的に支援しましょう。学習する組織文化の醸成は、長期的な競争力強化につながります。',
+            'キャリアパスを明確に示し、各ステージで求められるスキルや経験を可視化することで、従業員が自身の成長目標を描けるようにしましょう。定期的なキャリア面談で進捗を確認し、必要な支援を提供することが大切です。'
+        ],
+        '上司のサポート': [
+            '管理職向けのマネジメント研修を定期的に実施し、コーチングスキルやフィードバックスキルの向上を図りましょう。実践的なロールプレイを取り入れることで、即座に現場で活用できるスキルを習得できます。',
+            '定期的な1on1ミーティングを制度化し、部下との対話の質を高めましょう。単なる業務報告ではなく、キャリアや悩みについて深く話し合える場にすることが重要です。',
+            '360度評価を導入し、管理職の行動を多面的に評価・改善する仕組みを作りましょう。フィードバックを基に、具体的な行動改善計画を立てることで、マネジメント品質が向上します。',
+            'オープンドアポリシーを推進し、上司への相談がしやすい雰囲気を組織全体で醸成しましょう。管理職自身が積極的にコミュニケーションを取る姿勢を示すことが、心理的安全性の向上につながります。'
+        ],
+        '部署内の人間関係': [
+            'チームビルディング活動を定期的に実施し、業務以外の場面でも相互理解を深める機会を作りましょう。オンラインとオフラインを組み合わせた活動により、多様な働き方に対応できます。',
+            '情報共有ツール(Slack、Teams等)を効果的に活用し、部署内のコミュニケーションを円滑化しましょう。重要な情報が確実に伝わる仕組みを整えることが、チームワーク向上の基盤となります。',
+            '役割分担を明確化し、各メンバーの責任範囲と期待される成果を可視化しましょう。役割の重複や抜け漏れを防ぐことで、効率的な協働が可能になります。',
+            '部署の目標を共有するミーティングを定期開催し、チーム全体で同じ方向を目指す意識を醸成しましょう。個人の業務が全体目標にどう貢献するかを理解することで、一体感が生まれます。'
+        ],
+        '評価・処遇': [
+            '評価基準を明文化し、全従業員に周知することで透明性を高めましょう。評価基準説明会を開催し、質疑応答の機会を設けることで、納得感を高めることができます。',
+            '評価面談の質を向上させるため、評価者トレーニングを実施しましょう。具体的な事例を基にしたフィードバックの方法を学ぶことで、建設的な評価面談が実現できます。',
+            '成果だけでなく、プロセスや行動も評価に反映する仕組みを導入しましょう。バリューに沿った行動を評価することで、組織文化の浸透を促進できます。',
+            '昇進・昇格の基準を明確にし、必要なスキルや経験を具体的に示すことで、キャリアアップの道筋を可視化しましょう。定期的なキャリア面談で進捗を確認し、成長をサポートすることが重要です。'
+        ],
+        '会社への信頼': [
+            '経営層からの情報発信を定期的に行い、会社の方針や戦略をタイムリーに共有しましょう。全社ミーティングやタウンホールミーティングを通じて、経営層と従業員の距離を縮めることが信頼構築につながります。',
+            '重要な経営判断について、従業員向けの説明会を開催し、決定の背景や理由を丁寧に説明しましょう。質疑応答の時間を十分に設けることで、理解と納得を深めることができます。',
+            '従業員の意見を経営に反映させる仕組み(従業員サーベイ、提案制度等)を導入し、その結果や対応状況を定期的にフィードバックしましょう。意見が実際に活かされることで、エンゲージメントが向上します。',
+            'コンプライアンス研修を徹底し、倫理的な経営を実践する姿勢を組織全体で共有しましょう。経営層が率先して高い倫理観を示すことが、組織の信頼性を高めます。'
+        ],
+        '働く環境': [
+            'オフィス環境の改善(照明、空調、デスク、椅子等)を従業員の意見を聞きながら段階的に実施しましょう。快適な環境は、生産性と満足度の向上に直結します。',
+            '業務効率化ツールやシステムを積極的に導入し、無駄な作業や手作業を削減しましょう。デジタル化により、従業員がより付加価値の高い業務に集中できる環境を整えることが重要です。',
+            'テレワーク環境の整備や、フリーアドレス制の導入を検討し、柔軟な働き方をサポートしましょう。個人の働き方の選択肢を増やすことで、多様な人材が活躍できる環境を実現できます。',
+            '育児・介護支援制度を充実させ、ライフステージの変化に応じた働き方を支援しましょう。短時間勤務制度や復職支援プログラムの整備により、長期的なキャリア形成を可能にします。'
+        ],
+        '総合満足度': [
+            '従業員満足度調査を定期的に実施し、組織の課題を早期に発見・対応する仕組みを作りましょう。調査結果を基にした具体的な改善アクションを示すことで、従業員の信頼を獲得できます。',
+            '業務量の適正化を図り、過度な負担がかからないよう定期的に見直しを行いましょう。業務の棚卸しを実施し、不要な業務を削減することで、生産性と満足度の両立が可能になります。',
+            'キャリア開発支援を強化し、従業員の将来への期待を高めましょう。個別のキャリアプランを作成し、必要なスキル習得の機会を提供することで、長期的な成長を支援できます。',
+            '柔軟な働き方を推進し、個人のライフスタイルに合わせた勤務形態を提供しましょう。リモートワーク、フレックスタイム、短時間勤務など、多様な選択肢を用意することが重要です。'
+        ],
+        '組織へのつながり': [
+            '企業文化や価値観(ミッション・ビジョン・バリュー)を明確にし、全従業員に浸透させる取り組みを継続的に行いましょう。朝礼やミーティングでバリューを共有する習慣を作ることが効果的です。',
+            '社内コミュニケーションの機会を意識的に増やし、部署を越えた交流を促進しましょう。社内イベントやオンラインコミュニティの活用により、帰属意識を高めることができます。',
+            '従業員の多様性を尊重し、個性を活かせる職場環境を作りましょう。ダイバーシティ&インクルージョンの推進は、イノベーションと組織の成長を促進します。',
+            '長期的なキャリア形成を支援し、従業員が安心して働き続けられる環境を整えましょう。定期的なキャリア面談や、ライフステージに応じた柔軟な制度設計が、定着率向上につながります。'
+        ]
+    };
     
-    feedbackDiv.innerHTML = feedback;
+    return suggestions[lowestCategory.name] || [
+        '定期的な従業員との対話を通じて、現場の声を丁寧に聞き取り、課題の本質を理解しましょう。',
+        '専門家のアドバイスを受けながら、組織的な改善施策を計画的に実施しましょう。',
+        '小さな改善から始め、PDCAサイクルを回しながら継続的に取り組むことで、着実に成果を上げましょう。',
+        '改善の進捗を定期的に測定し、効果を可視化することで、組織全体のモチベーション向上につなげましょう。'
+    ];
 }
 
 // ===================================
