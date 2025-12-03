@@ -247,6 +247,10 @@ function saveAnswer(questionId, value) {
     answers[questionId] = value;
     localStorage.setItem(`answers_${employeeCode}`, JSON.stringify(answers));
     
+    // 🔥 ボタン状態を更新
+    updateNavButtons();
+    updateProgressBar();
+    
     // 自動的に次の質問へスクロール
     const allQuestions = Array.from(document.querySelectorAll('.question-block'));
     const currentIndex = allQuestions.findIndex(block => 
