@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理者ログイン - エンゲージメント・ナビ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-container {
+            background: white;
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 64px;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #4a148c;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .company-name {
+            color: #9c27b0;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 40px;
+        }
+
+        .security-notice {
+            background: #f3e5f5;
+            color: #4a148c;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-left: 4px solid #9c27b0;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            color: #4a148c;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input[type="password"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #9c27b0;
+            box-shadow: 0 0 0 3px rgba(156, 39, 176, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .error-message {
+            color: #d32f2f;
+            background: #ffebee;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .back-link {
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .back-link a {
+            color: #9c27b0;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        .features {
+            text-align: left;
+            margin-top: 30px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 10px;
+        }
+
+        .features h3 {
+            color: #4a148c;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        .features ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .features li {
+            color: #666;
+            font-size: 13px;
+            padding: 6px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .features li:before {
+            content: '✓';
+            color: #4caf50;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">🔐</div>
+        <h1>管理者ログイン</h1>
+        <p class="subtitle">エンゲージメント・ナビ</p>
+        <p class="company-name">株式会社モアップ 専用</p>
+        
+        <div class="security-notice">
+            <span>🛡️</span>
+            <span>このページは管理者専用です</span>
+        </div>
+
+        <form id="login-form">
+            <div class="input-group">
+                <label for="password">管理者パスワード</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    placeholder="パスワードを入力"
+                    autocomplete="off"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="login-btn">ログイン</button>
+            
+            <div id="error-message" class="error-message">
+                ❌ パスワードが正しくありません
+            </div>
+        </form>
+
+        <div class="features">
+            <h3>📊 管理ダッシュボード機能</h3>
+            <ul>
+                <li>企業別・部署別データ分析</li>
+                <li>離職リスクアラート検出</li>
+                <li>重要設問の低スコア抽出</li>
+                <li>CSV・レポート出力</li>
+                <li>個別従業員データ閲覧</li>
+            </ul>
+        </div>
+
+        <div class="back-link">
+            <a href="index.html">← 従業員診断ページに戻る</a>
+        </div>
+    </div>
+
+    <script>
+        const ADMIN_PASSWORD = 'moapp2024';
+
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('error-message');
+            
+            if (password === ADMIN_PASSWORD) {
+                sessionStorage.setItem('adminLoggedIn', 'true');
+                sessionStorage.setItem('loginTime', Date.now());
+                window.location.href = 'admin-dashboard.html';
+            } else {
+                errorMessage.style.display = 'block';
+                document.getElementById('password').value = '';
+                
+                setTimeout(() => {
+                    errorMessage.style.display = 'none';
+                }, 3000);
+            }
+        });
+
+        window.onload = function() {
+            document.getElementById('password').focus();
+        };
+    </script>
+</body>
+</html>
