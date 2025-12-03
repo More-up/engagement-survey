@@ -417,30 +417,32 @@ function drawRadarChart(categoryScores) {
         ctx.lineWidth = 2;
         ctx.stroke();
         
-        // ラベル
-        const labelDistance = radius + 60;
+        // ラベル(カテゴリー名)
+        const labelDistance = radius + 50;
         const labelX = centerX + labelDistance * Math.cos(angle);
         const labelY = centerY + labelDistance * Math.sin(angle);
         ctx.fillStyle = '#4a148c';
-        ctx.font = 'bold 15px sans-serif';
+        ctx.font = 'bold 14px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(cat.name, labelX, labelY);
         
-        // スコア表示（WEVOX風カラー）
-        const scoreDistance = radius + 85;
+        // スコア表示（ピンク色の円形バッジ）
+        const scoreDistance = radius + 75;
         const scoreX = centerX + scoreDistance * Math.cos(angle);
         const scoreY = centerY + scoreDistance * Math.sin(angle);
         
         // スコアの背景円
         ctx.fillStyle = '#e91e63';
         ctx.beginPath();
-        ctx.arc(scoreX, scoreY, 20, 0, Math.PI * 2);
+        ctx.arc(scoreX, scoreY, 14, 0, Math.PI * 2);
         ctx.fill();
         
         // スコアテキスト
         ctx.fillStyle = 'white';
-        ctx.font = 'bold 14px sans-serif';
+        ctx.font = 'bold 10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
         ctx.fillText(`${cat.score}`, scoreX, scoreY);
     });
     
@@ -457,27 +459,13 @@ function drawRadarChart(categoryScores) {
         } else {
             ctx.lineTo(x, y);
         }
-        
-        // ポイントを描画
-        const gradient = ctx.createRadialGradient(x, y, 0, x, y, 8);
-        gradient.addColorStop(0, '#e91e63');
-        gradient.addColorStop(1, '#9c27b0');
-        ctx.fillStyle = gradient;
-        ctx.beginPath();
-        ctx.arc(x, y, 8, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // ポイントの白い縁取り
-        ctx.strokeStyle = 'white';
-        ctx.lineWidth = 3;
-        ctx.stroke();
     });
     ctx.closePath();
     
-    // グラデーション塗りつぶし
+    // グラデーション塗りつぶし(濃くする)
     const fillGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
-    fillGradient.addColorStop(0, 'rgba(233, 30, 99, 0.3)');
-    fillGradient.addColorStop(1, 'rgba(156, 39, 176, 0.1)');
+    fillGradient.addColorStop(0, 'rgba(233, 30, 99, 0.5)');
+    fillGradient.addColorStop(1, 'rgba(156, 39, 176, 0.3)');
     ctx.fillStyle = fillGradient;
     ctx.fill();
     
@@ -488,7 +476,32 @@ function drawRadarChart(categoryScores) {
     ctx.strokeStyle = lineGradient;
     ctx.lineWidth = 4;
     ctx.stroke();
-}
+    
+    // プロット点を描画(すべて同じサイズ)
+categoryScores.forEach((cat, i) => {
+    const angle = angleStep * i - Math.PI / 2;
+    const distance = (cat.score / 100) * radius;
+    const pointX = centerX + distance * Math.cos(angle);
+    const pointY = centerY + distance * Math.sin(angle);
+    
+    // ポイントのグラデーション
+    const gradient = ctx.createRadialGradient(pointX, pointY, 0, pointX, pointY, 10);
+    gradient.addColorStop(0, '#ff4081');
+    gradient.addColorStop(1, '#e91e63');
+    
+    // 🔥 ポイント本体(塗りつぶし)
+    ctx.beginPath();
+    ctx.arc(pointX, pointY, 8, 0, Math.PI * 2);
+    ctx.fillStyle = gradient;
+    ctx.fill();
+    
+    // 🔥 ポイントの白い縁取り(別パスで描画)
+    ctx.beginPath();
+    ctx.arc(pointX, pointY, 8, 0, Math.PI * 2);
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+});
 
 // ===================================
 // フィードバック生成（詳細版）
