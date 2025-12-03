@@ -248,9 +248,9 @@ body {
 #survey-page {
     background-color: #f0f4f8;
     min-height: 100vh;
-    padding-top: 230px;
+    padding-top: 280px; /* 230px → 280px に変更 */
     position: relative; 
-    overflow-y: visible;/* ← 追加 */
+    overflow-y: visible;
 }
 
 /* 🔥 固定ヘッダー全体 */
@@ -640,7 +640,7 @@ body {
     }
 
     #survey-page {
-        padding-top: 260px; /* スマホ用の余白調整（評価凡例分を含む） */
+        padding-top: 310px; /* スマホ用の余白調整（評価凡例分を含む） */
     }
 
     .category-header h2 {
