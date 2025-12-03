@@ -12,7 +12,6 @@ body {
   line-height: 1.6;
   color: #333;
   background: #f5f5f5;
-  padding-top: 180px; /* 固定ヘッダー分の余白 */
 }
 
 .container {
@@ -22,8 +21,12 @@ body {
 }
 
 /* ==========================================
-   固定ヘッダー（進捗バー + カテゴリー + 評価凡例）
+   固定ヘッダー（診断ページのみ）
 ========================================== */
+#survey-page {
+  padding-top: 180px; /* 固定ヘッダー分の余白 */
+}
+
 #fixed-header {
   position: fixed;
   top: 0;
@@ -42,29 +45,38 @@ body {
 }
 
 #progress-bar {
+  background: #e0e0e0;
+  height: 8px;
+  width: 100%;
+  position: relative;
+}
+
+#progress-fill {
   height: 100%;
   background: linear-gradient(90deg, #4CAF50, #2196F3);
   transition: width 0.3s ease;
   width: 0;
 }
 
-#progress-text {
-  text-align: center;
-  padding: 10px;
-  font-size: 14px;
+#progress-percentage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 12px;
   color: #666;
-  background: #fafafa;
+  font-weight: bold;
 }
 
 /* カテゴリータイトル */
-#fixed-category-title {
+#category-header-fixed {
   text-align: center;
   padding: 15px 20px;
   background: white;
   border-bottom: 1px solid #e0e0e0;
 }
 
-#fixed-category-title h2 {
+#category-header-fixed h2 {
   font-size: 20px;
   color: #2196F3;
   margin: 0;
@@ -80,14 +92,14 @@ body {
   background: #f8f9fa;
   border-bottom: 2px solid #e0e0e0;
   font-size: 14px;
-  flex-wrap: wrap; /* 小画面では折り返し */
+  flex-wrap: wrap;
 }
 
 .rating-item {
   display: flex;
   align-items: center;
   gap: 5px;
-  white-space: nowrap; /* 項目内では改行しない */
+  white-space: nowrap;
 }
 
 .rating-num {
@@ -129,42 +141,45 @@ h2 {
 /* ==========================================
    トップページ
 ========================================== */
-.card-container {
+.features {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 20px;
-  margin-top: 30px;
+  margin: 30px 0;
 }
 
-.card {
-  background: white;
+.feature-card {
+  background: #f8f9fa;
   border-radius: 8px;
-  padding: 30px;
+  padding: 30px 20px;
   text-align: center;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  transition: transform 0.2s;
-  cursor: pointer;
+  border: 2px solid #e0e0e0;
 }
 
-.card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-}
-
-.card h3 {
-  color: #2196F3;
+.feature-icon {
+  font-size: 48px;
   margin-bottom: 15px;
-  font-size: 22px;
 }
 
-.card p {
-  color: #666;
-  font-size: 14px;
+.feature-card h3 {
+  color: #333;
+  font-size: 18px;
+  margin: 0;
 }
 
 /* ==========================================
    オリエンテーションページ
 ========================================== */
+.orientation-content {
+  margin-bottom: 30px;
+}
+
+.divider {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #2196F3, transparent);
+  margin: 40px 0;
+}
+
 .form-group {
   margin-bottom: 20px;
 }
@@ -204,8 +219,12 @@ ul li {
 /* ==========================================
    調査ページ
 ========================================== */
-#survey-page {
-  padding-top: 0; /* 固定ヘッダーがあるため上部余白不要 */
+#survey-content {
+  padding: 20px;
+}
+
+.section-container {
+  margin-bottom: 30px;
 }
 
 .question-container {
@@ -224,7 +243,7 @@ ul li {
   font-weight: 500;
 }
 
-/* 回答ボタン（サイズに差をつける） */
+/* 回答ボタン */
 .answer-options {
   display: flex;
   justify-content: center;
@@ -248,7 +267,6 @@ ul li {
   justify-content: center;
 }
 
-/* サイズ調整（5と1を大きく、3を小さく） */
 .answer-btn[data-value="5"],
 .answer-btn[data-value="1"] {
   width: 56px;
@@ -300,7 +318,7 @@ ul li {
 /* ==========================================
    ナビゲーションボタン
 ========================================== */
-.navigation {
+.nav-buttons {
   display: flex;
   justify-content: space-between;
   margin-top: 30px;
@@ -348,35 +366,31 @@ ul li {
 /* ==========================================
    結果ページ
 ========================================== */
-#results-page h2 {
+.result-summary {
   text-align: center;
-  margin-bottom: 25px;
+  margin-bottom: 40px;
 }
 
-#total-score {
-  font-size: 48px;
+.total-score {
+  font-size: 72px;
   color: #2196F3;
   font-weight: bold;
-  text-align: center;
   margin: 20px 0;
 }
 
-.score-label {
-  text-align: center;
-  color: #666;
-  font-size: 16px;
-  margin-bottom: 30px;
+.chart-container {
+  margin: 40px auto;
+  max-width: 600px;
 }
 
-#radar-chart-container {
-  margin: 30px auto;
-  max-width: 500px;
+.category-results {
+  margin: 30px 0;
 }
 
 .category-score {
   display: flex;
   justify-content: space-between;
-  padding: 12px;
+  padding: 15px;
   margin-bottom: 10px;
   background: #f5f5f5;
   border-radius: 4px;
@@ -392,20 +406,20 @@ ul li {
   font-weight: bold;
 }
 
-#feedback {
+.feedback-section {
   background: #E3F2FD;
-  padding: 20px;
+  padding: 25px;
   border-radius: 8px;
   margin-top: 30px;
   border-left: 4px solid #2196F3;
 }
 
-#feedback h3 {
+.feedback-section h3 {
   color: #1976D2;
   margin-bottom: 15px;
 }
 
-#feedback p {
+.feedback-section p {
   color: #555;
   line-height: 1.8;
 }
@@ -414,8 +428,8 @@ ul li {
    レスポンシブ対応（スマホ）
 ========================================== */
 @media (max-width: 768px) {
-  body {
-    padding-top: 200px; /* スマホでは固定ヘッダーが高くなるため */
+  #survey-page {
+    padding-top: 200px;
   }
 
   .container {
@@ -426,12 +440,15 @@ ul li {
     font-size: 24px;
   }
 
-  #fixed-category-title h2 {
+  .features {
+    grid-template-columns: 1fr;
+  }
+
+  #category-header-fixed h2 {
     font-size: 18px;
     padding: 10px 15px;
   }
 
-  /* 評価凡例（スマホ対応） */
   #rating-legend {
     font-size: 11px;
     gap: 10px;
@@ -446,7 +463,6 @@ ul li {
     font-size: 16px;
   }
 
-  /* 回答ボタン（スマホサイズ） */
   .answer-btn[data-value="5"],
   .answer-btn[data-value="1"] {
     width: 50px;
@@ -467,7 +483,7 @@ ul li {
     font-size: 16px;
   }
 
-  .navigation {
+  .nav-buttons {
     flex-direction: column;
   }
 
@@ -475,11 +491,7 @@ ul li {
     width: 100%;
   }
 
-  #total-score {
-    font-size: 36px;
-  }
-
-  .card-container {
-    grid-template-columns: 1fr;
+  .total-score {
+    font-size: 48px;
   }
 }
