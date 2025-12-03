@@ -363,14 +363,15 @@ body {
 
 .answer-options {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;   /* 両端詰めをやめて中央寄せにする */
     gap: 15px;
     flex-wrap: wrap;
 }
 
+
 .answer-option {
-    flex: 1;
-    min-width: 140px;
+    flex: 0 1 200px;           /* 固定基準幅を持たせる（調整可） */
+    min-width: 160px;          /* 日本語ラベル用に余裕を確保（必要なら180pxに） */
     text-align: center;
     padding: 15px 10px;
     background: #f8f9fa;
@@ -378,7 +379,9 @@ body {
     border-radius: 12px;
     cursor: pointer;
     transition: all 0.3s ease;
+    overflow: hidden;          /* 選択時の拡大でのはみ出しを抑える */
 }
+
 
 .answer-option:hover {
     background: #e3f2fd;
@@ -398,24 +401,28 @@ body {
     background: linear-gradient(135deg, #5dade2, #3498db);
     border-color: #3498db;
     color: white;
-    transform: scale(1.05);
+    transform: scale(1.03);    /* 少しだけ縮小してはみ出しを抑制 */
+    transform-origin: center;
 }
+
 
 .answer-option span {
     font-size: 1rem;
     font-weight: 600;
     color: #34495e;
     transition: color 0.3s ease;
-    white-space: nowrap;       /* 語句の途中で改行させない */
-    word-break: keep-all;      /* 日本語の不自然な改行を抑制 */
-    overflow: hidden;
-    text-overflow: ellipsis;   /* 幅不足時は末尾を省略 */
-    user-select: text;         /* テキストを選択・コピー可能にする */
+
+    white-space: normal;       /* 折り返しを許可する */
+    word-break: normal;        /* 自然な改行を優先 */
+    overflow-wrap: anywhere;   /* 幅不足時に強制改行を許可 */
+
+    user-select: text;
     -webkit-user-select: text;
     -moz-user-select: text;
     -ms-user-select: text;
     display: inline-block;
 }
+
 /* ===================================
    ナビゲーションボタン
 =================================== */
