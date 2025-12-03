@@ -242,41 +242,47 @@ body {
 }
 
 /* ===================================
-   診断ページ
+   診断ページ（上部固定対応）
 =================================== */
 #survey-page {
-    background: white;
-    border-radius: 12px;
-    padding: 0;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    overflow: hidden;
+    background-color: #f0f4f8;
+    min-height: 100vh;
+    padding-top: 180px; /* 🔥 固定ヘッダー分の余白 */
 }
 
-/* 進捗バーコンテナ */
-#progress-bar-container {
-    position: sticky;
+/* 🔥 固定ヘッダー全体 */
+#fixed-header {
+    position: fixed;
     top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
     background: white;
-    padding: 20px 30px;
-    border-bottom: 2px solid #e2e8f0;
-    z-index: 100;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* 進捗バー */
+/* 🔥 進捗バーコンテナ */
+#progress-bar-container {
+    padding: 20px;
+    background: white;
+}
+
 #progress-bar {
-    width: 100%;
-    height: 30px;
-    background: #e2e8f0;
-    border-radius: 15px;
+    max-width: 900px;
+    margin: 0 auto;
+    height: 35px;
+    background-color: #e0e0e0;
+    border-radius: 20px;
     overflow: hidden;
     position: relative;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 #progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #5DADE2 0%, #87CEEB 100%);
-    transition: width 0.5s ease;
-    border-radius: 15px;
+    background: linear-gradient(90deg, #5dade2, #3498db);
+    transition: width 0.4s ease;
+    border-radius: 20px;
 }
 
 #progress-percentage {
@@ -285,307 +291,283 @@ body {
     left: 50%;
     transform: translate(-50%, -50%);
     font-weight: bold;
-    color: #2d3748;
-    font-size: 0.9rem;
-    text-shadow: 0 0 3px white;
-    z-index: 10;
+    color: #2c3e50;
+    font-size: 1.1rem;
 }
 
-/* 質問コンテンツ */
+/* 🔥 カテゴリーヘッダー（固定 + 中央揃え） */
+#category-header-fixed {
+    background: linear-gradient(135deg, #5dade2, #3498db);
+    color: white;
+    padding: 20px;
+    text-align: center; /* 🔥 中央揃え */
+}
+
+.category-header h2 {
+    font-size: 1.8rem;
+    margin: 0;
+    font-weight: 700;
+}
+
+/* カテゴリー5の説明文 */
+.category-note {
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 15px 20px;
+    margin: 20px auto;
+    border-radius: 8px;
+    color: #856404;
+    font-size: 1rem;
+    max-width: 900px;
+    text-align: center; /* 🔥 中央揃え */
+}
+
+.category-note p {
+    margin: 0;
+}
+
+/* ===================================
+   質問コンテンツ（中央揃え）
+=================================== */
 #survey-content {
-    padding: 40px 30px;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
 }
 
 .section-container {
-    max-width: 800px;
-    margin: 0 auto;
+    margin-bottom: 40px;
 }
 
 .question-block {
     background: white;
-    padding: 25px;
-    margin-bottom: 30px;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    scroll-margin-top: 100px;
+    padding: 30px;
+    margin-bottom: 25px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.question-block:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
 }
 
 .question-text {
-    font-size: 1.15rem;
-    font-weight: 600;
-    color: #2d3748;
+    font-size: 1.3rem;
+    color: #2c3e50;
     margin-bottom: 20px;
-    line-height: 1.7;
+    font-weight: 600;
+    text-align: center; /* 🔥 質問文を中央揃え */
 }
 
-/* 回答オプション（横並び5つ） */
 .answer-options {
     display: flex;
-    gap: 8px;
     justify-content: space-between;
-    flex-wrap: nowrap;
+    gap: 15px;
+    flex-wrap: wrap;
 }
 
 .answer-option {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     flex: 1;
-    min-width: 0;
+    min-width: 140px;
+    text-align: center;
+    padding: 15px 10px;
+    background: #f8f9fa;
+    border: 2px solid #dfe6e9;
+    border-radius: 12px;
     cursor: pointer;
     transition: all 0.3s ease;
+}
+
+.answer-option:hover {
+    background: #e3f2fd;
+    border-color: #5dade2;
+    transform: translateY(-2px);
 }
 
 .answer-option input[type="radio"] {
     display: none;
 }
 
-.answer-option span {
-    display: block;
-    padding: 10px 5px;
-    background: #f7fafc;
-    border: 2px solid #e2e8f0;
-    border-radius: 8px;
-    text-align: center;
-    font-size: 0.75rem;
-    color: #4a5568;
-    width: 100%;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    transition: all 0.3s ease;
-    box-sizing: border-box;
-}
-
-.answer-option:hover span {
-    background: #edf2f7;
-    border-color: #87CEEB;
-}
-
 .answer-option input[type="radio"]:checked + span {
-    background: linear-gradient(135deg, #5DADE2 0%, #87CEEB 100%);
     color: white;
-    border-color: #5DADE2;
-    font-weight: bold;
 }
 
-/* ナビゲーションボタン */
+.answer-option:has(input[type="radio"]:checked) {
+    background: linear-gradient(135deg, #5dade2, #3498db);
+    border-color: #3498db;
+    color: white;
+    transform: scale(1.05);
+}
+
+.answer-option span {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #34495e;
+    transition: color 0.3s ease;
+}
+
+/* ===================================
+   ナビゲーションボタン
+=================================== */
 .nav-buttons {
     display: flex;
     justify-content: center;
-    gap: 15px;
+    gap: 20px;
     margin-top: 40px;
-    padding-bottom: 20px;
+    flex-wrap: wrap;
 }
 
 /* ===================================
    結果ページ
 =================================== */
 #result-page {
-    background: white;
-    border-radius: 12px;
-    padding: 40px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-#result-page h1 {
-    color: #4A90A4;
-    text-align: center;
-    margin-bottom: 30px;
+    background: linear-gradient(135deg, #e8f4f8 0%, #d4e9f2 100%);
+    min-height: 100vh;
+    padding: 40px 20px;
 }
 
 .result-summary {
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 50px;
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
 }
 
 .result-summary h2 {
-    color: #4a5568;
-    font-size: 1.3rem;
-    margin-bottom: 15px;
+    font-size: 2rem;
+    color: #2c3e50;
+    margin-bottom: 20px;
 }
 
 .total-score {
-    font-size: 4rem;
-    font-weight: bold;
-    color: #5DADE2;
+    font-size: 5rem;
+    color: #5dade2;
+    font-weight: 700;
+    margin: 20px 0;
 }
 
-/* チャート */
 .chart-container {
-    max-width: 600px;
-    margin: 0 auto 40px;
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    margin-bottom: 40px;
 }
 
-/* カテゴリー別スコア */
 .category-results {
-    margin: 30px 0;
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    margin-bottom: 40px;
 }
 
 .category-score-item {
-    margin-bottom: 25px;
+    margin-bottom: 30px;
 }
 
 .category-score-item h3 {
-    color: #4a5568;
-    font-size: 1.1rem;
+    font-size: 1.4rem;
+    color: #2c3e50;
     margin-bottom: 10px;
 }
 
 .score-bar {
-    width: 100%;
-    height: 25px;
-    background: #e2e8f0;
-    border-radius: 12px;
+    height: 30px;
+    background-color: #e0e0e0;
+    border-radius: 15px;
     overflow: hidden;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
 }
 
 .score-fill {
     height: 100%;
-    background: linear-gradient(90deg, #5DADE2 0%, #87CEEB 100%);
-    border-radius: 12px;
+    background: linear-gradient(90deg, #5dade2, #3498db);
+    border-radius: 15px;
     transition: width 0.5s ease;
 }
 
-.category-score-item p {
-    font-size: 0.95rem;
-    color: #718096;
-}
-
-/* フィードバック */
 .feedback-section {
-    background: #f7fafc;
-    padding: 25px;
-    border-radius: 10px;
-    margin-top: 30px;
+    background: white;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
 }
 
 .feedback-section h2 {
-    color: #4A90A4;
-    margin-bottom: 15px;
+    color: #2c3e50;
+    margin-bottom: 20px;
 }
 
 .feedback-section h3 {
-    color: #4a5568;
-    margin-top: 20px;
-    margin-bottom: 10px;
+    color: #34495e;
+    margin-top: 30px;
+    margin-bottom: 15px;
 }
 
 .feedback-good {
-    color: #38a169;
-    font-size: 1.2rem;
-    font-weight: 600;
+    color: #27ae60;
+    font-weight: 700;
 }
 
 .feedback-normal {
-    color: #3182ce;
-    font-size: 1.2rem;
-    font-weight: 600;
+    color: #f39c12;
+    font-weight: 700;
 }
 
 .feedback-warning {
-    color: #dd6b20;
-    font-size: 1.2rem;
-    font-weight: 600;
-}
-
-.feedback-section ul {
-    margin-left: 25px;
-}
-
-.feedback-section li {
-    margin-bottom: 10px;
+    color: #e74c3c;
+    font-weight: 700;
 }
 
 /* ===================================
-   履歴ページ
-=================================== */
-#history-page {
-    background: white;
-    border-radius: 12px;
-    padding: 40px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-#history-page h1 {
-    color: #4A90A4;
-    margin-bottom: 30px;
-    text-align: center;
-}
-
-#history-content {
-    margin-bottom: 30px;
-}
-
-/* ===================================
-   レスポンシブデザイン（スマホ対応）
+   レスポンシブ対応（スマホ）
 =================================== */
 @media (max-width: 768px) {
-    .container {
-        padding: 10px;
-    }
-
     #top-page h1 {
         font-size: 2rem;
     }
 
-    #top-page > p {
-        font-size: 1.1rem;
-    }
-
     .features {
         flex-direction: column;
-        align-items: center;
+        gap: 20px;
     }
 
     .feature-card {
         max-width: 100%;
     }
 
-    #orientation-page {
-        padding: 30px 15px;
+    .feature-card h3 {
+        font-size: 1.6rem;
+    }
+
+    .btn-primary, .btn-secondary {
+        padding: 18px 50px;
+        font-size: 1.4rem;
     }
 
     #orientation-page .container {
-        padding: 30px 25px;
-    }
-
-    #orientation-page h1 {
-        font-size: 2rem;
-    }
-
-    #orientation-page h2 {
-        font-size: 1.3rem;
-    }
-
-    #orientation-page form {
-        padding: 25px 20px;
-    }
-
-    #progress-bar-container {
-        padding: 15px 20px;
-    }
-
-    #progress-bar {
-        height: 25px;
-    }
-
-    #progress-percentage {
-        font-size: 0.8rem;
-    }
-
-    #survey-content {
         padding: 30px 20px;
     }
 
-    .question-block {
-        padding: 20px 15px;
-        scroll-margin-top: 90px;
+    #orientation-page h1 {
+        font-size: 1.8rem;
+    }
+
+    #survey-page {
+        padding-top: 200px; /* スマホ用の余白調整 */
+    }
+
+    .category-header h2 {
+        font-size: 1.3rem;
     }
 
     .question-text {
-        font-size: 1rem;
+        font-size: 1.1rem;
     }
 
     .answer-options {
@@ -593,23 +575,15 @@ body {
         gap: 10px;
     }
 
-    .answer-option span {
-        font-size: 0.95rem;
-        padding: 12px 15px;
-        white-space: normal;
+    .answer-option {
+        min-width: 100%;
     }
 
-    #result-page,
-    #history-page {
-        padding: 25px 20px;
-    }
-
-    .btn-primary, .btn-secondary {
-        padding: 12px 30px;
-        font-size: 1rem;
+    .nav-buttons {
+        flex-direction: column;
     }
 
     .total-score {
-        font-size: 3rem;
+        font-size: 3.5rem;
     }
 }
