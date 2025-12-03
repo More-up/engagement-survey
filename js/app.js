@@ -365,7 +365,7 @@ function calculateResults() {
 
 function displayResults(totalScore, categoryScores) {
     showPage('result-page');
-    
+    window.scrollTo(0, 0);
     // 総合スコア表示
     document.getElementById('total-score').textContent = totalScore;
     
