@@ -1,5 +1,5 @@
 // ===================================
-// カテゴリー定義と質問データ
+// カテゴリー定義
 // ===================================
 const categories = [
     { id: 1, name: "心身の健康" },
@@ -11,41 +11,44 @@ const categories = [
     { id: 7, name: "会社への信頼" },
     { id: 8, name: "働く環境" },
     { id: 9, name: "総合満足度" },
-    { id: 10, name: "会社への愛着・帰属意識" }
+    { id: 10, name: "組織へのつながり" }
 ];
 
+// ===================================
+// 質問データ（完全版100問）
+// ===================================
 const questions = [
     // カテゴリー1: 心身の健康 (Q1-10)
-    { id: 1, category: 1, text: "毎日、疲れが少ない気持ちで働けている" },
+    { id: 1, category: 1, text: "働きながらも、心身の健康を保てていると感じる" },
     { id: 2, category: 1, text: "仕事のストレスをうまく管理できている" },
-    { id: 3, category: 1, text: "毎日、十分な睡眠をとれている" },
+    { id: 3, category: 1, text: "仕事が原因で睡眠不足になることはない" },
     { id: 4, category: 1, text: "仕事とプライベートの時間配分に満足している" },
     { id: 5, category: 1, text: "必要な時に休暇を取得できている" },
-    { id: 6, category: 1, text: "休日にしっかりリフレッシュできている" },
+    { id: 6, category: 1, text: "休みの日は仕事の疲れをリフレッシュできている" },
     { id: 7, category: 1, text: "職場で悩みや苦しみを相談できる人がいる" },
     { id: 8, category: 1, text: "失敗や苦手なことを恐れず上司や同僚に相談できる" },
-    { id: 9, category: 1, text: "体調不良や疲労が蓄積していない" },
+    { id: 9, category: 1, text: "仕事の負荷が原因で、体調を崩すことがある" },
     { id: 10, category: 1, text: "自分の価値観や考え方が職場で受け入れられている" },
 
     // カテゴリー2: 仕事の充実感 (Q11-20)
     { id: 11, category: 2, text: "今の仕事にやりがいを感じている" },
     { id: 12, category: 2, text: "自分の仕事が会社の目標達成に貢献していると感じる" },
-    { id: 13, category: 2, text: "達成をやり終えた時に達成感を感じている" },
+    { id: 13, category: 2, text: "仕事を完了した時に達成感を感じている" },
     { id: 14, category: 2, text: "自分の強みを活かして仕事ができている" },
     { id: 15, category: 2, text: "担当業務の内容に興味を持って取り組んでいる" },
     { id: 16, category: 2, text: "担当している業務の目的や意義を理解している" },
     { id: 17, category: 2, text: "自分の判断で業務を進められる環境がある" },
     { id: 18, category: 2, text: "担当業務の範囲や責任が明確である" },
-    { id: 19, category: 2, text: "毎日の仕事に前向きに取り組んでいる" },
+    { id: 19, category: 2, text: "仕事の進め方について、自分なりの工夫や改善ができている" },
     { id: 20, category: 2, text: "自分の仕事が社会や顧客に役立っていると感じている" },
 
     // カテゴリー3: 成長機会 (Q21-30)
-    { id: 21, category: 3, text: "昨年と比べて、自分のスキルや知識が向上していると感じる" },
+    { id: 21, category: 3, text: "この1年で、自分のスキルや知識が成長したと感じる" },
     { id: 22, category: 3, text: "業務に役立つ研修や勉強会に参加できている" },
     { id: 23, category: 3, text: "業務時間内に学習やスキルアップの時間を確保できている" },
     { id: 24, category: 3, text: "業務を通じて実践的なスキルを身につけられている" },
     { id: 25, category: 3, text: "会社は資格取得や学習を支援してくれている" },
-    { id: 26, category: 3, text: "会社は将来どのように成長できるか示してくれている" },
+    { id: 26, category: 3, text: "会社は私が将来どのように成長できるか示してくれている" },
     { id: 27, category: 3, text: "自分の希望するキャリアを会社で実現できると思う" },
     { id: 28, category: 3, text: "自分の成長につながる新しい仕事を任されている" },
     { id: 29, category: 3, text: "上司や先輩から業務について教えてもらえている" },
@@ -59,9 +62,9 @@ const questions = [
     { id: 35, category: 4, text: "上司は全員に公平に接している" },
     { id: 36, category: 4, text: "上司に相談しやすい雰囲気がある" },
     { id: 37, category: 4, text: "上司は私の仕事の進め方に自主性を認めている" },
-    { id: 38, category: 4, text: "上司から期待される役割や責任が明確に伝えられている" },
+    { id: 38, category: 4, text: "上司は業務を円滑に進められるよう支援している" },
     { id: 39, category: 4, text: "上司の指示は具体的で理解しやすい" },
-    { id: 40, category: 4, text: "上司は私の業務遂行を理解してくれている" },
+    { id: 40, category: 4, text: "上司は私に任せる仕事の範囲と責任を明確に示している" },
 
     // カテゴリー5: 部署内の人間関係 (Q41-50)
     { id: 41, category: 5, text: "自部署のメンバーを信頼している" },
@@ -69,11 +72,11 @@ const questions = [
     { id: 43, category: 5, text: "自部署でお互いに助け合う雰囲気がある" },
     { id: 44, category: 5, text: "自部署内で情報共有がスムーズである" },
     { id: 45, category: 5, text: "自部署で自由に意見を述べる雰囲気がある" },
-    { id: 46, category: 5, text: "他部署との連携がスムーズである" },
+    { id: 46, category: 5, text: "自部署と他部署の連携がスムーズであると感じる" },
     { id: 47, category: 5, text: "自部署のメンバーの役割分担が明確である" },
     { id: 48, category: 5, text: "自部署の目標がメンバー間で共有されている" },
-    { id: 49, category: 5, text: "自部署内では、お互いの意見や人格を尊重し合えている" },
-    { id: 50, category: 5, text: "自部署で対人問題を感じることがない" },
+    { id: 49, category: 5, text: "自部署で意見の違いがあっても建設的に対話ができている" },
+    { id: 50, category: 5, text: "自部署内の人間関係は業務に支障をきたしていない" },
 
     // カテゴリー6: 評価・処遇 (Q51-60)
     { id: 51, category: 6, text: "人事評価基準が明確である" },
@@ -83,8 +86,8 @@ const questions = [
     { id: 55, category: 6, text: "給与や待遇は自分の働きに見合っている" },
     { id: 56, category: 6, text: "成果や努力が給与の決定に反映されている" },
     { id: 57, category: 6, text: "昇進・昇格の機会は公平である" },
-    { id: 58, category: 6, text: "福利厚生制度が充実に役立っている" },
-    { id: 59, category: 6, text: "上司や同僚から評価の説明をもらえている" },
+    { id: 58, category: 6, text: "福利厚生制度が生活に役立っている" },
+    { id: 59, category: 6, text: "上司から評価について丁寧なフィードバックを受けている" },
     { id: 60, category: 6, text: "自分の努力や成果が組織に認められていると感じる" },
 
     // カテゴリー7: 会社への信頼 (Q61-70)
@@ -94,7 +97,7 @@ const questions = [
     { id: 64, category: 7, text: "この会社の未来に期待できる" },
     { id: 65, category: 7, text: "経営層から会社方針や戦略の情報が定期的に共有されている" },
     { id: 66, category: 7, text: "会社の意思決定や決断を理解できている" },
-    { id: 67, category: 7, text: "会社の意思決定のプロセスが透明である" },
+    { id: 67, category: 7, text: "会社の重要な決定について、その背景や理由を理解できている" },
     { id: 68, category: 7, text: "会社の仕事が社会に役立っていると感じている" },
     { id: 69, category: 7, text: "会社は従業員の意見を聞く体制がある" },
     { id: 70, category: 7, text: "会社の変革や改善の取り組みを信頼できる" },
@@ -114,16 +117,16 @@ const questions = [
     // カテゴリー9: 総合満足度 (Q81-90)
     { id: 81, category: 9, text: "今の会社で働くことに満足している" },
     { id: 82, category: 9, text: "仕事に取り組む時に前向きな気持ちを持てている" },
-    { id: 83, category: 9, text: "仕事を通じて充実感を得られている" },
+    { id: 83, category: 9, text: "今の職場環境は、自分の働きやすさに配慮されている" },
     { id: 84, category: 9, text: "今の業務量は適切だと思う" },
-    { id: 85, category: 9, text: "会社の方針に納得できている" },
+    { id: 85, category: 9, text: "会社の将来性に期待を持てている" },
     { id: 86, category: 9, text: "自分の能力を十分に発揮できている" },
     { id: 87, category: 9, text: "今後のキャリア形成に期待できている" },
     { id: 88, category: 9, text: "勤務時間は妥当な範囲に収まっている" },
     { id: 89, category: 9, text: "業務の責任範囲が明確になっている" },
     { id: 90, category: 9, text: "過度なプレッシャーを感じることなく働けている" },
 
-    // カテゴリー10: 会社への愛着・帰属意識 (Q91-100)
+    // カテゴリー10: 組織へのつながり (Q91-100)
     { id: 91, category: 10, text: "この会社の働き方は自分に合っている" },
     { id: 92, category: 10, text: "この会社で自分の居場所を持てている" },
     { id: 93, category: 10, text: "この会社の文化や価値観に共感している" },
@@ -198,7 +201,7 @@ function saveDepartmentAndStart() {
 }
 
 // ===================================
-// セクション描画（10問まとめて表示）
+// セクション描画（10問まとめて表示 + カテゴリータイトル表示）
 // ===================================
 function renderSection() {
     const startIdx = currentSection * 10;
@@ -207,6 +210,23 @@ function renderSection() {
 
     const container = document.getElementById('questions-container');
     container.innerHTML = '';
+
+    // カテゴリータイトルを表示
+    const categoryId = sectionQuestions[0].category;
+    const category = categories.find(cat => cat.id === categoryId);
+    
+    const categoryHeader = document.createElement('div');
+    categoryHeader.className = 'category-header';
+    categoryHeader.innerHTML = `<h2>カテゴリー${categoryId}: ${category.name} (Q${startIdx + 1}-Q${endIdx})</h2>`;
+    container.appendChild(categoryHeader);
+
+    // カテゴリー5の場合は「自部署」説明文を追加
+    if (categoryId === 5) {
+        const categoryNote = document.createElement('div');
+        categoryNote.className = 'category-note';
+        categoryNote.innerHTML = `<p>※以下の設問における「自部署」とは、あなたが普段一緒に仕事をしているメンバー(チーム・部署)を指します。</p>`;
+        container.appendChild(categoryNote);
+    }
 
     sectionQuestions.forEach(question => {
         const questionBlock = document.createElement('div');
@@ -263,6 +283,11 @@ function saveAnswer(questionId, value) {
         
         if (nextQuestion) {
             nextQuestion.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            const nextSectionButton = document.getElementById('next-btn');
+            if (nextSectionButton) {
+                nextSectionButton.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }
         }
     }, 400);
 }
