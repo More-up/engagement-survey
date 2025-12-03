@@ -403,7 +403,7 @@ function drawRadarChart(categoryScores) {
         ctx.stroke();
     }
     
-    // 軸の描画
+        // 軸の描画
     const angleStep = (Math.PI * 2) / categoryScores.length;
     categoryScores.forEach((cat, i) => {
         const angle = angleStep * i - Math.PI / 2;
@@ -426,13 +426,70 @@ function drawRadarChart(categoryScores) {
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(cat.name, labelX, labelY);
+    });
+    
+    // データのプロット（WEVOX風カラー）
+    ctx.beginPath();
+    categoryScores.forEach((cat, i) => {
+        const angle = angleStep * i - Math.PI / 2;
+        const distance = (cat.score / 100) * radius;
+        const x = centerX + distance * Math.cos(angle);
+        const y = centerY + distance * Math.sin(angle);
         
-        // スコア表示（ピンク色の円形バッジ）
-        const scoreDistance = radius + 75;
+        if (i === 0) {
+            ctx.moveTo(x, y);
+        } else {
+            ctx.lineTo(x, y);
+        }
+    });
+    ctx.closePath();
+    
+    // グラデーション塗りつぶし(濃くする)
+    const fillGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
+    fillGradient.addColorStop(0, 'rgba(233, 30, 99, 0.5)');
+    fillGradient.addColorStop(1, 'rgba(156, 39, 176, 0.3)');
+    ctx.fillStyle = fillGradient;
+    ctx.fill();
+    
+    // 線のグラデーション
+    const lineGradient = ctx.createLinearGradient(centerX - radius, centerY, centerX + radius, centerY);
+    lineGradient.addColorStop(0, '#e91e63');
+    lineGradient.addColorStop(1, '#9c27b0');
+    ctx.strokeStyle = lineGradient;
+    ctx.lineWidth = 4;
+    ctx.stroke();
+    
+    // プロット点を描画(すべて同じサイズ) + スコア数字をプロット点のそばに配置
+    categoryScores.forEach((cat, i) => {
+        const angle = angleStep * i - Math.PI / 2;
+        const distance = (cat.score / 100) * radius;
+        const pointX = centerX + distance * Math.cos(angle);
+        const pointY = centerY + distance * Math.sin(angle);
+        
+        // ポイントのグラデーション
+        const gradient = ctx.createRadialGradient(pointX, pointY, 0, pointX, pointY, 10);
+        gradient.addColorStop(0, '#ff4081');
+        gradient.addColorStop(1, '#e91e63');
+        
+        // 🔥 ポイント本体(塗りつぶし)
+        ctx.beginPath();
+        ctx.arc(pointX, pointY, 8, 0, Math.PI * 2);
+        ctx.fillStyle = gradient;
+        ctx.fill();
+        
+        // 🔥 ポイントの白い縁取り(別パスで描画)
+        ctx.beginPath();
+        ctx.arc(pointX, pointY, 8, 0, Math.PI * 2);
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        
+        // 🔥 スコア数字をプロット点のすぐそばに表示(カテゴリー名の外側ではなく、点の近く)
+        const scoreDistance = distance + 25; // プロット点から25px外側
         const scoreX = centerX + scoreDistance * Math.cos(angle);
         const scoreY = centerY + scoreDistance * Math.sin(angle);
         
-        // スコアの背景円
+        // スコアの背景円(ピンク色のバッジ)
         ctx.fillStyle = '#e91e63';
         ctx.beginPath();
         ctx.arc(scoreX, scoreY, 14, 0, Math.PI * 2);
@@ -440,11 +497,13 @@ function drawRadarChart(categoryScores) {
         
         // スコアテキスト
         ctx.fillStyle = 'white';
-        ctx.font = 'bold 10px sans-serif';
+        ctx.font = 'bold 11px sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(`${cat.score}`, scoreX, scoreY);
     });
+}  // ← drawRadarChart() 関数の閉じ括弧
+
     
     // データのプロット（WEVOX風カラー）
     ctx.beginPath();
