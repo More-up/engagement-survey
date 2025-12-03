@@ -30,7 +30,7 @@ function checkAuthentication() {
     const loginTime = sessionStorage.getItem('adminLoginTime');
     const loginPassword = sessionStorage.getItem('adminPassword');
     
-    if (!loginTime || !loginPassword || loginPassword !== 'moapp2024') {
+    if (!loginTime || !loginPassword || loginPassword !== 'moreup-japan') {
         alert('認証が必要です');
         window.location.href = 'admin-login.html';
         return;
