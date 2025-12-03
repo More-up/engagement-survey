@@ -231,8 +231,8 @@
             const errorMessage = document.getElementById('error-message');
             
             if (password === ADMIN_PASSWORD) {
-                sessionStorage.setItem('adminLoggedIn', 'true');
-                sessionStorage.setItem('loginTime', Date.now());
+                sessionStorage.setItem('adminPassword', password);
+                sessionStorage.setItem('adminLoginTime', Date.now());
                 window.location.href = 'admin-dashboard.html';
             } else {
                 errorMessage.style.display = 'block';
