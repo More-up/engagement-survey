@@ -477,34 +477,35 @@ function drawRadarChart(categoryScores) {
     ctx.lineWidth = 4;
     ctx.stroke();
     
-    // プロット点を描画(すべて同じサイズ)
-categoryScores.forEach((cat, i) => {
-    const angle = angleStep * i - Math.PI / 2;
-    const distance = (cat.score / 100) * radius;
-    const pointX = centerX + distance * Math.cos(angle);
-    const pointY = centerY + distance * Math.sin(angle);
-    
-    // ポイントのグラデーション
-    const gradient = ctx.createRadialGradient(pointX, pointY, 0, pointX, pointY, 10);
-    gradient.addColorStop(0, '#ff4081');
-    gradient.addColorStop(1, '#e91e63');
-    
-    // 🔥 ポイント本体(塗りつぶし)
-    ctx.beginPath();
-    ctx.arc(pointX, pointY, 8, 0, Math.PI * 2);
-    ctx.fillStyle = gradient;
-    ctx.fill();
-    
-    // 🔥 ポイントの白い縁取り(別パスで描画)
-    ctx.beginPath();
-    ctx.arc(pointX, pointY, 8, 0, Math.PI * 2);
-    ctx.strokeStyle = 'white';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-});
+        // プロット点を描画(すべて同じサイズ)
+    categoryScores.forEach((cat, i) => {
+        const angle = angleStep * i - Math.PI / 2;
+        const distance = (cat.score / 100) * radius;
+        const pointX = centerX + distance * Math.cos(angle);
+        const pointY = centerY + distance * Math.sin(angle);
+        
+        // ポイントのグラデーション
+        const gradient = ctx.createRadialGradient(pointX, pointY, 0, pointX, pointY, 10);
+        gradient.addColorStop(0, '#ff4081');
+        gradient.addColorStop(1, '#e91e63');
+        
+        // 🔥 ポイント本体(塗りつぶし)
+        ctx.beginPath();
+        ctx.arc(pointX, pointY, 8, 0, Math.PI * 2);
+        ctx.fillStyle = gradient;
+        ctx.fill();
+        
+        // 🔥 ポイントの白い縁取り(別パスで描画)
+        ctx.beginPath();
+        ctx.arc(pointX, pointY, 8, 0, Math.PI * 2);
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+    });
+}  // ← drawRadarChart() 関数の閉じ括弧
 
 // ===================================
-// フィードバック生成（詳細版）
+// フィードバック生成(詳細版)
 // ===================================
 function generateFeedback(totalScore, categoryScores) {
     const feedbackDiv = document.getElementById('feedback-content');
@@ -567,7 +568,7 @@ function generateFeedback(totalScore, categoryScores) {
             </ul>
         </div>
     `;
-}
+}  // ← generateFeedback() 関数の閉じ括弧(これが抜けていた!)
 
 // ===================================
 // 詳細な改善提案生成
