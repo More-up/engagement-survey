@@ -158,6 +158,10 @@ function showPage(pageId) {
 // 従業員コード保存と診断開始
 // ===================================
 function saveDepartmentAndStart() {
+    // 🆕 URLパラメータから企業名を自動取得
+    const urlParams = new URLSearchParams(window.location.search);
+    const companyName = urlParams.get('company') || '未設定';
+    
     const code = document.getElementById('employee-code').value.trim();
     const dept = document.getElementById('department').value;
     
@@ -172,7 +176,9 @@ function saveDepartmentAndStart() {
     
     employeeCode = code;
     localStorage.setItem('employeeCode', code);
-    localStorage.setItem('department', dept);
+    localStorage.setItem('department_' + code, dept);
+    // 🆕 企業名を自動保存
+    localStorage.setItem('company_' + code, companyName);
     
     const saved = localStorage.getItem(`answers_${employeeCode}`);
     if (saved) {
