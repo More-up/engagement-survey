@@ -406,8 +406,16 @@ body {
     font-weight: 600;
     color: #34495e;
     transition: color 0.3s ease;
+    white-space: nowrap;       /* 語句の途中で改行させない */
+    word-break: keep-all;      /* 日本語の不自然な改行を抑制 */
+    overflow: hidden;
+    text-overflow: ellipsis;   /* 幅不足時は末尾を省略 */
+    user-select: text;         /* テキストを選択・コピー可能にする */
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    display: inline-block;
 }
-
 /* ===================================
    ナビゲーションボタン
 =================================== */
