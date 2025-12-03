@@ -221,15 +221,16 @@ function renderSection() {
         block.innerHTML = `
             <div class="question-text">Q${q.id}. ${q.text}</div>
             <div class="answer-options">
-                ${[5,4,3,2,1].map(val => `
-                    <label class="answer-option">
-                        <input type="radio" name="q${q.id}" value="${val}" 
-                               ${answers[q.id] == val ? 'checked' : ''} 
-                               onchange="saveAnswer(${q.id}, ${val})">
-                        <span>${val}</span>
-                    </label>
-                `).join('')}
-            </div>
+    ${[1,2,3,4,5].map(val => `
+        <label class="answer-option">
+            <input type="radio" name="q${q.id}" value="${val}" 
+                   ${answers[q.id] == val ? 'checked' : ''} 
+                   onchange="saveAnswer(${q.id}, ${val})">
+            <span>${val}</span>
+        </label>
+    `).join('')}
+</div>
+
         `;
         container.appendChild(block);
     });
