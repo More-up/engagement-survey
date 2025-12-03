@@ -383,7 +383,7 @@ function displayResults(totalScore, categoryScores) {
 }
 
 // ===================================
-// レーダーチャート描画（WEVOX風・スコア表示付き）
+// レーダーチャート描画(WEVOX風・スコア表示付き)
 // ===================================
 function drawRadarChart(categoryScores) {
     const canvas = document.getElementById('radar-chart');
@@ -394,7 +394,7 @@ function drawRadarChart(categoryScores) {
     
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // 背景の円（WEVOX風カラー）
+    // 背景の円(WEVOX風カラー)
     for (let i = 1; i <= 5; i++) {
         ctx.beginPath();
         ctx.arc(centerX, centerY, (radius / 5) * i, 0, Math.PI * 2);
@@ -403,7 +403,7 @@ function drawRadarChart(categoryScores) {
         ctx.stroke();
     }
     
-        // 軸の描画
+    // 軸の描画
     const angleStep = (Math.PI * 2) / categoryScores.length;
     categoryScores.forEach((cat, i) => {
         const angle = angleStep * i - Math.PI / 2;
@@ -428,7 +428,7 @@ function drawRadarChart(categoryScores) {
         ctx.fillText(cat.name, labelX, labelY);
     });
     
-    // データのプロット（WEVOX風カラー）
+    // データのプロット(WEVOX風カラー)
     ctx.beginPath();
     categoryScores.forEach((cat, i) => {
         const angle = angleStep * i - Math.PI / 2;
@@ -471,20 +471,20 @@ function drawRadarChart(categoryScores) {
         gradient.addColorStop(0, '#ff4081');
         gradient.addColorStop(1, '#e91e63');
         
-        // 🔥 ポイント本体(塗りつぶし)
+        // ポイント本体(塗りつぶし)
         ctx.beginPath();
         ctx.arc(pointX, pointY, 8, 0, Math.PI * 2);
         ctx.fillStyle = gradient;
         ctx.fill();
         
-        // 🔥 ポイントの白い縁取り(別パスで描画)
+        // ポイントの白い縁取り(別パスで描画)
         ctx.beginPath();
         ctx.arc(pointX, pointY, 8, 0, Math.PI * 2);
         ctx.strokeStyle = 'white';
         ctx.lineWidth = 3;
         ctx.stroke();
         
-        // 🔥 スコア数字をプロット点のすぐそばに表示(カテゴリー名の外側ではなく、点の近く)
+        // 🔥 スコア数字をプロット点のすぐそばに表示
         const scoreDistance = distance + 25; // プロット点から25px外側
         const scoreX = centerX + scoreDistance * Math.cos(angle);
         const scoreY = centerY + scoreDistance * Math.sin(angle);
@@ -502,7 +502,7 @@ function drawRadarChart(categoryScores) {
         ctx.textBaseline = 'middle';
         ctx.fillText(`${cat.score}`, scoreX, scoreY);
     });
-}  // ← drawRadarChart() 関数の閉じ括弧
+}
 
     
     // データのプロット（WEVOX風カラー）
