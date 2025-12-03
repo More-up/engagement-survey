@@ -13,6 +13,7 @@ body {
     color: #2d3748;
     background: linear-gradient(135deg, #87CEEB 0%, #B0E0E6 100%);
     min-height: 100vh;
+    overflow-y: auto;
 }
 
 .container {
@@ -247,7 +248,9 @@ body {
 #survey-page {
     background-color: #f0f4f8;
     min-height: 100vh;
-    padding-top: 230px; /* 🔥 固定ヘッダー分の余白（評価凡例分を追加） */
+    padding-top: 230px;
+    position: relative; 
+    overflow-y: visible;/* ← 追加 */
 }
 
 /* 🔥 固定ヘッダー全体 */
@@ -259,6 +262,7 @@ body {
     z-index: 1000;
     background: white;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    overflow: visible; /* ← この行を追加 */
 }
 
 /* 🔥 進捗バーコンテナ */
@@ -659,12 +663,10 @@ body {
     }
 
     .answer-options {
-        flex-direction: column;
         gap: 10px;
     }
 
     .answer-option {
-        min-width: 100%;
     }
 
     .nav-buttons {
