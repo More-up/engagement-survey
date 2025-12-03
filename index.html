@@ -156,28 +156,31 @@
         </div>
     </div>
 
-    <!-- 結果ページ -->
-    <div id="result-page" class="page">
-        <div class="container">
-            <h1>診断結果</h1>
-            
-            <div class="result-summary">
-                <h2>あなたの総合スコア</h2>
-                <div class="total-score" id="total-score">0</div>
-                <p>（100点満点）</p>
-            </div>
-
-            <div class="chart-container">
-                <canvas id="radarChart"></canvas>
-            </div>
-
-            <div class="category-results" id="category-results"></div>
-
-            <div class="feedback-section" id="feedback-section"></div>
-
-            <button class="btn-primary" onclick="location.reload()">もう一度診断する</button>
+<!-- 結果ページ -->
+<div id="result-page" class="page">
+    <div class="container">
+        <h1>診断結果</h1>
+        
+        <div class="result-summary">
+            <h2>あなたの総合スコア</h2>
+            <div class="total-score" id="total-score">0</div>
+            <p>（100点満点）</p>
         </div>
+
+        <div class="chart-container">
+            <canvas id="radar-chart" width="500" height="500"></canvas>
+        </div>
+
+        <div class="category-results" id="category-scores"></div>
+
+        <div class="feedback-section">
+            <div id="feedback-text"></div>
+        </div>
+
+        <button class="btn-primary" onclick="location.reload()">もう一度診断する</button>
     </div>
+</div>
+
 
     <script src="js/app.js"></script>
 </body>
