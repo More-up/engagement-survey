@@ -218,15 +218,7 @@
             display: block;
         }
 
-        .alert-list {
-            background: #fff3cd;
-            border-left: 5px solid #ffc107;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-        }
-
-        .alert-item {
+        .alert-card {
             background: white;
             padding: 20px;
             border-radius: 10px;
@@ -235,40 +227,19 @@
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
-        .alert-item.high-risk {
-            border-left-color: #e74c3c;
-        }
-
-        .alert-item.medium-risk {
-            border-left-color: #f39c12;
-        }
-
-        .alert-item h4 {
+        .alert-card h3 {
             color: #e74c3c;
             margin-bottom: 10px;
             font-size: 1.2em;
         }
 
-        .alert-details {
+        .alert-card p {
             color: #666;
             line-height: 1.6;
-            margin-bottom: 10px;
-        }
-
-        .alert-actions {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 10px;
-        }
-
-        .alert-actions strong {
-            color: #667eea;
-            display: block;
             margin-bottom: 8px;
         }
 
-        .alert-actions ul {
+        .alert-card ul {
             margin-left: 20px;
             color: #555;
         }
@@ -302,7 +273,7 @@
             background: #f8f9fa;
         }
 
-        .risk-badge {
+        .badge {
             display: inline-block;
             padding: 5px 15px;
             border-radius: 20px;
@@ -310,19 +281,148 @@
             font-size: 0.9em;
         }
 
-        .risk-badge.high {
+        .badge-high {
             background: #fee;
             color: #e74c3c;
         }
 
-        .risk-badge.medium {
+        .badge-medium {
             background: #fef3e0;
             color: #f39c12;
         }
 
-        .risk-badge.low {
+        .badge-low {
             background: #e8f8f5;
             color: #27ae60;
+        }
+
+        /* 部署別比較スタイル */
+        .department-selector {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .department-selector h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .checkbox-group label:hover {
+            background: #e8f0fe;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .btn-apply-comparison {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-apply-comparison:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .department-summary-section {
+            margin-bottom: 40px;
+        }
+
+        .department-summary-section h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .chart-container h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .analysis-report {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .analysis-report h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .analysis-report h4 {
+            color: #555;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .ai-insight {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border-left: 5px solid #667eea;
+        }
+
+        .ai-insight p {
+            color: #333;
+            line-height: 1.8;
+            margin-bottom: 10px;
+        }
+
+        .analysis-list, .action-list {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+
+        .analysis-list li, .action-list li {
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 12px;
         }
 
         .no-data {
@@ -330,13 +430,6 @@
             padding: 60px 20px;
             color: #999;
             font-size: 1.2em;
-        }
-
-        .no-data svg {
-            width: 80px;
-            height: 80px;
-            margin-bottom: 20px;
-            opacity: 0.3;
         }
 
         @media (max-width: 768px) {
@@ -363,6 +456,10 @@
             .data-table {
                 font-size: 0.9em;
             }
+
+            .checkbox-group {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -380,23 +477,23 @@
             <div class="filter-row">
                 <div class="filter-group">
                     <label>企業</label>
-                    <select id="companyFilter" onchange="applyFilters()">
-                        <option value="">すべての企業</option>
+                    <select id="filter-company" onchange="applyFilters()">
+                        <option value="all">すべての企業</option>
                     </select>
                 </div>
                 <div class="filter-group">
                     <label>部署</label>
-                    <select id="departmentFilter" onchange="applyFilters()">
-                        <option value="">すべての部署</option>
+                    <select id="filter-department" onchange="applyFilters()">
+                        <option value="all">すべての部署</option>
                     </select>
                 </div>
                 <div class="filter-group">
                     <label>リスクレベル</label>
-                    <select id="riskFilter" onchange="applyFilters()">
-                        <option value="">すべて</option>
-                        <option value="high">高リスク</option>
-                        <option value="medium">中リスク</option>
-                        <option value="low">低リスク</option>
+                    <select id="filter-risk" onchange="applyFilters()">
+                        <option value="all">すべて</option>
+                        <option value="高リスク">高リスク</option>
+                        <option value="中リスク">中リスク</option>
+                        <option value="低リスク">低リスク</option>
                     </select>
                 </div>
             </div>
@@ -406,23 +503,23 @@
         <div class="stats-grid">
             <div class="stat-card danger">
                 <h3>🚨 高リスク</h3>
-                <div class="number" id="highRiskCount">0</div>
+                <div class="number" id="high-risk-count">0</div>
             </div>
             <div class="stat-card warning">
                 <h3>⚠️ 中リスク</h3>
-                <div class="number" id="mediumRiskCount">0</div>
+                <div class="number" id="medium-risk-count">0</div>
             </div>
             <div class="stat-card success">
                 <h3>✅ 低リスク</h3>
-                <div class="number" id="lowRiskCount">0</div>
+                <div class="number" id="low-risk-count">0</div>
             </div>
             <div class="stat-card">
                 <h3>👥 診断完了者</h3>
-                <div class="number" id="totalCount">0</div>
+                <div class="number" id="total-users">0</div>
             </div>
             <div class="stat-card">
                 <h3>📊 平均スコア</h3>
-                <div class="number" id="avgScore">0</div>
+                <div class="number" id="average-score">0</div>
             </div>
         </div>
 
@@ -438,41 +535,84 @@
 
         <!-- タブ -->
         <div class="tabs">
-            <button class="tab active" onclick="switchTab(0)">離職リスク分析</button>
-            <button class="tab" onclick="switchTab(1)">全従業員データ</button>
-            <button class="tab" onclick="switchTab(2)">統計・グラフ</button>
+            <button class="tab active" onclick="switchTab('risk-analysis')">離職リスク分析</button>
+            <button class="tab" onclick="switchTab('all-data')">全従業員データ</button>
+            <button class="tab" onclick="switchTab('dept-comparison')">部署別比較</button>
+            <button class="tab" onclick="switchTab('stats-graphs')">統計・グラフ</button>
         </div>
 
         <!-- タブ1: 離職リスク分析 -->
-        <div class="tab-content active" id="tab1">
-            <div id="alertContainer"></div>
+        <div class="tab-content active" id="risk-analysis">
+            <div id="alerts-list"></div>
         </div>
 
         <!-- タブ2: 全従業員データ -->
-        <div class="tab-content" id="tab2">
+        <div class="tab-content" id="all-data">
             <table class="data-table">
                 <thead>
                     <tr>
                         <th>従業員コード</th>
-                        <th>部署</th>
                         <th>企業</th>
+                        <th>部署</th>
                         <th>総合スコア</th>
+                        <th>重要質問平均</th>
                         <th>リスクレベル</th>
-                        <th>診断日時</th>
                     </tr>
                 </thead>
-                <tbody id="dataTableBody"></tbody>
+                <tbody id="employee-data-table"></tbody>
             </table>
         </div>
 
-        <!-- タブ3: 統計・グラフ -->
-        <div class="tab-content" id="tab3">
-            <div style="text-align: center; padding: 60px 20px; color: #999;">
-                <p style="font-size: 1.2em;">📊 統計グラフ機能は今後実装予定です</p>
+        <!-- タブ3: 部署別比較 -->
+        <div class="tab-content" id="dept-comparison">
+            <!-- 部署選択 -->
+            <div class="department-selector">
+                <h3>📊 比較する部署を選択</h3>
+                <div class="checkbox-group" id="dept-checkboxes"></div>
+                <button class="btn-apply-comparison" onclick="applyDeptComparison()">選択した部署を比較</button>
+            </div>
+
+            <!-- 部署別サマリーテーブル -->
+            <div class="department-summary-section">
+                <h3>📈 部署別スコアサマリー</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>部署</th>
+                            <th>診断完了者</th>
+                            <th>平均スコア</th>
+                            <th>高リスク</th>
+                            <th>中リスク</th>
+                            <th>低リスク</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dept-summary-table"></tbody>
+                </table>
+            </div>
+
+            <!-- 部署別カテゴリー比較グラフ -->
+            <div class="chart-container">
+                <h3>📊 カテゴリ別スコア比較</h3>
+                <canvas id="dept-comparison-chart" width="800" height="400"></canvas>
+            </div>
+
+            <!-- AI分析レポート -->
+            <div class="analysis-report" id="dept-analysis-report"></div>
+        </div>
+
+        <!-- タブ4: 統計・グラフ -->
+        <div class="tab-content" id="stats-graphs">
+            <div class="no-data">
+                <p>📊 統計グラフ機能は今後実装予定です</p>
             </div>
         </div>
+
     </div>
 
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    
+    <!-- ダッシュボードJS -->
     <script src="admin-dashboard.js"></script>
 </body>
 </html>
