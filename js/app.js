@@ -215,25 +215,32 @@ function renderSection() {
         container.appendChild(note);
     }
     
-    sectionQuestions.forEach(q => {
+        sectionQuestions.forEach(q => {
         const block = document.createElement('div');
         block.className = 'question-block';
         block.innerHTML = `
             <div class="question-text">Q${q.id}. ${q.text}</div>
             <div class="answer-options">
-    ${[1,2,3,4,5].map(val => `
-        <label class="answer-option">
-            <input type="radio" name="q${q.id}" value="${val}" 
-                   ${answers[q.id] == val ? 'checked' : ''} 
-                   onchange="saveAnswer(${q.id}, ${val})">
-            <span>${val}</span>
-        </label>
-    `).join('')}
-</div>
-
+                ${[1,2,3,4,5].map(val => `
+                    <label class="answer-option">
+                        <input type="radio" name="q${q.id}" value="${val}" 
+                               ${answers[q.id] == val ? 'checked' : ''}>
+                        <span>${val}</span>
+                    </label>
+                `).join('')}
+            </div>
         `;
         container.appendChild(block);
+        
+        // 🔥 イベントリスナーを追加
+        const radios = block.querySelectorAll('input[type="radio"]');
+        radios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                saveAnswer(q.id, parseInt(this.value));
+            });
+        });
     });
+
     
     updateNavButtons();
     updateProgressBar();
