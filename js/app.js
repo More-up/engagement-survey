@@ -201,7 +201,7 @@ function saveDepartmentAndStart() {
 }
 
 // ===================================
-// セクション描画（10問まとめて表示 + カテゴリータイトル表示）
+// セクション描画（固定カテゴリータイトルを更新）
 // ===================================
 function renderSection() {
     const startIdx = currentSection * 10;
@@ -211,14 +211,12 @@ function renderSection() {
     const container = document.getElementById('questions-container');
     container.innerHTML = '';
 
-    // カテゴリータイトルを表示
+    // 🔥 固定カテゴリータイトルを更新（質問番号なし）
     const categoryId = sectionQuestions[0].category;
     const category = categories.find(cat => cat.id === categoryId);
     
-    const categoryHeader = document.createElement('div');
-    categoryHeader.className = 'category-header';
-    categoryHeader.innerHTML = `<h2>カテゴリー${categoryId}: ${category.name} (Q${startIdx + 1}-Q${endIdx})</h2>`;
-    container.appendChild(categoryHeader);
+    const fixedCategoryHeader = document.getElementById('category-header-fixed');
+    fixedCategoryHeader.innerHTML = `<h2>カテゴリー${categoryId}: ${category.name}</h2>`;
 
     // カテゴリー5の場合は「自部署」説明文を追加
     if (categoryId === 5) {
@@ -377,10 +375,12 @@ function calculateResults() {
 }
 
 // ===================================
-// 結果表示
+// 結果表示（🔥 100点満点に換算）
 // ===================================
 function displayResults(totalScore, maxScore, categoryScores) {
-    document.getElementById('total-score').textContent = totalScore;
+    // 🔥 100点満点に換算
+    const score100 = Math.round((totalScore / maxScore) * 100);
+    document.getElementById('total-score').textContent = score100;
 
     const categoryResultsHtml = Object.values(categoryScores).map(cat => `
         <div class="category-score-item">
