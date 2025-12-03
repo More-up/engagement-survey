@@ -466,19 +466,5 @@ function generateFeedback(totalScore, categoryScores) {
 // 初期化
 // ===================================
 window.onload = function() {
-    const savedCode = localStorage.getItem('employeeCode');
-    if (savedCode) {
-        document.getElementById('employee-code').value = savedCode;
-        employeeCode = savedCode;
-        
-        const saved = localStorage.getItem(`answers_${employeeCode}`);
-        if (saved) {
-            answers = JSON.parse(saved);
-        }
-    }
-    
-    const savedDept = localStorage.getItem('department');
-    if (savedDept) {
-        document.getElementById('department').value = savedDept;
-    }
+    // 毎回空欄で開始
 };
