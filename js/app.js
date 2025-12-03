@@ -286,7 +286,16 @@ function updateNavButtons() {
     const sectionQuestions = questions.slice(startIdx, endIdx);
     const allAnswered = sectionQuestions.every(q => answers[q.id] !== undefined);
     
-    nextBtn.disabled = !allAnswered;
+    if (allAnswered) {
+        nextBtn.disabled = false;
+        nextBtn.style.opacity = '1';
+        nextBtn.style.cursor = 'pointer';
+    } else {
+        nextBtn.disabled = true;
+        nextBtn.style.opacity = '0.5';
+        nextBtn.style.cursor = 'not-allowed';
+    }
+    
     nextBtn.textContent = currentSectionIndex >= 9 ? '結果を見る' : '次のセクション';
 }
 
