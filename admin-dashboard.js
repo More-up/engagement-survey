@@ -373,6 +373,11 @@ function switchTab(index) {
             contents[i].classList.remove('active');
         }
     });
+    
+    // タブ3（部署別比較）が開かれたときに部署チェックボックスを生成
+    if (index === 2) {
+        generateDeptCheckboxes();
+    }
 }
 
 // ========================================
@@ -496,4 +501,296 @@ function exportDetailedReport() {
     link.click();
     
     alert('詳細レポート出力が完了しました！');
+}
+
+// ================================================
+// 部署別比較機能
+// ================================================
+
+// タブ3が開かれたときに部署チェックボックスを生成
+let deptComparisonChart = null;
+
+function generateDeptCheckboxes() {
+    const container = document.getElementById('deptCheckboxes');
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    // 現在フィルタされている企業の部署を取得
+    const currentCompany = document.getElementById('companyFilter').value;
+    const relevantEmployees = currentCompany ? 
+        allEmployeeData.filter(e => e.company === currentCompany) : 
+        allEmployeeData;
+    
+    const departments = [...new Set(relevantEmployees.map(e => e.department))].filter(d => d !== '不明');
+    
+    if (departments.length === 0) {
+        container.innerHTML = '<p style="color: #999;">比較可能な部署がありません</p>';
+        return;
+    }
+    
+    departments.forEach(dept => {
+        const label = document.createElement('label');
+        label.style.cssText = 'display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px; background: white; border-radius: 8px; transition: all 0.3s;';
+        label.innerHTML = `<input type="checkbox" value="${dept}" style="width: 18px; height: 18px; cursor: pointer;"> ${dept}`;
+        label.onmouseover = () => label.style.background = '#e8f0fe';
+        label.onmouseout = () => label.style.background = 'white';
+        container.appendChild(label);
+    });
+}
+
+function generateDeptComparison() {
+    const checkboxes = document.querySelectorAll('#deptCheckboxes input[type="checkbox"]:checked');
+    
+    if (checkboxes.length < 2) {
+        alert('比較する部署を2つ以上選択してください');
+        return;
+    }
+    
+    const selectedDepts = Array.from(checkboxes).map(cb => cb.value);
+    const currentCompany = document.getElementById('companyFilter').value;
+    const relevantEmployees = currentCompany ? 
+        allEmployeeData.filter(e => e.company === currentCompany) : 
+        allEmployeeData;
+    
+    // 部署別データを集計
+    const deptData = [];
+    
+    selectedDepts.forEach(dept => {
+        const deptEmployees = relevantEmployees.filter(e => e.department === dept);
+        
+        if (deptEmployees.length > 0) {
+            // 総合スコア平均
+            const avgTotalScore = (deptEmployees.reduce((sum, e) => sum + e.totalScore, 0) / deptEmployees.length).toFixed(2);
+            
+            // カテゴリ別スコア平均
+            const categories = ['心身の健康', '仕事の充実感', '成長機会', '上司のサポート', 'チームとの協働', 
+                               '評価・処遇', '会社への信頼', '働く環境', '総合満足度', '組織へのつながり'];
+            
+            const categoryAvgs = {};
+            categories.forEach(cat => {
+                const scores = deptEmployees.map(e => e.categoryScores[cat]);
+                categoryAvgs[cat] = (scores.reduce((sum, s) => sum + parseFloat(s), 0) / scores.length).toFixed(2);
+            });
+            
+            // リスクレベル集計
+            const highRisk = deptEmployees.filter(e => e.riskLevel === 'high').length;
+            const mediumRisk = deptEmployees.filter(e => e.riskLevel === 'medium').length;
+            const lowRisk = deptEmployees.filter(e => e.riskLevel === 'low').length;
+            
+            deptData.push({
+                dept,
+                count: deptEmployees.length,
+                avgTotalScore: parseFloat(avgTotalScore),
+                categoryAvgs,
+                highRisk,
+                mediumRisk,
+                lowRisk
+            });
+        }
+    });
+    
+    // 結果を表示
+    displayDeptComparisonResult(deptData, currentCompany);
+}
+
+function displayDeptComparisonResult(deptData, companyName) {
+    const resultContainer = document.getElementById('deptComparisonResult');
+    
+    // サマリーテーブル
+    const sortedByScore = [...deptData].sort((a, b) => b.avgTotalScore - a.avgTotalScore);
+    const bestDept = sortedByScore[0];
+    const worstDept = sortedByScore[sortedByScore.length - 1];
+    
+    let html = `
+        <div style="background: white; padding: 30px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
+            <h3 style="color: #667eea; margin-bottom: 20px;">📈 部署別サマリー${companyName ? ' - ' + companyName : ''}</h3>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>部署</th>
+                        <th>人数</th>
+                        <th>総合スコア</th>
+                        <th>高リスク</th>
+                        <th>中リスク</th>
+                        <th>低リスク</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    sortedByScore.forEach(dept => {
+        html += `
+            <tr>
+                <td><strong>${dept.dept}</strong></td>
+                <td>${dept.count}名</td>
+                <td>${dept.avgTotalScore.toFixed(2)}</td>
+                <td>${dept.highRisk}名</td>
+                <td>${dept.mediumRisk}名</td>
+                <td>${dept.lowRisk}名</td>
+            </tr>
+        `;
+    });
+    
+    html += `
+                </tbody>
+            </table>
+        </div>
+        
+        <div style="background: white; padding: 30px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
+            <h3 style="color: #667eea; text-align: center; margin-bottom: 20px;">📊 カテゴリ別スコア比較</h3>
+            <canvas id="deptComparisonChart" width="800" height="400"></canvas>
+        </div>
+    `;
+    
+    // AI分析レポート
+    const categories = ['心身の健康', '仕事の充実感', '成長機会', '上司のサポート', 'チームとの協働', 
+                       '評価・処遇', '会社への信頼', '働く環境', '総合満足度', '組織へのつながり'];
+    
+    const categoryGaps = [];
+    categories.forEach(cat => {
+        const scores = deptData.map(d => parseFloat(d.categoryAvgs[cat]));
+        const max = Math.max(...scores);
+        const min = Math.min(...scores);
+        const gap = (max - min).toFixed(2);
+        
+        if (parseFloat(gap) > 0) {
+            const maxDept = deptData.find(d => parseFloat(d.categoryAvgs[cat]) === max);
+            const minDept = deptData.find(d => parseFloat(d.categoryAvgs[cat]) === min);
+            
+            categoryGaps.push({
+                category: cat,
+                gap: parseFloat(gap),
+                max: max.toFixed(2),
+                min: min.toFixed(2),
+                maxDept: maxDept.dept,
+                minDept: minDept.dept
+            });
+        }
+    });
+    
+    categoryGaps.sort((a, b) => b.gap - a.gap);
+    const topGap = categoryGaps[0];
+    
+    // 最高部署の強みカテゴリ（上位2つ）
+    const bestDeptCategories = Object.entries(bestDept.categoryAvgs)
+        .map(([cat, score]) => ({ cat, score: parseFloat(score) }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 2);
+    
+    // 最低部署の弱みカテゴリ（下位2つ）
+    const worstDeptCategories = Object.entries(worstDept.categoryAvgs)
+        .map(([cat, score]) => ({ cat, score: parseFloat(score) }))
+        .sort((a, b) => a.score - b.score)
+        .slice(0, 2);
+    
+    html += `
+        <div style="background: #f8f9fa; padding: 30px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
+            <h3 style="color: #667eea; margin-bottom: 20px;">🤖 AI分析レポート</h3>
+            
+            <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid #667eea;">
+                <p style="margin-bottom: 10px;"><strong>🏆 最も高スコアの部署:</strong> ${bestDept.dept} (平均 ${bestDept.avgTotalScore.toFixed(2)}点、${bestDept.count}名)</p>
+                <p style="margin-bottom: 10px;"><strong>⚠️ 最も低スコアの部署:</strong> ${worstDept.dept} (平均 ${worstDept.avgTotalScore.toFixed(2)}点、${worstDept.count}名)</p>
+                <p><strong>📈 最大カテゴリ差:</strong> ${topGap.category} (差分 ${topGap.gap.toFixed(2)}点)</p>
+                <p style="margin-top: 10px; color: #666; font-size: 0.9em;">
+                    └ 最高: ${topGap.maxDept} (${topGap.max}点) / 最低: ${topGap.minDept} (${topGap.min}点)
+                </p>
+            </div>
+            
+            <h4 style="color: #555; margin-top: 25px; margin-bottom: 15px;">💡 詳細分析</h4>
+            <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 15px;">
+                <ul style="line-height: 1.8; color: #555;">
+                    <li><strong>${bestDept.dept}の強み:</strong> ${bestDeptCategories.map(c => `${c.cat}(${c.score.toFixed(2)}点)`).join('、')}</li>
+                    <li><strong>${worstDept.dept}の課題:</strong> ${worstDeptCategories.map(c => `${c.cat}(${c.score.toFixed(2)}点)`).join('、')}</li>
+                </ul>
+            </div>
+            
+            <h4 style="color: #555; margin-top: 25px; margin-bottom: 15px;">📌 推奨アクション</h4>
+            <div style="background: white; padding: 20px; border-radius: 10px;">
+                <ul style="line-height: 1.8; color: #555;">
+                    <li>${worstDept.dept}に対する ${worstDeptCategories[0].cat} 改善施策の実施</li>
+                    <li>${bestDept.dept}のベストプラクティスの他部署への共有</li>
+                    <li>${topGap.category}に関する部署間の情報交換会の実施</li>
+                    <li>定期的なエンゲージメント調査の継続実施</li>
+                </ul>
+            </div>
+        </div>
+    `;
+    
+    resultContainer.innerHTML = html;
+    
+    // グラフを描画
+    drawDeptComparisonChart(deptData);
+}
+
+function drawDeptComparisonChart(deptData) {
+    const canvas = document.getElementById('deptComparisonChart');
+    if (!canvas) return;
+    
+    // 既存のチャートを破棄
+    if (deptComparisonChart) {
+        deptComparisonChart.destroy();
+    }
+    
+    const ctx = canvas.getContext('2d');
+    
+    const categories = ['心身の健康', '仕事の充実感', '成長機会', '上司のサポート', 'チームとの協働', 
+                       '評価・処遇', '会社への信頼', '働く環境', '総合満足度', '組織へのつながり'];
+    
+    const colors = [
+        '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', 
+        '#858796', '#5a5c69', '#2e59d9', '#17a673', '#2c9faf'
+    ];
+    
+    const datasets = deptData.map((dept, index) => {
+        const data = categories.map(cat => parseFloat(dept.categoryAvgs[cat]));
+        return {
+            label: dept.dept + ' (' + dept.count + '名)',
+            data: data,
+            backgroundColor: colors[index % colors.length] + '80',
+            borderColor: colors[index % colors.length],
+            borderWidth: 2
+        };
+    });
+    
+    deptComparisonChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: categories,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 5,
+                    title: {
+                        display: true,
+                        text: 'スコア (5点満点)',
+                        font: { size: 14 }
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'カテゴリ',
+                        font: { size: 14 }
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: '部署別カテゴリスコア比較',
+                    font: { size: 18 }
+                },
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
+            }
+        }
+    });
 }
