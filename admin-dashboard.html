@@ -432,7 +432,7 @@
         <div class="tabs">
             <button class="tab active" onclick="switchTab(0)">離職リスク分析</button>
             <button class="tab" onclick="switchTab(1)">全従業員データ</button>
-            <button class="tab" onclick="switchTab(2)">統計・グラフ</button>
+            <button class="tab" onclick="switchTab(2)">部署別比較</button>
         </div>
 
         <!-- タブ1: 離職リスク分析 -->
@@ -457,15 +457,24 @@
             </table>
         </div>
 
-        <!-- タブ3: 統計・グラフ -->
+        <!-- タブ3: 部署別比較 -->
         <div class="tab-content" id="tab3">
-            <div class="no-data">
-                <p>📊 統計グラフ機能は今後実装予定です</p>
+            <div style="background: #f8f9fa; padding: 25px; border-radius: 15px; margin-bottom: 30px;">
+                <h3 style="color: #667eea; margin-bottom: 15px;">📊 比較する部署を選択</h3>
+                <div id="deptCheckboxes" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px;"></div>
+                <button onclick="generateDeptComparison()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 15px 40px; border-radius: 10px; font-size: 1em; font-weight: bold; cursor: pointer; transition: all 0.3s;">
+                    比較を実行
+                </button>
             </div>
+            
+            <div id="deptComparisonResult"></div>
         </div>
 
     </div>
 
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    
     <script src="admin-dashboard.js"></script>
 </body>
 </html>
