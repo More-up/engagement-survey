@@ -3,9 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <title>技能実習生エンゲージメント診断</title>
+  <style>
+    .question {
+      margin: 20px 0;
+    }
+    .options {
+      display: flex;
+      gap: 15px;
+    }
+    .option {
+      text-align: center;
+      cursor: pointer;
+    }
+    .option img {
+      width: 60px;
+      height: 60px;
+    }
+  </style>
 </head>
 <body>
-  <h1>技能実習生エンゲージメント診断（新規作成中）</h1>
-  <p>このページは現在作成中です。後ほど質問UIが追加されます。</p>
+  <h1>技能実習生エンゲージメント診断</h1>
+  <p>以下の質問に答えてください。</p>
+
+  <div class="question">
+    <p>Q1. 今の職場環境に満足していますか？</p>
+    <div class="options">
+      <div class="option">
+        <img src="https://twemoji.maxcdn.com/v/latest/svg/1f622.svg" alt="悲しい">
+        <p>不満</p>
+      </div>
+      <div class="option">
+        <img src="https://twemoji.maxcdn.com/v/latest/svg/1f610.svg" alt="普通">
+        <p>普通</p>
+      </div>
+      <div class="option">
+        <img src="https://twemoji.maxcdn.com/v/latest/svg/1f600.svg" alt="嬉しい">
+        <p>満足</p>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
