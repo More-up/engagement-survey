@@ -1,4 +1,9 @@
 // ===================================
+// API エンドポイント
+// ===================================
+const API_ENDPOINT = 'https://engagement-survey-api.more-up.workers.dev';
+
+// ===================================
 // カテゴリー定義
 // ===================================
 const categories = [
@@ -358,6 +363,9 @@ function calculateResults() {
     });
     
     displayResults(normalizedScore, categoryScores);
+    
+    // ✅ APIに送信
+    submitResultsToAPI(normalizedScore, categoryScores);
 }
 
 function displayResults(totalScore, categoryScores) {
@@ -626,6 +634,59 @@ function generateDetailedSuggestions(lowestCategory, totalScore) {
         '小さな改善から始め、PDCAサイクルを回しながら継続的に取り組むことで、着実に成果を上げましょう。',
         '改善の進捗を定期的に測定し、効果を可視化することで、組織全体のモチベーション向上につなげましょう。'
     ];
+}
+
+// ===================================
+// 結果をAPIに送信
+// ===================================
+async function submitResultsToAPI(totalScore, categoryScores) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const companyCode = urlParams.get('company') || '未設定';
+    const department = localStorage.getItem('department_' + employeeCode) || 'general';
+    
+    const now = new Date();
+    const yearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const surveyDate = now.toISOString().split('T')[0];
+    const resultId = `SURVEY-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    const categoryScoresObj = {};
+    categoryScores.forEach(cat => {
+        const categoryKey = cat.name.replace(/[^a-zA-Z]/g, '');
+        categoryScoresObj[categoryKey] = cat.score;
+    });
+    
+    const data = {
+        resultId,
+        employeeCode,
+        department,
+        nationality: 'jp',
+        companyCode,
+        yearMonth,
+        totalScore,
+        surveyDate,
+        categoryScores: categoryScoresObj,
+        answers
+    };
+    
+    try {
+        const response = await fetch(`${API_ENDPOINT}/api/survey/submit`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            console.log('結果がサーバーに保存されました:', result);
+        } else {
+            console.error('サーバーへの保存に失敗しました:', result.error);
+        }
+    } catch (error) {
+        console.error('API送信エラー:', error);
+    }
 }
 
 // ===================================
