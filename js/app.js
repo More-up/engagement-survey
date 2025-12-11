@@ -163,7 +163,6 @@ function showPage(pageId) {
 // 従業員コード保存と診断開始
 // ===================================
 function saveDepartmentAndStart() {
-    // 🆕 URLパラメータから企業名を自動取得
     const urlParams = new URLSearchParams(window.location.search);
     const companyName = urlParams.get('company') || '未設定';
     
@@ -182,7 +181,6 @@ function saveDepartmentAndStart() {
     employeeCode = code;
     localStorage.setItem('employeeCode', code);
     localStorage.setItem('department_' + code, dept);
-    // 🆕 企業名を自動保存
     localStorage.setItem('company_' + code, companyName);
     
     const saved = localStorage.getItem(`answers_${employeeCode}`);
@@ -363,9 +361,7 @@ function calculateResults() {
     });
     
     displayResults(normalizedScore, categoryScores);
-    
-    // ✅ APIに送信
-    submitResultsToAPI(normalizedScore, categoryScores);
+    submitResultsToAPI(normalizedScore, categoryScores, answers);
 }
 
 function displayResults(totalScore, categoryScores) {
@@ -384,7 +380,7 @@ function displayResults(totalScore, categoryScores) {
 }
 
 // ===================================
-// レーダーチャート描画(WEVOX風・スコア表示付き)
+// レーダーチャート描画
 // ===================================
 function drawRadarChart(categoryScores) {
     const canvas = document.getElementById('radar-chart');
@@ -395,7 +391,6 @@ function drawRadarChart(categoryScores) {
     
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // 背景の同心円を描画
     for (let i = 1; i <= 5; i++) {
         ctx.beginPath();
         ctx.arc(centerX, centerY, (radius / 5) * i, 0, Math.PI * 2);
@@ -404,7 +399,6 @@ function drawRadarChart(categoryScores) {
         ctx.stroke();
     }
     
-    // 軸とカテゴリー名を描画
     const angleStep = (Math.PI * 2) / categoryScores.length;
     categoryScores.forEach((cat, i) => {
         const angle = angleStep * i - Math.PI / 2;
@@ -428,7 +422,6 @@ function drawRadarChart(categoryScores) {
         ctx.fillText(cat.name, labelX, labelY);
     });
     
-    // データポリゴンを描画
     ctx.beginPath();
     categoryScores.forEach((cat, i) => {
         const angle = angleStep * i - Math.PI / 2;
@@ -444,14 +437,12 @@ function drawRadarChart(categoryScores) {
     });
     ctx.closePath();
     
-    // 塗りつぶし
     const fillGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, radius);
     fillGradient.addColorStop(0, 'rgba(233, 30, 99, 0.5)');
     fillGradient.addColorStop(1, 'rgba(156, 39, 176, 0.3)');
     ctx.fillStyle = fillGradient;
     ctx.fill();
     
-    // 線の描画
     const lineGradient = ctx.createLinearGradient(centerX - radius, centerY, centerX + radius, centerY);
     lineGradient.addColorStop(0, '#e91e63');
     lineGradient.addColorStop(1, '#9c27b0');
@@ -459,7 +450,6 @@ function drawRadarChart(categoryScores) {
     ctx.lineWidth = 4;
     ctx.stroke();
     
-    // データポイントとスコア表示を描画
     categoryScores.forEach((cat, i) => {
         const angle = angleStep * i - Math.PI / 2;
         const distance = (cat.score / 100) * radius;
@@ -499,7 +489,7 @@ function drawRadarChart(categoryScores) {
 }
 
 // ===================================
-// フィードバック生成(詳細版)
+// フィードバック生成
 // ===================================
 function generateFeedback(totalScore, categoryScores) {
     const feedbackDiv = document.getElementById('feedback-content');
@@ -637,35 +627,33 @@ function generateDetailedSuggestions(lowestCategory, totalScore) {
 }
 
 // ===================================
-// 結果をAPIに送信
+// 結果をAPIに送信（100点満点対応）
 // ===================================
-async function submitResultsToAPI(totalScore, categoryScores) {
+async function submitResultsToAPI(totalScore, categoryScores, answers) {
     const urlParams = new URLSearchParams(window.location.search);
     const companyCode = urlParams.get('company') || '未設定';
-    const department = localStorage.getItem('department_' + employeeCode) || 'general';
+    const department = localStorage.getItem('department_' + employeeCode) || '未設定';
     
     const now = new Date();
     const yearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    const surveyDate = now.toISOString().split('T')[0];
-    const resultId = `SURVEY-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const surveyDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
     
+    // 🔥 カテゴリースコアをオブジェクト形式に変換
     const categoryScoresObj = {};
     categoryScores.forEach(cat => {
-        const categoryKey = cat.name.replace(/[^a-zA-Z]/g, '');
-        categoryScoresObj[categoryKey] = cat.score;
+        categoryScoresObj[cat.name] = cat.score;
     });
     
+    // 🔥 resultIdとnationalityを削除
     const data = {
-        resultId,
-        employeeCode,
-        department,
-        nationality: 'jp',
-        companyCode,
-        yearMonth,
-        totalScore,
-        surveyDate,
-        categoryScores: categoryScoresObj,
-        answers
+        employeeCode: employeeCode,
+        department: department,
+        companyCode: companyCode,
+        yearMonth: yearMonth,
+        totalScore: totalScore,  // 100点満点のまま
+        surveyDate: surveyDate,
+        categoryScores: categoryScoresObj,  // 100点満点のまま
+        answers: answers
     };
     
     try {
