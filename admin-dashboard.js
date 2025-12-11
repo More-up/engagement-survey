@@ -2,6 +2,9 @@
 // 管理者ダッシュボード - メインロジック
 // ========================================
 
+// API エンドポイント
+const API_ENDPOINT = 'https://engagement-survey-api.more-up.workers.dev';
+
 // 重要設問の定義
 const CRITICAL_QUESTIONS = {
     27: { category: '成長機会', text: 'この会社で働き続けることで、自分のキャリアの将来像を描けますか？', threshold: 2 },
@@ -54,46 +57,78 @@ function logout() {
 }
 
 // ========================================
-// データ読み込み
+// データ読み込み (API接続版)
 // ========================================
-function loadAllData() {
-    allEmployeeData = [];
-    
-    // LocalStorageから全従業員データを取得
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
+async function loadAllData() {
+    try {
+        // APIからデータ取得
+        const response = await fetch(`${API_ENDPOINT}/api/survey/results`);
         
-        // answers_ で始まるキーを探す
-        if (key.startsWith('answers_')) {
-            const employeeCode = key.replace('answers_', '');
-            const answersData = JSON.parse(localStorage.getItem(key));
-            const department = localStorage.getItem('department_' + employeeCode) || '不明';
-            const company = localStorage.getItem('company_' + employeeCode) || '不明';
-            const completedAt = localStorage.getItem('completedAt_' + employeeCode) || new Date().toISOString();
-            
-            // スコア計算
-            const scores = calculateScores(answersData);
-            const riskLevel = calculateRiskLevel(answersData);
-            const criticalAlerts = detectCriticalAlerts(answersData);
-            
-            allEmployeeData.push({
-                employeeCode,
-                department,
-                company,
-                answers: answersData,
-                totalScore: scores.total,
-                categoryScores: scores.categories,
-                riskLevel,
-                criticalAlerts,
-                completedAt
-            });
+        if (!response.ok) {
+            throw new Error('データの取得に失敗しました');
         }
+        
+        const apiData = await response.json();
+        
+        // データが空の場合
+        if (!apiData.results || apiData.results.length === 0) {
+            allEmployeeData = [];
+            filteredData = [];
+            updateFilters();
+            updateDashboard();
+            return;
+        }
+        
+        // APIデータを内部形式に変換
+        allEmployeeData = apiData.results.map(record => {
+            // answersをオブジェクト形式に変換
+            const answersObj = {};
+            if (record.answers) {
+                record.answers.forEach(ans => {
+                    answersObj[ans.question_id] = ans.score;
+                });
+            }
+            
+            // categoryScoresをオブジェクト形式に変換
+            const categoryScoresObj = {};
+            if (record.category_scores) {
+                record.category_scores.forEach(cat => {
+                    categoryScoresObj[cat.category_name] = parseFloat(cat.score);
+                });
+            }
+            
+            // リスクレベル計算
+            const riskLevel = calculateRiskLevel(answersObj);
+            
+            // 重要設問アラート検出
+            const criticalAlerts = detectCriticalAlerts(answersObj);
+            
+            return {
+                employeeCode: record.employee_code,
+                department: record.department || '不明',
+                company: record.company_code || '不明',
+                answers: answersObj,
+                totalScore: parseFloat(record.total_score),
+                categoryScores: categoryScoresObj,
+                riskLevel: riskLevel,
+                criticalAlerts: criticalAlerts,
+                completedAt: record.survey_date
+            };
+        });
+        
+        // 初期表示
+        filteredData = [...allEmployeeData];
+        updateFilters();
+        updateDashboard();
+        
+    } catch (error) {
+        console.error('データ読み込みエラー:', error);
+        alert('データの読み込みに失敗しました。ネットワーク接続を確認してください。');
+        allEmployeeData = [];
+        filteredData = [];
+        updateFilters();
+        updateDashboard();
     }
-    
-    // 初期表示
-    filteredData = [...allEmployeeData];
-    updateFilters();
-    updateDashboard();
 }
 
 // ========================================
@@ -578,6 +613,9 @@ function generateDeptComparison() {
             const mediumRisk = deptEmployees.filter(e => e.riskLevel === 'medium').length;
             const lowRisk = deptEmployees.filter(e => e.riskLevel === 'low').length;
             
+            // マネージャー評価スコア (上司のサポート)
+            const managerScore = parseFloat(categoryAvgs['上司のサポート']);
+            
             deptData.push({
                 dept,
                 count: deptEmployees.length,
@@ -585,7 +623,8 @@ function generateDeptComparison() {
                 categoryAvgs,
                 highRisk,
                 mediumRisk,
-                lowRisk
+                lowRisk,
+                managerScore
             });
         }
     });
@@ -599,8 +638,11 @@ function displayDeptComparisonResult(deptData, companyName) {
     
     // サマリーテーブル
     const sortedByScore = [...deptData].sort((a, b) => b.avgTotalScore - a.avgTotalScore);
+    const sortedByManager = [...deptData].sort((a, b) => b.managerScore - a.managerScore);
     const bestDept = sortedByScore[0];
     const worstDept = sortedByScore[sortedByScore.length - 1];
+    const bestManager = sortedByManager[0];
+    const worstManager = sortedByManager[sortedByManager.length - 1];
     
     let html = `
         <div style="background: white; padding: 30px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
@@ -611,6 +653,7 @@ function displayDeptComparisonResult(deptData, companyName) {
                         <th>部署</th>
                         <th>人数</th>
                         <th>総合スコア</th>
+                        <th>マネージャー評価</th>
                         <th>高リスク</th>
                         <th>中リスク</th>
                         <th>低リスク</th>
@@ -625,6 +668,7 @@ function displayDeptComparisonResult(deptData, companyName) {
                 <td><strong>${dept.dept}</strong></td>
                 <td>${dept.count}名</td>
                 <td>${dept.avgTotalScore.toFixed(2)}</td>
+                <td>${dept.managerScore.toFixed(2)}</td>
                 <td>${dept.highRisk}名</td>
                 <td>${dept.mediumRisk}名</td>
                 <td>${dept.lowRisk}名</td>
@@ -691,6 +735,8 @@ function displayDeptComparisonResult(deptData, companyName) {
             <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid #667eea;">
                 <p style="margin-bottom: 10px;"><strong>🏆 最も高スコアの部署:</strong> ${bestDept.dept} (平均 ${bestDept.avgTotalScore.toFixed(2)}点、${bestDept.count}名)</p>
                 <p style="margin-bottom: 10px;"><strong>⚠️ 最も低スコアの部署:</strong> ${worstDept.dept} (平均 ${worstDept.avgTotalScore.toFixed(2)}点、${worstDept.count}名)</p>
+                <p style="margin-bottom: 10px;"><strong>👨‍💼 最優秀マネージャー:</strong> ${bestManager.dept} (上司サポート ${bestManager.managerScore.toFixed(2)}点)</p>
+                <p style="margin-bottom: 10px;"><strong>🔧 改善が必要なマネージャー:</strong> ${worstManager.dept} (上司サポート ${worstManager.managerScore.toFixed(2)}点)</p>
                 <p><strong>📈 最大カテゴリ差:</strong> ${topGap.category} (差分 ${topGap.gap.toFixed(2)}点)</p>
                 <p style="margin-top: 10px; color: #666; font-size: 0.9em;">
                     └ 最高: ${topGap.maxDept} (${topGap.max}点) / 最低: ${topGap.minDept} (${topGap.min}点)
@@ -702,6 +748,7 @@ function displayDeptComparisonResult(deptData, companyName) {
                 <ul style="line-height: 1.8; color: #555;">
                     <li><strong>${bestDept.dept}の強み:</strong> ${bestDeptCategories.map(c => `${c.cat}(${c.score.toFixed(2)}点)`).join('、')}</li>
                     <li><strong>${worstDept.dept}の課題:</strong> ${worstDeptCategories.map(c => `${c.cat}(${c.score.toFixed(2)}点)`).join('、')}</li>
+                    <li><strong>マネージャー評価差:</strong> ${(bestManager.managerScore - worstManager.managerScore).toFixed(2)}点 (${bestManager.dept} vs ${worstManager.dept})</li>
                 </ul>
             </div>
             
@@ -710,8 +757,10 @@ function displayDeptComparisonResult(deptData, companyName) {
                 <ul style="line-height: 1.8; color: #555;">
                     <li>${worstDept.dept}に対する ${worstDeptCategories[0].cat} 改善施策の実施</li>
                     <li>${bestDept.dept}のベストプラクティスの他部署への共有</li>
+                    <li>${bestManager.dept}のマネジメント手法を ${worstManager.dept} へ横展開</li>
                     <li>${topGap.category}に関する部署間の情報交換会の実施</li>
                     <li>定期的なエンゲージメント調査の継続実施</li>
+                    <li>マネージャー研修の実施 (特に${worstManager.dept}管理職を優先)</li>
                 </ul>
             </div>
         </div>
