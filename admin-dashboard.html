@@ -331,6 +331,199 @@
             opacity: 0.3;
         }
 
+        /* ================================================
+           🆕 経営ダッシュボード専用スタイル
+        ================================================ */
+        
+        /* 組織健康スコアセクション */
+        .health-score-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            padding: 50px;
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.3);
+        }
+
+        .health-score-section h2 {
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        .score-circle {
+            width: 250px;
+            height: 250px;
+            margin: 0 auto 30px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5em;
+            font-weight: bold;
+            color: #667eea;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .score-circle::after {
+            content: '点';
+            font-size: 0.4em;
+            position: absolute;
+            bottom: 60px;
+            right: 40px;
+        }
+
+        .score-change {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .trend-up {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2ecc71;
+        }
+
+        .trend-down {
+            font-size: 2em;
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+
+        .comparison {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        /* 緊急アラートボックス */
+        .alert-box {
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .alert-box.danger {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+        }
+
+        .alert-box.success {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
+        }
+
+        .alert-box h3 {
+            font-size: 1.5em;
+            margin: 0;
+        }
+
+        .btn-alert {
+            padding: 12px 30px;
+            background: white;
+            color: #e74c3c;
+            border: none;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-alert:hover {
+            transform: scale(1.05);
+        }
+
+        /* レーダーチャートセクション */
+        .radar-chart-section {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .radar-chart-section h3 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        /* トレンドグラフセクション */
+        .trend-chart-section {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .trend-chart-section h3 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        .period-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .period-btn {
+            padding: 10px 25px;
+            background: #f5f5f5;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .period-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .period-btn:hover {
+            background: #e8f0fe;
+            border-color: #667eea;
+        }
+
+        /* PDF出力ボタン */
+        .btn-pdf {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(231, 76, 60, 0.4);
+            transition: all 0.3s ease;
+            margin-bottom: 30px;
+            display: inline-block;
+        }
+
+        .btn-pdf:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(231, 76, 60, 0.6);
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 20px;
@@ -354,6 +547,26 @@
 
             .data-table {
                 font-size: 0.9em;
+            }
+
+            .score-circle {
+                width: 200px;
+                height: 200px;
+                font-size: 4em;
+            }
+
+            .health-score-section {
+                padding: 30px 20px;
+            }
+
+            .radar-chart-section,
+            .trend-chart-section {
+                padding: 20px;
+            }
+
+            .alert-box {
+                flex-direction: column;
+                text-align: center;
             }
         }
     </style>
@@ -430,13 +643,51 @@
 
         <!-- タブ -->
         <div class="tabs">
-            <button class="tab active" onclick="switchTab(0)">離職リスク分析</button>
-            <button class="tab" onclick="switchTab(1)">全従業員データ</button>
-            <button class="tab" onclick="switchTab(2)">部署別比較</button>
+            <button class="tab active" onclick="switchTab(0)">📊 経営ダッシュボード</button>
+            <button class="tab" onclick="switchTab(1)">🚨 離職リスク分析</button>
+            <button class="tab" onclick="switchTab(2)">👥 全従業員データ</button>
+            <button class="tab" onclick="switchTab(3)">📈 部署別比較</button>
+        </div>
+
+        <!-- 🆕 タブ0: 経営ダッシュボード -->
+        <div class="tab-content active" id="tab0">
+            <button class="btn-pdf" onclick="generateExecutivePDF()">
+                📄 役員会用PDFレポート出力
+            </button>
+
+            <!-- 組織健康スコア -->
+            <div class="health-score-section">
+                <h2>組織健康スコア</h2>
+                <div class="score-circle" id="executiveScore">68</div>
+                <div class="score-change">
+                    <span class="trend-up" id="scoreTrend">↑ +8pt</span>
+                    <span class="comparison">前回診断との比較</span>
+                </div>
+            </div>
+
+            <!-- 緊急アラート -->
+            <div id="executiveAlert"></div>
+
+            <!-- レーダーチャート -->
+            <div class="radar-chart-section">
+                <h3>10カテゴリー別スコア(前回比較)</h3>
+                <canvas id="executiveRadarChart" width="800" height="600"></canvas>
+            </div>
+
+            <!-- 改善トレンド -->
+            <div class="trend-chart-section">
+                <h3>改善トレンド</h3>
+                <div class="period-controls">
+                    <button class="period-btn active" onclick="changePeriod(this, 3)">3ヶ月</button>
+                    <button class="period-btn" onclick="changePeriod(this, 6)">6ヶ月</button>
+                    <button class="period-btn" onclick="changePeriod(this, 12)">12ヶ月</button>
+                </div>
+                <canvas id="trendChart" width="800" height="400"></canvas>
+            </div>
         </div>
 
         <!-- タブ1: 離職リスク分析 -->
-        <div class="tab-content active" id="tab1">
+        <div class="tab-content" id="tab1">
             <div id="alertContainer"></div>
         </div>
 
@@ -474,6 +725,9 @@
 
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <!-- 🆕 jsPDF & html2canvas CDN (PDF生成用) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <script src="admin-dashboard.js"></script>
 </body>
