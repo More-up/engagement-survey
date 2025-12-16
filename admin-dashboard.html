@@ -107,6 +107,37 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* フィルター */
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .filter-group label {
+            font-size: 0.9em;
+            color: #666;
+            font-weight: 600;
+        }
+
+        .filter-group select {
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            min-width: 150px;
+        }
+
         /* 統計カード */
         .stats-grid {
             display: grid;
@@ -197,34 +228,6 @@
         .risk-badge.low {
             background: #e0ffe0;
             color: #27ae60;
-        }
-
-        /* フィルター */
-        .filters {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .filter-group {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
-        }
-
-        .filter-group label {
-            font-size: 0.9em;
-            color: #666;
-            font-weight: 600;
-        }
-
-        .filter-group select {
-            padding: 10px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 14px;
-            min-width: 150px;
         }
 
         /* アラート */
@@ -603,7 +606,56 @@
         <!-- タブ0: 経営ダッシュボード -->
         <div id="tab0" class="tab-content active">
             
-            <!-- ✨ 1. 改善トレンド(最上部) -->
+            <!-- フィルター(最上部) -->
+            <div class="filters">
+                <div class="filter-group">
+                    <label>企業</label>
+                    <select id="execCompanyFilter" onchange="applyExecutiveFilters()">
+                        <option value="">すべての企業</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>部署</label>
+                    <select id="execDepartmentFilter" onchange="applyExecutiveFilters()">
+                        <option value="">すべての部署</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>リスクレベル</label>
+                    <select id="execRiskFilter" onchange="applyExecutiveFilters()">
+                        <option value="">すべて</option>
+                        <option value="high">高リスク</option>
+                        <option value="medium">中リスク</option>
+                        <option value="low">低リスク</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 統計カード -->
+            <div class="stats-grid">
+                <div class="stat-card danger">
+                    <h3>🚨 高リスク</h3>
+                    <div class="number" id="execHighRiskCount">0</div>
+                </div>
+                <div class="stat-card warning">
+                    <h3>⚠️ 中リスク</h3>
+                    <div class="number" id="execMediumRiskCount">0</div>
+                </div>
+                <div class="stat-card success">
+                    <h3>✅ 低リスク</h3>
+                    <div class="number" id="execLowRiskCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>👥 診断完了者</h3>
+                    <div class="number" id="execTotalCount">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>📊 平均スコア</h3>
+                    <div class="number" id="execAvgScore">0</div>
+                </div>
+            </div>
+
+            <!-- ✨ 1. 改善トレンド -->
             <div class="trend-section">
                 <div class="section-header">
                     <h2>📈 改善トレンド</h2>
@@ -633,8 +685,10 @@
                         </div>
                     </div>
                 </div>
-                <canvas id="trendChart" style="max-width: 100%; height: 400px;"></canvas>
-                <div id="trendMessage" class="trend-message" style="display:none; text-align:center; padding:20px; color:#999;">
+                <div style="position: relative; height: 400px;">
+                    <canvas id="trendChart"></canvas>
+                </div>
+                <div id="trendMessage" class="trend-message" style="display:none;">
                     データを読み込み中...
                 </div>
             </div>
@@ -663,7 +717,9 @@
                         前回比較を表示
                     </label>
                 </div>
-                <canvas id="executiveRadarChart" style="max-width: 100%; height: auto;"></canvas>
+                <div style="position: relative; max-width: 600px; margin: 0 auto;">
+                    <canvas id="executiveRadarChart"></canvas>
+                </div>
             </div>
 
             <!-- ✨ 4. PDF出力ボタン(最下部) -->
