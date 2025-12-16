@@ -7,11 +7,11 @@ const API_ENDPOINT = 'https://engagement-survey-api.more-up.workers.dev';
 
 // 重要設問の定義
 const CRITICAL_QUESTIONS = {
-    27: { category: '成長機会', text: 'この会社で働き続けることで、自分のキャリアの将来像を描けますか？', threshold: 2 },
-    54: { category: '評価・処遇', text: '会社の評価制度に納得していますか？', threshold: 2 },
-    64: { category: '会社への信頼', text: 'この会社は将来性があると思いますか？', threshold: 2 },
-    81: { category: '総合満足度', text: '現在の仕事に満足していますか？', threshold: 2 },
-    100: { category: '組織へのつながり', text: 'この会社で長く働きたいと思いますか？', threshold: 2 }
+    27: { category: '成長機会', text: 'この会社で働き続けることで、自分のキャリアの将来像を描けますか?', threshold: 2 },
+    54: { category: '評価・処遇', text: '会社の評価制度に納得していますか?', threshold: 2 },
+    64: { category: '会社への信頼', text: 'この会社は将来性があると思いますか?', threshold: 2 },
+    81: { category: '総合満足度', text: '現在の仕事に満足していますか?', threshold: 2 },
+    100: { category: '組織へのつながり', text: 'この会社で長く働きたいと思いますか?', threshold: 2 }
 };
 
 // グローバル変数
@@ -120,6 +120,9 @@ async function loadAllData() {
         filteredData = [...allEmployeeData];
         updateFilters();
         updateDashboard();
+        
+        // 🆕 経営ダッシュボードを初期化
+        initExecutiveDashboard();
         
     } catch (error) {
         console.error('データ読み込みエラー:', error);
@@ -261,6 +264,8 @@ function applyFilters() {
     });
     
     updateDashboard();
+    // 🆕 フィルター変更時に経営ダッシュボードも更新
+    updateExecutiveDashboard();
 }
 
 // ========================================
@@ -409,8 +414,15 @@ function switchTab(index) {
         }
     });
     
+    // 🆕 タブ0(経営ダッシュボード)が開かれたときに初期化
+    if (index === 0) {
+        setTimeout(() => {
+            initExecutiveDashboard();
+        }, 100);
+    }
+    
     // タブ3（部署別比較）が開かれたときに部署チェックボックスを生成
-    if (index === 2) {
+    if (index === 3) {
         generateDeptCheckboxes();
     }
 }
@@ -842,4 +854,318 @@ function drawDeptComparisonChart(deptData) {
             }
         }
     });
+}
+
+// ================================================
+// 🆕 経営ダッシュボード機能
+// ================================================
+
+let executiveRadarChart = null;
+let trendLineChart = null;
+let currentPeriod = 3; // デフォルト3ヶ月
+
+// ========================================
+// 経営ダッシュボードの初期化
+// ========================================
+function initExecutiveDashboard() {
+    updateExecutiveScore();
+    updateExecutiveAlert();
+    drawExecutiveRadarChart();
+    drawTrendChart(currentPeriod);
+}
+
+// ========================================
+// 経営ダッシュボードの更新(フィルター変更時)
+// ========================================
+function updateExecutiveDashboard() {
+    updateExecutiveScore();
+    updateExecutiveAlert();
+    if (executiveRadarChart) {
+        drawExecutiveRadarChart();
+    }
+    if (trendLineChart) {
+        drawTrendChart(currentPeriod);
+    }
+}
+
+// ========================================
+// 組織健康スコアの更新
+// ========================================
+function updateExecutiveScore() {
+    if (filteredData.length === 0) {
+        document.getElementById('executiveScore').textContent = '0';
+        document.getElementById('scoreTrend').textContent = '-';
+        return;
+    }
+
+    // 現在の平均スコア(5点満点→100点換算)
+    const currentAvg = filteredData.reduce((sum, e) => sum + e.totalScore, 0) / filteredData.length;
+    const currentScore = Math.round((currentAvg / 5) * 100);
+    
+    document.getElementById('executiveScore').textContent = currentScore;
+
+    // 前回データがあれば比較(模擬データ: 現在スコア-8点)
+    const previousScore = currentScore - 8;
+    const diff = currentScore - previousScore;
+
+    const trendElement = document.getElementById('scoreTrend');
+    if (diff > 0) {
+        trendElement.textContent = `↑ +${diff}pt`;
+        trendElement.className = 'trend-up';
+    } else if (diff < 0) {
+        trendElement.textContent = `↓ ${diff}pt`;
+        trendElement.className = 'trend-down';
+    } else {
+        trendElement.textContent = '→ 変化なし';
+        trendElement.className = '';
+    }
+}
+
+// ========================================
+// 緊急アラートの更新
+// ========================================
+function updateExecutiveAlert() {
+    const alertContainer = document.getElementById('executiveAlert');
+    if (!alertContainer) return;
+    
+    const highRiskCount = filteredData.filter(e => e.riskLevel === 'high').length;
+
+    if (highRiskCount >= 3) {
+        alertContainer.innerHTML = `
+            <div class="alert-box danger">
+                <h3>🚨 緊急対応が必要: 高リスク社員 ${highRiskCount}名</h3>
+                <button class="btn-alert" onclick="switchTab(1)">詳細を見る</button>
+            </div>
+        `;
+    } else {
+        alertContainer.innerHTML = `
+            <div class="alert-box success">
+                <h3>✅ 組織は良好な状態です</h3>
+            </div>
+        `;
+    }
+}
+
+// ========================================
+// 経営ダッシュボード用レーダーチャート
+// ========================================
+function drawExecutiveRadarChart() {
+    const canvas = document.getElementById('executiveRadarChart');
+    if (!canvas) return;
+
+    // 既存のチャートを破棄
+    if (executiveRadarChart) {
+        executiveRadarChart.destroy();
+    }
+
+    const ctx = canvas.getContext('2d');
+
+    // カテゴリー別平均スコア計算
+    const categories = ['心身の健康', '仕事の充実感', '成長機会', '上司のサポート', 'チームとの協働', 
+                       '評価・処遇', '会社への信頼', '働く環境', '総合満足度', '組織へのつながり'];
+
+    const currentScores = categories.map(cat => {
+        if (filteredData.length === 0) return 0;
+        const scores = filteredData.map(e => parseFloat(e.categoryScores[cat]) || 0);
+        const avg = scores.reduce((sum, s) => sum + s, 0) / scores.length;
+        return parseFloat(avg.toFixed(2));
+    });
+
+    // 前回データ(模擬データ: 現在の-0.2〜+0.3の範囲でランダム)
+    const previousScores = currentScores.map(score => {
+        const variation = (Math.random() - 0.4) * 0.5;
+        return Math.max(0, parseFloat(score) + variation).toFixed(2);
+    });
+
+    executiveRadarChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: categories,
+            datasets: [
+                {
+                    label: '今回診断',
+                    data: currentScores,
+                    borderColor: 'rgba(102, 126, 234, 1)',
+                    backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                    borderWidth: 3,
+                    pointBackgroundColor: 'rgba(102, 126, 234, 1)',
+                    pointBorderColor: '#fff',
+                    pointRadius: 5
+                },
+                {
+                    label: '前回診断',
+                    data: previousScores,
+                    borderColor: 'rgba(149, 165, 166, 0.6)',
+                    backgroundColor: 'rgba(149, 165, 166, 0.1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(149, 165, 166, 0.6)',
+                    pointBorderColor: '#fff',
+                    pointRadius: 4
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 5,
+                    ticks: {
+                        stepSize: 1,
+                        font: { size: 14 }
+                    },
+                    pointLabels: {
+                        font: { size: 14 }
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: { font: { size: 16 } }
+                },
+                title: {
+                    display: false
+                }
+            }
+        }
+    });
+}
+
+// ========================================
+// 改善トレンドグラフ
+// ========================================
+function drawTrendChart(period) {
+    const canvas = document.getElementById('trendChart');
+    if (!canvas) return;
+
+    // 既存のチャートを破棄
+    if (trendLineChart) {
+        trendLineChart.destroy();
+    }
+
+    const ctx = canvas.getContext('2d');
+
+    // 期間に応じたラベル生成(模擬データ)
+    const labels = [];
+    const dataPoints = [];
+    
+    for (let i = period; i >= 0; i--) {
+        const date = new Date();
+        date.setMonth(date.getMonth() - i);
+        labels.push(`${date.getFullYear()}/${date.getMonth() + 1}`);
+        
+        // 模擬データ: 60〜72の範囲でランダム
+        dataPoints.push((Math.random() * 12 + 60).toFixed(1));
+    }
+
+    // 最新データは実際の平均スコア
+    if (filteredData.length > 0) {
+        const currentAvg = filteredData.reduce((sum, e) => sum + e.totalScore, 0) / filteredData.length;
+        dataPoints[dataPoints.length - 1] = ((currentAvg / 5) * 100).toFixed(1);
+    }
+
+    trendLineChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: '総合スコア推移',
+                data: dataPoints,
+                borderColor: 'rgba(102, 126, 234, 1)',
+                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 6,
+                pointBackgroundColor: 'rgba(102, 126, 234, 1)',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: 'スコア (100点満点)',
+                        font: { size: 16 }
+                    },
+                    ticks: { font: { size: 14 } }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: '診断実施月',
+                        font: { size: 16 }
+                    },
+                    ticks: { font: { size: 14 } }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: { font: { size: 16 } }
+                }
+            }
+        }
+    });
+}
+
+// ========================================
+// 期間変更
+// ========================================
+function changePeriod(button, period) {
+    // ボタンのアクティブ状態を更新
+    document.querySelectorAll('.period-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    button.classList.add('active');
+
+    // グラフを再描画
+    currentPeriod = period;
+    drawTrendChart(period);
+}
+
+// ========================================
+// PDF自動生成(説明ダイアログ)
+// ========================================
+function generateExecutivePDF() {
+    alert('📄 PDF生成機能は現在開発中です。\n\n【実装予定】\n✓ 8〜12ページの役員会用レポート\n✓ レーダーチャート、トレンドグラフの自動挿入\n✓ 部署別分析、マネージャー評価\n✓ AI分析レポート\n\n次のフェーズで詳細実装を行います。');
+
+    // 🔜 将来の実装例(jsPDF使用)
+    /*
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    
+    // ページ1: 総合スコア
+    doc.setFontSize(28);
+    doc.text('経営ダッシュボード', 105, 30, { align: 'center' });
+    
+    doc.setFontSize(18);
+    doc.text('組織健康スコア: ' + document.getElementById('executiveScore').textContent + '点', 105, 60, { align: 'center' });
+    
+    // レーダーチャートの画像化
+    const canvas1 = document.getElementById('executiveRadarChart');
+    const img1 = canvas1.toDataURL('image/png');
+    doc.addImage(img1, 'PNG', 10, 80, 190, 150);
+    
+    // ページ2: トレンドグラフ
+    doc.addPage();
+    doc.setFontSize(22);
+    doc.text('改善トレンド', 105, 30, { align: 'center' });
+    
+    const canvas2 = document.getElementById('trendChart');
+    const img2 = canvas2.toDataURL('image/png');
+    doc.addImage(img2, 'PNG', 10, 50, 190, 120);
+    
+    doc.save('executive_report_' + new Date().toISOString().split('T')[0] + '.pdf');
+    */
 }
