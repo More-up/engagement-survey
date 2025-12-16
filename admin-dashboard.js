@@ -301,59 +301,35 @@ function updateStats() {
 // アラート表示更新
 // ========================================
 function updateAlerts() {
-    const alertContainer = document.getElementById('alertContainer');
+    const criticalAlerts = document.getElementById('criticalAlerts');
+    const alertsList = document.getElementById('alertsList');
     
-    // 高リスク従業員のみ表示
-    const highRiskEmployees = filteredData.filter(e => e.riskLevel === 'high');
+    if (!criticalAlerts || !alertsList) return;
     
-    if (highRiskEmployees.length === 0) {
-        alertContainer.innerHTML = `
-            <div class="no-data">
-                <svg fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/>
-                </svg>
-                <p>🎉 高リスク従業員はいません</p>
-            </div>
-        `;
+    // 重要設問で低スコアの従業員を抽出
+    const employeesWithCriticalIssues = filteredData.filter(e => e.criticalAlerts.length > 0);
+    
+    if (employeesWithCriticalIssues.length === 0) {
+        criticalAlerts.style.display = 'none';
         return;
     }
     
-    let html = '<div class="alert-list">';
-    html += '<h3 style="color: #e74c3c; margin-bottom: 20px;">🚨 緊急対応が必要な従業員</h3>';
+    criticalAlerts.style.display = 'block';
     
-    highRiskEmployees.forEach(employee => {
-        html += `
-            <div class="alert-item high-risk">
-                <h4>👤 従業員コード: ${employee.employeeCode}</h4>
-                <div class="alert-details">
-                    <p><strong>部署:</strong> ${employee.department} | <strong>企業:</strong> ${employee.company}</p>
-                    <p><strong>総合スコア:</strong> ${employee.totalScore} / 5.0</p>
-                    <p><strong>危険な回答:</strong></p>
-                    <ul style="margin-left: 20px; color: #555;">
-        `;
-        
+    let html = '';
+    employeesWithCriticalIssues.forEach(employee => {
         employee.criticalAlerts.forEach(alert => {
-            html += `<li>Q${alert.questionNum} [${alert.category}] - スコア: ${alert.score}/5 → ${alert.text}</li>`;
+            html += `
+                <div class="alert-item">
+                    <strong>${employee.employeeCode} (${employee.department})</strong><br>
+                    Q${alert.questionNum} [${alert.category}] スコア: ${alert.score}/5<br>
+                    ${alert.text}
+                </div>
+            `;
         });
-        
-        html += `
-                    </ul>
-                </div>
-                <div class="alert-actions">
-                    <strong>📋 推奨アクション:</strong>
-                    <ul>
-                        <li>🔹 緊急1on1面談の実施（1週間以内）</li>
-                        <li>🔹 キャリアパス再提示と成長機会の具体化</li>
-                        <li>🔹 評価制度の詳細説明と納得感の醸成</li>
-                        <li>🔹 業務負荷の見直しと配置転換の検討</li>
-                    </ul>
-                </div>
-            </div>
-        `;
     });
     
-    html += '</div>';
-    alertContainer.innerHTML = html;
+    alertsList.innerHTML = html;
 }
 
 // ========================================
@@ -401,15 +377,15 @@ function updateDataTable() {
 // タブ切り替え
 // ========================================
 function switchTab(index) {
-    const tabs = document.querySelectorAll('.tab');
+    const buttons = document.querySelectorAll('.tab-button');
     const contents = document.querySelectorAll('.tab-content');
     
-    tabs.forEach((tab, i) => {
+    buttons.forEach((btn, i) => {
         if (i === index) {
-            tab.classList.add('active');
+            btn.classList.add('active');
             contents[i].classList.add('active');
         } else {
-            tab.classList.remove('active');
+            btn.classList.remove('active');
             contents[i].classList.remove('active');
         }
     });
@@ -421,9 +397,9 @@ function switchTab(index) {
         }, 100);
     }
     
-    // タブ3（部署別比較）が開かれたときに部署チェックボックスを生成
-    if (index === 3) {
-        generateDeptCheckboxes();
+    // タブ2（部署別比較）が開かれたときに初期化
+    if (index === 2) {
+        loadDepartmentComparison();
     }
 }
 
@@ -554,453 +530,93 @@ function exportDetailedReport() {
 // 部署別比較機能
 // ================================================
 
-// タブ3が開かれたときに部署チェックボックスを生成
-let deptComparisonChart = null;
+let comparisonChart = null;
 
-function generateDeptCheckboxes() {
-    const container = document.getElementById('deptCheckboxes');
-    if (!container) return;
+function loadDepartmentComparison() {
+    const companySelect = document.getElementById('companySelectComparison');
+    const dept1Select = document.getElementById('dept1Select');
+    const dept2Select = document.getElementById('dept2Select');
     
-    container.innerHTML = '';
+    if (!companySelect || !dept1Select || !dept2Select) return;
     
-    // 現在フィルタされている企業の部署を取得
-    const currentCompany = document.getElementById('companyFilter').value;
-    const relevantEmployees = currentCompany ? 
-        allEmployeeData.filter(e => e.company === currentCompany) : 
-        allEmployeeData;
-    
-    const departments = [...new Set(relevantEmployees.map(e => e.department))].filter(d => d !== '不明');
-    
-    if (departments.length === 0) {
-        container.innerHTML = '<p style="color: #999;">比較可能な部署がありません</p>';
-        return;
-    }
-    
-    departments.forEach(dept => {
-        const label = document.createElement('label');
-        label.style.cssText = 'display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 10px; background: white; border-radius: 8px; transition: all 0.3s;';
-        label.innerHTML = `<input type="checkbox" value="${dept}" style="width: 18px; height: 18px; cursor: pointer;"> ${dept}`;
-        label.onmouseover = () => label.style.background = '#e8f0fe';
-        label.onmouseout = () => label.style.background = 'white';
-        container.appendChild(label);
+    // 企業選択肢を生成
+    const companies = [...new Set(allEmployeeData.map(e => e.company))];
+    companySelect.innerHTML = '<option value="">企業を選択</option>';
+    companies.forEach(company => {
+        const option = document.createElement('option');
+        option.value = company;
+        option.textContent = company;
+        companySelect.appendChild(option);
     });
 }
 
-function generateDeptComparison() {
-    const checkboxes = document.querySelectorAll('#deptCheckboxes input[type="checkbox"]:checked');
+function updateComparison() {
+    const companyValue = document.getElementById('companySelectComparison').value;
+    const dept1Value = document.getElementById('dept1Select').value;
+    const dept2Value = document.getElementById('dept2Select').value;
     
-    if (checkboxes.length < 2) {
-        alert('比較する部署を2つ以上選択してください');
+    if (!dept1Value || !dept2Value) {
         return;
     }
     
-    const selectedDepts = Array.from(checkboxes).map(cb => cb.value);
-    const currentCompany = document.getElementById('companyFilter').value;
-    const relevantEmployees = currentCompany ? 
-        allEmployeeData.filter(e => e.company === currentCompany) : 
-        allEmployeeData;
+    // 部署データを取得
+    const dept1Data = allEmployeeData.filter(e => e.company === companyValue && e.department === dept1Value);
+    const dept2Data = allEmployeeData.filter(e => e.company === companyValue && e.department === dept2Value);
     
-    // 部署別データを集計
-    const deptData = [];
+    if (dept1Data.length === 0 || dept2Data.length === 0) {
+        alert('選択した部署にデータがありません');
+        return;
+    }
     
-    selectedDepts.forEach(dept => {
-        const deptEmployees = relevantEmployees.filter(e => e.department === dept);
-        
-        if (deptEmployees.length > 0) {
-            // 総合スコア平均
-            const avgTotalScore = (deptEmployees.reduce((sum, e) => sum + e.totalScore, 0) / deptEmployees.length).toFixed(2);
-            
-            // カテゴリ別スコア平均
-            const categories = ['心身の健康', '仕事の充実感', '成長機会', '上司のサポート', 'チームとの協働', 
-                               '評価・処遇', '会社への信頼', '働く環境', '総合満足度', '組織へのつながり'];
-            
-            const categoryAvgs = {};
-            categories.forEach(cat => {
-                const scores = deptEmployees.map(e => e.categoryScores[cat]);
-                categoryAvgs[cat] = (scores.reduce((sum, s) => sum + parseFloat(s), 0) / scores.length).toFixed(2);
-            });
-            
-            // リスクレベル集計
-            const highRisk = deptEmployees.filter(e => e.riskLevel === 'high').length;
-            const mediumRisk = deptEmployees.filter(e => e.riskLevel === 'medium').length;
-            const lowRisk = deptEmployees.filter(e => e.riskLevel === 'low').length;
-            
-            // マネージャー評価スコア (上司のサポート)
-            const managerScore = parseFloat(categoryAvgs['上司のサポート']);
-            
-            deptData.push({
-                dept,
-                count: deptEmployees.length,
-                avgTotalScore: parseFloat(avgTotalScore),
-                categoryAvgs,
-                highRisk,
-                mediumRisk,
-                lowRisk,
-                managerScore
-            });
-        }
-    });
-    
-    // 結果を表示
-    displayDeptComparisonResult(deptData, currentCompany);
-}
-
-function displayDeptComparisonResult(deptData, companyName) {
-    const resultContainer = document.getElementById('deptComparisonResult');
-    
-    // サマリーテーブル
-    const sortedByScore = [...deptData].sort((a, b) => b.avgTotalScore - a.avgTotalScore);
-    const sortedByManager = [...deptData].sort((a, b) => b.managerScore - a.managerScore);
-    const bestDept = sortedByScore[0];
-    const worstDept = sortedByScore[sortedByScore.length - 1];
-    const bestManager = sortedByManager[0];
-    const worstManager = sortedByManager[sortedByManager.length - 1];
-    
-    let html = `
-        <div style="background: white; padding: 30px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
-            <h3 style="color: #667eea; margin-bottom: 20px;">📈 部署別サマリー${companyName ? ' - ' + companyName : ''}</h3>
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>部署</th>
-                        <th>人数</th>
-                        <th>総合スコア</th>
-                        <th>マネージャー評価</th>
-                        <th>高リスク</th>
-                        <th>中リスク</th>
-                        <th>低リスク</th>
-                    </tr>
-                </thead>
-                <tbody>
-    `;
-    
-    sortedByScore.forEach(dept => {
-        html += `
-            <tr>
-                <td><strong>${dept.dept}</strong></td>
-                <td>${dept.count}名</td>
-                <td>${dept.avgTotalScore.toFixed(2)}</td>
-                <td>${dept.managerScore.toFixed(2)}</td>
-                <td>${dept.highRisk}名</td>
-                <td>${dept.mediumRisk}名</td>
-                <td>${dept.lowRisk}名</td>
-            </tr>
-        `;
-    });
-    
-    html += `
-                </tbody>
-            </table>
-        </div>
-        
-        <div style="background: white; padding: 30px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
-            <h3 style="color: #667eea; text-align: center; margin-bottom: 20px;">📊 カテゴリ別スコア比較</h3>
-            <canvas id="deptComparisonChart" width="800" height="400"></canvas>
-        </div>
-    `;
-    
-    // AI分析レポート
+    // カテゴリー別平均スコアを計算
     const categories = ['心身の健康', '仕事の充実感', '成長機会', '上司のサポート', 'チームとの協働', 
                        '評価・処遇', '会社への信頼', '働く環境', '総合満足度', '組織へのつながり'];
     
-    const categoryGaps = [];
-    categories.forEach(cat => {
-        const scores = deptData.map(d => parseFloat(d.categoryAvgs[cat]));
-        const max = Math.max(...scores);
-        const min = Math.min(...scores);
-        const gap = (max - min).toFixed(2);
-        
-        if (parseFloat(gap) > 0) {
-            const maxDept = deptData.find(d => parseFloat(d.categoryAvgs[cat]) === max);
-            const minDept = deptData.find(d => parseFloat(d.categoryAvgs[cat]) === min);
-            
-            categoryGaps.push({
-                category: cat,
-                gap: parseFloat(gap),
-                max: max.toFixed(2),
-                min: min.toFixed(2),
-                maxDept: maxDept.dept,
-                minDept: minDept.dept
-            });
-        }
+    const dept1Scores = categories.map(cat => {
+        const scores = dept1Data.map(e => parseFloat(e.categoryScores[cat]) || 0);
+        return (scores.reduce((sum, s) => sum + s, 0) / scores.length).toFixed(2);
     });
     
-    categoryGaps.sort((a, b) => b.gap - a.gap);
-    const topGap = categoryGaps[0];
-    
-    // 最高部署の強みカテゴリ（上位2つ）
-    const bestDeptCategories = Object.entries(bestDept.categoryAvgs)
-        .map(([cat, score]) => ({ cat, score: parseFloat(score) }))
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 2);
-    
-    // 最低部署の弱みカテゴリ（下位2つ）
-    const worstDeptCategories = Object.entries(worstDept.categoryAvgs)
-        .map(([cat, score]) => ({ cat, score: parseFloat(score) }))
-        .sort((a, b) => a.score - b.score)
-        .slice(0, 2);
-    
-    html += `
-        <div style="background: #f8f9fa; padding: 30px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1);">
-            <h3 style="color: #667eea; margin-bottom: 20px;">🤖 AI分析レポート</h3>
-            
-            <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid #667eea;">
-                <p style="margin-bottom: 10px;"><strong>🏆 最も高スコアの部署:</strong> ${bestDept.dept} (平均 ${bestDept.avgTotalScore.toFixed(2)}点、${bestDept.count}名)</p>
-                <p style="margin-bottom: 10px;"><strong>⚠️ 最も低スコアの部署:</strong> ${worstDept.dept} (平均 ${worstDept.avgTotalScore.toFixed(2)}点、${worstDept.count}名)</p>
-                <p style="margin-bottom: 10px;"><strong>👨‍💼 最優秀マネージャー:</strong> ${bestManager.dept} (上司サポート ${bestManager.managerScore.toFixed(2)}点)</p>
-                <p style="margin-bottom: 10px;"><strong>🔧 改善が必要なマネージャー:</strong> ${worstManager.dept} (上司サポート ${worstManager.managerScore.toFixed(2)}点)</p>
-                <p><strong>📈 最大カテゴリ差:</strong> ${topGap.category} (差分 ${topGap.gap.toFixed(2)}点)</p>
-                <p style="margin-top: 10px; color: #666; font-size: 0.9em;">
-                    └ 最高: ${topGap.maxDept} (${topGap.max}点) / 最低: ${topGap.minDept} (${topGap.min}点)
-                </p>
-            </div>
-            
-            <h4 style="color: #555; margin-top: 25px; margin-bottom: 15px;">💡 詳細分析</h4>
-            <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 15px;">
-                <ul style="line-height: 1.8; color: #555;">
-                    <li><strong>${bestDept.dept}の強み:</strong> ${bestDeptCategories.map(c => `${c.cat}(${c.score.toFixed(2)}点)`).join('、')}</li>
-                    <li><strong>${worstDept.dept}の課題:</strong> ${worstDeptCategories.map(c => `${c.cat}(${c.score.toFixed(2)}点)`).join('、')}</li>
-                    <li><strong>マネージャー評価差:</strong> ${(bestManager.managerScore - worstManager.managerScore).toFixed(2)}点 (${bestManager.dept} vs ${worstManager.dept})</li>
-                </ul>
-            </div>
-            
-            <h4 style="color: #555; margin-top: 25px; margin-bottom: 15px;">📌 推奨アクション</h4>
-            <div style="background: white; padding: 20px; border-radius: 10px;">
-                <ul style="line-height: 1.8; color: #555;">
-                    <li>${worstDept.dept}に対する ${worstDeptCategories[0].cat} 改善施策の実施</li>
-                    <li>${bestDept.dept}のベストプラクティスの他部署への共有</li>
-                    <li>${bestManager.dept}のマネジメント手法を ${worstManager.dept} へ横展開</li>
-                    <li>${topGap.category}に関する部署間の情報交換会の実施</li>
-                    <li>定期的なエンゲージメント調査の継続実施</li>
-                    <li>マネージャー研修の実施 (特に${worstManager.dept}管理職を優先)</li>
-                </ul>
-            </div>
-        </div>
-    `;
-    
-    resultContainer.innerHTML = html;
+    const dept2Scores = categories.map(cat => {
+        const scores = dept2Data.map(e => parseFloat(e.categoryScores[cat]) || 0);
+        return (scores.reduce((sum, s) => sum + s, 0) / scores.length).toFixed(2);
+    });
     
     // グラフを描画
-    drawDeptComparisonChart(deptData);
+    drawComparisonChart(categories, dept1Value, dept1Scores, dept2Value, dept2Scores);
+    
+    // AI分析を表示
+    generateAIAnalysis(dept1Value, dept1Data, dept1Scores, dept2Value, dept2Data, dept2Scores);
 }
 
-function drawDeptComparisonChart(deptData) {
-    const canvas = document.getElementById('deptComparisonChart');
+function drawComparisonChart(categories, dept1Name, dept1Scores, dept2Name, dept2Scores) {
+    const canvas = document.getElementById('comparisonChart');
     if (!canvas) return;
     
-    // 既存のチャートを破棄
-    if (deptComparisonChart) {
-        deptComparisonChart.destroy();
+    if (comparisonChart) {
+        comparisonChart.destroy();
     }
     
     const ctx = canvas.getContext('2d');
     
-    const categories = ['心身の健康', '仕事の充実感', '成長機会', '上司のサポート', 'チームとの協働', 
-                       '評価・処遇', '会社への信頼', '働く環境', '総合満足度', '組織へのつながり'];
-    
-    const colors = [
-        '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', 
-        '#858796', '#5a5c69', '#2e59d9', '#17a673', '#2c9faf'
-    ];
-    
-    const datasets = deptData.map((dept, index) => {
-        const data = categories.map(cat => parseFloat(dept.categoryAvgs[cat]));
-        return {
-            label: dept.dept + ' (' + dept.count + '名)',
-            data: data,
-            backgroundColor: colors[index % colors.length] + '80',
-            borderColor: colors[index % colors.length],
-            borderWidth: 2
-        };
-    });
-    
-    deptComparisonChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: categories,
-            datasets: datasets
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 5,
-                    title: {
-                        display: true,
-                        text: 'スコア (5点満点)',
-                        font: { size: 14 }
-                    }
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: 'カテゴリ',
-                        font: { size: 14 }
-                    }
-                }
-            },
-            plugins: {
-                title: {
-                    display: true,
-                    text: '部署別カテゴリスコア比較',
-                    font: { size: 18 }
-                },
-                legend: {
-                    display: true,
-                    position: 'top'
-                }
-            }
-        }
-    });
-}
-
-// ================================================
-// 🆕 経営ダッシュボード機能
-// ================================================
-
-let executiveRadarChart = null;
-let trendLineChart = null;
-let currentPeriod = 3; // デフォルト3ヶ月
-
-// ========================================
-// 経営ダッシュボードの初期化
-// ========================================
-function initExecutiveDashboard() {
-    updateExecutiveScore();
-    updateExecutiveAlert();
-    drawExecutiveRadarChart();
-    drawTrendChart(currentPeriod);
-}
-
-// ========================================
-// 経営ダッシュボードの更新(フィルター変更時)
-// ========================================
-function updateExecutiveDashboard() {
-    updateExecutiveScore();
-    updateExecutiveAlert();
-    if (executiveRadarChart) {
-        drawExecutiveRadarChart();
-    }
-    if (trendLineChart) {
-        drawTrendChart(currentPeriod);
-    }
-}
-
-// ========================================
-// 組織健康スコアの更新
-// ========================================
-function updateExecutiveScore() {
-    if (filteredData.length === 0) {
-        document.getElementById('executiveScore').textContent = '0';
-        document.getElementById('scoreTrend').textContent = '-';
-        return;
-    }
-
-    // 現在の平均スコア(5点満点→100点換算)
-    const currentAvg = filteredData.reduce((sum, e) => sum + e.totalScore, 0) / filteredData.length;
-    const currentScore = Math.round((currentAvg / 5) * 100);
-    
-    document.getElementById('executiveScore').textContent = currentScore;
-
-    // 前回データがあれば比較(模擬データ: 現在スコア-8点)
-    const previousScore = currentScore - 8;
-    const diff = currentScore - previousScore;
-
-    const trendElement = document.getElementById('scoreTrend');
-    if (diff > 0) {
-        trendElement.textContent = `↑ +${diff}pt`;
-        trendElement.className = 'trend-up';
-    } else if (diff < 0) {
-        trendElement.textContent = `↓ ${diff}pt`;
-        trendElement.className = 'trend-down';
-    } else {
-        trendElement.textContent = '→ 変化なし';
-        trendElement.className = '';
-    }
-}
-
-// ========================================
-// 緊急アラートの更新
-// ========================================
-function updateExecutiveAlert() {
-    const alertContainer = document.getElementById('executiveAlert');
-    if (!alertContainer) return;
-    
-    const highRiskCount = filteredData.filter(e => e.riskLevel === 'high').length;
-
-    if (highRiskCount >= 3) {
-        alertContainer.innerHTML = `
-            <div class="alert-box danger">
-                <h3>🚨 緊急対応が必要: 高リスク社員 ${highRiskCount}名</h3>
-                <button class="btn-alert" onclick="switchTab(1)">詳細を見る</button>
-            </div>
-        `;
-    } else {
-        alertContainer.innerHTML = `
-            <div class="alert-box success">
-                <h3>✅ 組織は良好な状態です</h3>
-            </div>
-        `;
-    }
-}
-
-// ========================================
-// 経営ダッシュボード用レーダーチャート
-// ========================================
-function drawExecutiveRadarChart() {
-    const canvas = document.getElementById('executiveRadarChart');
-    if (!canvas) return;
-
-    // 既存のチャートを破棄
-    if (executiveRadarChart) {
-        executiveRadarChart.destroy();
-    }
-
-    const ctx = canvas.getContext('2d');
-
-    // カテゴリー別平均スコア計算
-    const categories = ['心身の健康', '仕事の充実感', '成長機会', '上司のサポート', 'チームとの協働', 
-                       '評価・処遇', '会社への信頼', '働く環境', '総合満足度', '組織へのつながり'];
-
-    const currentScores = categories.map(cat => {
-        if (filteredData.length === 0) return 0;
-        const scores = filteredData.map(e => parseFloat(e.categoryScores[cat]) || 0);
-        const avg = scores.reduce((sum, s) => sum + s, 0) / scores.length;
-        return parseFloat(avg.toFixed(2));
-    });
-
-    // 前回データ(模擬データ: 現在の-0.2〜+0.3の範囲でランダム)
-    const previousScores = currentScores.map(score => {
-        const variation = (Math.random() - 0.4) * 0.5;
-        return Math.max(0, parseFloat(score) + variation).toFixed(2);
-    });
-
-    executiveRadarChart = new Chart(ctx, {
+    comparisonChart = new Chart(ctx, {
         type: 'radar',
         data: {
             labels: categories,
             datasets: [
                 {
-                    label: '今回診断',
-                    data: currentScores,
+                    label: dept1Name,
+                    data: dept1Scores,
                     borderColor: 'rgba(102, 126, 234, 1)',
                     backgroundColor: 'rgba(102, 126, 234, 0.2)',
-                    borderWidth: 3,
-                    pointBackgroundColor: 'rgba(102, 126, 234, 1)',
-                    pointBorderColor: '#fff',
-                    pointRadius: 5
+                    borderWidth: 3
                 },
                 {
-                    label: '前回診断',
-                    data: previousScores,
-                    borderColor: 'rgba(149, 165, 166, 0.6)',
-                    backgroundColor: 'rgba(149, 165, 166, 0.1)',
-                    borderWidth: 2,
-                    pointBackgroundColor: 'rgba(149, 165, 166, 0.6)',
-                    pointBorderColor: '#fff',
-                    pointRadius: 4
+                    label: dept2Name,
+                    data: dept2Scores,
+                    borderColor: 'rgba(46, 204, 113, 1)',
+                    backgroundColor: 'rgba(46, 204, 113, 0.2)',
+                    borderWidth: 3
                 }
             ]
         },
@@ -1010,13 +626,224 @@ function drawExecutiveRadarChart() {
             scales: {
                 r: {
                     beginAtZero: true,
+                    max: 5
+                }
+            }
+        }
+    });
+}
+
+function generateAIAnalysis(dept1Name, dept1Data, dept1Scores, dept2Name, dept2Data, dept2Scores) {
+    const aiReport = document.getElementById('aiAnalysisReport');
+    if (!aiReport) return;
+    
+    aiReport.style.display = 'block';
+    
+    // 総合評価
+    const dept1Avg = (dept1Data.reduce((sum, e) => sum + e.totalScore, 0) / dept1Data.length).toFixed(2);
+    const dept2Avg = (dept2Data.reduce((sum, e) => sum + e.totalScore, 0) / dept2Data.length).toFixed(2);
+    
+    const overallAnalysis = `${dept1Name}の平均スコア: ${dept1Avg}/5.0 (${dept1Data.length}名)<br>
+                            ${dept2Name}の平均スコア: ${dept2Avg}/5.0 (${dept2Data.length}名)<br>
+                            スコア差: ${Math.abs(dept1Avg - dept2Avg).toFixed(2)}点`;
+    
+    document.getElementById('aiOverallAnalysis').innerHTML = overallAnalysis;
+    
+    // 強みと課題
+    const categories = ['心身の健康', '仕事の充実感', '成長機会', '上司のサポート', 'チームとの協働', 
+                       '評価・処遇', '会社への信頼', '働く環境', '総合満足度', '組織へのつながり'];
+    
+    let strengthsWeaknesses = '';
+    categories.forEach((cat, idx) => {
+        const diff = (parseFloat(dept1Scores[idx]) - parseFloat(dept2Scores[idx])).toFixed(2);
+        if (Math.abs(diff) > 0.5) {
+            strengthsWeaknesses += `<li>${cat}: ${dept1Name}が${diff > 0 ? diff + '点高い' : Math.abs(diff) + '点低い'}</li>`;
+        }
+    });
+    
+    document.getElementById('aiStrengthsWeaknesses').innerHTML = strengthsWeaknesses || '<li>大きな差異はありません</li>';
+    
+    // 推奨アクション
+    const recommendations = `
+        <li>${dept1Avg > dept2Avg ? dept1Name : dept2Name}のベストプラクティスを共有</li>
+        <li>スコアの低いカテゴリに対する改善施策の実施</li>
+        <li>部署間の定期的な情報交換会の開催</li>
+        <li>マネージャー研修の実施</li>
+    `;
+    
+    document.getElementById('aiRecommendations').innerHTML = recommendations;
+}
+
+// ================================================
+// 🆕 経営ダッシュボード機能
+// ================================================
+
+let executiveRadarChart = null;
+let trendLineChart = null;
+let currentPeriod = 6; // デフォルト6ヶ月
+let currentTrendView = 'company'; // デフォルト全社表示
+
+// ========================================
+// 経営ダッシュボードの初期化
+// ========================================
+function initExecutiveDashboard() {
+    updateExecutiveAlerts();
+    updateExecutiveRadarChart();
+    updateTrendSelectors();
+    updateTrendChart();
+}
+
+// ========================================
+// 経営ダッシュボードの更新(フィルター変更時)
+// ========================================
+function updateExecutiveDashboard() {
+    updateExecutiveAlerts();
+    updateExecutiveRadarChart();
+    updateTrendChart();
+}
+
+// ========================================
+// 緊急アラートの更新
+// ========================================
+function updateExecutiveAlerts() {
+    const highRiskAlertsDiv = document.getElementById('highRiskAlerts');
+    const managerAlertsDiv = document.getElementById('managerAlerts');
+    
+    if (!highRiskAlertsDiv || !managerAlertsDiv) return;
+    
+    // 高リスク従業員
+    const highRiskEmployees = filteredData.filter(e => e.riskLevel === 'high');
+    
+    if (highRiskEmployees.length === 0) {
+        highRiskAlertsDiv.innerHTML = '<p style="color: #2ecc71;">✅ 現在、高リスク従業員はいません</p>';
+    } else {
+        let html = '<ul style="list-style: none; padding: 0;">';
+        highRiskEmployees.slice(0, 5).forEach(emp => {
+            html += `<li style="padding: 8px 0; border-bottom: 1px solid #eee;">
+                        👤 ${emp.employeeCode} (${emp.department}) - スコア: ${emp.totalScore.toFixed(2)}
+                     </li>`;
+        });
+        if (highRiskEmployees.length > 5) {
+            html += `<li style="padding: 8px 0; color: #999;">...他${highRiskEmployees.length - 5}名</li>`;
+        }
+        html += '</ul>';
+        highRiskAlertsDiv.innerHTML = html;
+    }
+    
+    // 要支援マネージャー(上司のサポートスコアが低い部署)
+    const deptManagerScores = {};
+    
+    filteredData.forEach(emp => {
+        if (!deptManagerScores[emp.department]) {
+            deptManagerScores[emp.department] = [];
+        }
+        const managerScore = emp.categoryScores['上司のサポート'] || 0;
+        deptManagerScores[emp.department].push(managerScore);
+    });
+    
+    const deptAvgScores = Object.keys(deptManagerScores).map(dept => {
+        const scores = deptManagerScores[dept];
+        const avg = scores.reduce((sum, s) => sum + s, 0) / scores.length;
+        return { dept, avg: avg.toFixed(2) };
+    }).sort((a, b) => a.avg - b.avg);
+    
+    const lowManagerDepts = deptAvgScores.filter(d => d.avg < 3.0).slice(0, 3);
+    
+    if (lowManagerDepts.length === 0) {
+        managerAlertsDiv.innerHTML = '<p style="color: #2ecc71;">✅ 全部署でマネジメントは良好です</p>';
+    } else {
+        let html = '<ul style="list-style: none; padding: 0;">';
+        lowManagerDepts.forEach(dept => {
+            html += `<li style="padding: 8px 0; border-bottom: 1px solid #eee;">
+                        👨‍💼 ${dept.dept} - 上司サポート: ${dept.avg}点
+                     </li>`;
+        });
+        html += '</ul>';
+        managerAlertsDiv.innerHTML = html;
+    }
+}
+
+// ========================================
+// 経営ダッシュボード用レーダーチャート
+// ========================================
+function updateExecutiveRadarChart() {
+    const canvas = document.getElementById('executiveRadarChart');
+    if (!canvas) return;
+
+    // 既存のチャートを破棄
+    if (executiveRadarChart) {
+        executiveRadarChart.destroy();
+    }
+
+    if (filteredData.length === 0) {
+        return;
+    }
+
+    const ctx = canvas.getContext('2d');
+
+    // カテゴリー別平均スコア計算
+    const categories = ['心身の健康', '仕事の充実感', '成長機会', '上司のサポート', 'チームとの協働', 
+                       '評価・処遇', '会社への信頼', '働く環境', '総合満足度', '組織へのつながり'];
+
+    const currentScores = categories.map(cat => {
+        const scores = filteredData.map(e => parseFloat(e.categoryScores[cat]) || 0);
+        const avg = scores.reduce((sum, s) => sum + s, 0) / scores.length;
+        return parseFloat(avg.toFixed(2));
+    });
+
+    // 前回比較表示が有効か確認
+    const showPrevious = document.getElementById('showPreviousRadar')?.checked || false;
+
+    const datasets = [{
+        label: '今回診断',
+        data: currentScores,
+        borderColor: 'rgba(102, 126, 234, 1)',
+        backgroundColor: 'rgba(102, 126, 234, 0.2)',
+        borderWidth: 3,
+        pointBackgroundColor: 'rgba(102, 126, 234, 1)',
+        pointBorderColor: '#fff',
+        pointRadius: 5
+    }];
+
+    // 前回データを表示する場合(模擬データ)
+    if (showPrevious) {
+        const previousScores = currentScores.map(score => {
+            const variation = (Math.random() - 0.5) * 0.4;
+            return Math.max(0, Math.min(5, parseFloat(score) + variation)).toFixed(2);
+        });
+        
+        datasets.push({
+            label: '前回診断',
+            data: previousScores,
+            borderColor: 'rgba(149, 165, 166, 0.6)',
+            backgroundColor: 'rgba(149, 165, 166, 0.1)',
+            borderWidth: 2,
+            pointBackgroundColor: 'rgba(149, 165, 166, 0.6)',
+            pointBorderColor: '#fff',
+            pointRadius: 4
+        });
+    }
+
+    executiveRadarChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: categories,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            aspectRatio: 1,
+            scales: {
+                r: {
+                    beginAtZero: true,
                     max: 5,
                     ticks: {
                         stepSize: 1,
-                        font: { size: 14 }
+                        font: { size: 12 }
                     },
                     pointLabels: {
-                        font: { size: 14 }
+                        font: { size: 11 }
                     }
                 }
             },
@@ -1024,10 +851,7 @@ function drawExecutiveRadarChart() {
                 legend: {
                     display: true,
                     position: 'top',
-                    labels: { font: { size: 16 } }
-                },
-                title: {
-                    display: false
+                    labels: { font: { size: 14 } }
                 }
             }
         }
@@ -1035,36 +859,124 @@ function drawExecutiveRadarChart() {
 }
 
 // ========================================
+// トレンド表示の切り替えボタン更新
+// ========================================
+function updateTrendSelectors() {
+    const deptSelect = document.getElementById('trendDeptSelect');
+    const personSelect = document.getElementById('trendPersonSelect');
+    
+    if (!deptSelect || !personSelect) return;
+    
+    // 部署選択肢を生成
+    const departments = [...new Set(filteredData.map(e => e.department))].filter(d => d !== '不明');
+    deptSelect.innerHTML = '<option value="">部署を選択</option>';
+    departments.forEach(dept => {
+        const option = document.createElement('option');
+        option.value = dept;
+        option.textContent = dept;
+        deptSelect.appendChild(option);
+    });
+    
+    // 個人選択肢を生成
+    personSelect.innerHTML = '<option value="">従業員を選択</option>';
+    filteredData.forEach(emp => {
+        const option = document.createElement('option');
+        option.value = emp.employeeCode;
+        option.textContent = `${emp.employeeCode} (${emp.department})`;
+        personSelect.appendChild(option);
+    });
+}
+
+// ========================================
+// トレンド表示切替
+// ========================================
+function changeTrendView(viewType) {
+    currentTrendView = viewType;
+    
+    // ボタンのアクティブ状態を更新
+    document.querySelectorAll('.view-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    // 選択UIの表示/非表示
+    const deptSelect = document.getElementById('trendDeptSelect');
+    const personSelect = document.getElementById('trendPersonSelect');
+    
+    if (deptSelect && personSelect) {
+        deptSelect.style.display = viewType === 'department' ? 'block' : 'none';
+        personSelect.style.display = viewType === 'individual' ? 'block' : 'none';
+    }
+    
+    // グラフを更新
+    updateTrendChart();
+}
+
+// ========================================
 // 改善トレンドグラフ
 // ========================================
-function drawTrendChart(period) {
+function updateTrendChart() {
     const canvas = document.getElementById('trendChart');
+    const messageDiv = document.getElementById('trendMessage');
+    
     if (!canvas) return;
 
     // 既存のチャートを破棄
     if (trendLineChart) {
         trendLineChart.destroy();
+        trendLineChart = null;
+    }
+
+    // データがない場合
+    if (filteredData.length === 0) {
+        if (messageDiv) {
+            messageDiv.textContent = 'データがありません';
+            messageDiv.style.display = 'block';
+        }
+        canvas.style.display = 'none';
+        return;
     }
 
     const ctx = canvas.getContext('2d');
 
-    // 期間に応じたラベル生成(模擬データ)
+    // 期間に応じたラベル生成
     const labels = [];
     const dataPoints = [];
     
-    for (let i = period; i >= 0; i--) {
+    for (let i = currentPeriod - 1; i >= 0; i--) {
         const date = new Date();
         date.setMonth(date.getMonth() - i);
-        labels.push(`${date.getFullYear()}/${date.getMonth() + 1}`);
+        labels.push(`${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}`);
         
-        // 模擬データ: 60〜72の範囲でランダム
-        dataPoints.push((Math.random() * 12 + 60).toFixed(1));
+        // 模擬データ: 55〜75の範囲
+        dataPoints.push((Math.random() * 20 + 55).toFixed(1));
     }
 
-    // 最新データは実際の平均スコア
-    if (filteredData.length > 0) {
-        const currentAvg = filteredData.reduce((sum, e) => sum + e.totalScore, 0) / filteredData.length;
+    // 最新月のデータを実際の平均スコアに置き換え
+    let targetData = filteredData;
+    
+    // 表示タイプに応じてデータをフィルタリング
+    if (currentTrendView === 'department') {
+        const selectedDept = document.getElementById('trendDeptSelect')?.value;
+        if (selectedDept) {
+            targetData = filteredData.filter(e => e.department === selectedDept);
+        }
+    } else if (currentTrendView === 'individual') {
+        const selectedPerson = document.getElementById('trendPersonSelect')?.value;
+        if (selectedPerson) {
+            targetData = filteredData.filter(e => e.employeeCode === selectedPerson);
+        }
+    }
+    
+    if (targetData.length > 0) {
+        const currentAvg = targetData.reduce((sum, e) => sum + e.totalScore, 0) / targetData.length;
         dataPoints[dataPoints.length - 1] = ((currentAvg / 5) * 100).toFixed(1);
+    }
+
+    // グラフを表示
+    canvas.style.display = 'block';
+    if (messageDiv) {
+        messageDiv.style.display = 'none';
     }
 
     trendLineChart = new Chart(ctx, {
@@ -1072,7 +984,7 @@ function drawTrendChart(period) {
         data: {
             labels: labels,
             datasets: [{
-                label: '総合スコア推移',
+                label: '総合スコア推移 (100点満点)',
                 data: dataPoints,
                 borderColor: 'rgba(102, 126, 234, 1)',
                 backgroundColor: 'rgba(102, 126, 234, 0.1)',
@@ -1087,7 +999,7 @@ function drawTrendChart(period) {
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             scales: {
                 y: {
                     beginAtZero: true,
@@ -1095,24 +1007,24 @@ function drawTrendChart(period) {
                     title: {
                         display: true,
                         text: 'スコア (100点満点)',
-                        font: { size: 16 }
+                        font: { size: 14 }
                     },
-                    ticks: { font: { size: 14 } }
+                    ticks: { font: { size: 12 } }
                 },
                 x: {
                     title: {
                         display: true,
                         text: '診断実施月',
-                        font: { size: 16 }
+                        font: { size: 14 }
                     },
-                    ticks: { font: { size: 14 } }
+                    ticks: { font: { size: 12 } }
                 }
             },
             plugins: {
                 legend: {
                     display: true,
                     position: 'top',
-                    labels: { font: { size: 16 } }
+                    labels: { font: { size: 14 } }
                 }
             }
         }
@@ -1122,50 +1034,22 @@ function drawTrendChart(period) {
 // ========================================
 // 期間変更
 // ========================================
-function changePeriod(button, period) {
+function changePeriod(period) {
+    currentPeriod = period;
+    
     // ボタンのアクティブ状態を更新
-    document.querySelectorAll('.period-btn').forEach(btn => {
+    document.querySelectorAll('.period-buttons button').forEach(btn => {
         btn.classList.remove('active');
     });
-    button.classList.add('active');
+    event.target.classList.add('active');
 
     // グラフを再描画
-    currentPeriod = period;
-    drawTrendChart(period);
+    updateTrendChart();
 }
 
 // ========================================
-// PDF自動生成(説明ダイアログ)
+// PDF自動生成(プレースホルダー)
 // ========================================
 function generateExecutivePDF() {
-    alert('📄 PDF生成機能は現在開発中です。\n\n【実装予定】\n✓ 8〜12ページの役員会用レポート\n✓ レーダーチャート、トレンドグラフの自動挿入\n✓ 部署別分析、マネージャー評価\n✓ AI分析レポート\n\n次のフェーズで詳細実装を行います。');
-
-    // 🔜 将来の実装例(jsPDF使用)
-    /*
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF('p', 'mm', 'a4');
-    
-    // ページ1: 総合スコア
-    doc.setFontSize(28);
-    doc.text('経営ダッシュボード', 105, 30, { align: 'center' });
-    
-    doc.setFontSize(18);
-    doc.text('組織健康スコア: ' + document.getElementById('executiveScore').textContent + '点', 105, 60, { align: 'center' });
-    
-    // レーダーチャートの画像化
-    const canvas1 = document.getElementById('executiveRadarChart');
-    const img1 = canvas1.toDataURL('image/png');
-    doc.addImage(img1, 'PNG', 10, 80, 190, 150);
-    
-    // ページ2: トレンドグラフ
-    doc.addPage();
-    doc.setFontSize(22);
-    doc.text('改善トレンド', 105, 30, { align: 'center' });
-    
-    const canvas2 = document.getElementById('trendChart');
-    const img2 = canvas2.toDataURL('image/png');
-    doc.addImage(img2, 'PNG', 10, 50, 190, 120);
-    
-    doc.save('executive_report_' + new Date().toISOString().split('T')[0] + '.pdf');
-    */
+    alert('📄 PDF生成機能は現在開発中です。\n\n【実装予定】\n✓ 8〜12ページの役員会用レポート\n✓ レーダーチャート、トレンドグラフの自動挿入\n✓ 緊急アラート、部署別分析\n✓ AI分析レポート\n\n次のフェーズで詳細実装を行います。');
 }
