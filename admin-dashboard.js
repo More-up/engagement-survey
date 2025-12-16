@@ -153,7 +153,7 @@ function calculateScores(answers) {
         { name: '仕事の充実感', start: 11, end: 20 },
         { name: '成長機会', start: 21, end: 30 },
         { name: '上司のサポート', start: 31, end: 40 },
-        { name: 'チームとの協働', start: 41, end: 50 },
+        { name: '部署内の人間関係', start: 41, end: 50 },
         { name: '評価・処遇', start: 51, end: 60 },
         { name: '会社への信頼', start: 61, end: 70 },
         { name: '働く環境', start: 71, end: 80 },
@@ -577,7 +577,7 @@ function updateComparison() {
     }
     
     // カテゴリー別平均スコアを計算
-    const categories = ['心身の健康', '仕事の充実感', '成長機会', '上司のサポート', 'チームとの協働', 
+    const categories = ['心身の健康', '仕事の充実感', '成長機会', '上司のサポート', '部署内の人間関係', 
                        '評価・処遇', '会社への信頼', '働く環境', '総合満足度', '組織へのつながり'];
     
     const dept1Scores = categories.map(cat => {
@@ -658,7 +658,7 @@ function generateAIAnalysis(dept1Name, dept1Data, dept1Scores, dept2Name, dept2D
     document.getElementById('aiOverallAnalysis').innerHTML = overallAnalysis;
     
     // 強みと課題
-    const categories = ['心身の健康', '仕事の充実感', '成長機会', '上司のサポート', 'チームとの協働', 
+    const categories = ['心身の健康', '仕事の充実感', '成長機会', '上司のサポート', '部署内の人間関係', 
                        '評価・処遇', '会社への信頼', '働く環境', '総合満足度', '組織へのつながり'];
     
     let strengthsWeaknesses = '';
@@ -856,7 +856,7 @@ function updateExecutiveRadarChart() {
     const ctx = canvas.getContext('2d');
 
     // カテゴリー別平均スコア計算
-    const categories = ['心身の健康', '仕事の充実感', '成長機会', '上司のサポート', 'チームとの協働', 
+    const categories = ['心身の健康', '仕事の充実感', '成長機会', '上司のサポート', '部署内の人間関係', 
                        '評価・処遇', '会社への信頼', '働く環境', '総合満足度', '組織へのつながり'];
 
     const currentScores = categories.map(cat => {
@@ -889,10 +889,10 @@ function updateExecutiveRadarChart() {
         datasets.push({
             label: '前回診断',
             data: previousScores,
-            borderColor: 'rgba(149, 165, 166, 0.6)',
-            backgroundColor: 'rgba(149, 165, 166, 0.1)',
+            borderColor: 'rgba(255, 159, 64, 1)',
+            backgroundColor: 'rgba(255, 159, 64, 0.2)',
             borderWidth: 2,
-            pointBackgroundColor: 'rgba(149, 165, 166, 0.6)',
+            pointBackgroundColor: 'rgba(255, 159, 64, 1)',
             pointBorderColor: '#fff',
             pointRadius: 4
         });
