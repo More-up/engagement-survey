@@ -139,31 +139,23 @@ const questions = [
 ];
 
 // グローバル変数
-let currentQuestion = 0;
-let answers = [];
+let currentSection = 0; // 現在のセクション (0-9)
+let answers = {}; // {questionIndex: score} の形式で保存
 let employeeCode = '';
 let department = '';
 let gender = '';
 
 // ページ遷移関数
-function showOrientation() {
-    document.getElementById('topPage').classList.remove('active');
-    document.getElementById('orientationPage').classList.add('active');
-}
-
-function showBasicInfo() {
-    document.getElementById('orientationPage').classList.remove('active');
-    document.getElementById('basicInfoPage').classList.add('active');
+function showPage(pageId) {
+    document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+    });
+    document.getElementById(pageId).classList.add('active');
 }
 
 // 基本情報の保存と診断開始
-document.getElementById('basicInfoForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    saveDepartmentAndStart();
-});
-
 function saveDepartmentAndStart() {
-    employeeCode = document.getElementById('employeeCode').value;
+    employeeCode = document.getElementById('employee-code').value.trim();
     department = document.getElementById('department').value;
     gender = document.getElementById('gender').value;
     
@@ -172,166 +164,153 @@ function saveDepartmentAndStart() {
         return;
     }
     
-    // ローカルストレージに保存
-    localStorage.setItem('employeeCode', employeeCode);
-    localStorage.setItem('department', department);
-    localStorage.setItem('gender', gender);
-    
-    document.getElementById('basicInfoPage').classList.remove('active');
-    document.getElementById('surveyPage').classList.add('active');
-    loadQuestion();
+    showPage('survey-page');
+    loadSection(0);
 }
 
-// 質問の読み込み
-function loadQuestion() {
-    if (currentQuestion >= questions.length) {
-        calculateResults();
-        return;
-    }
+// セクションの読み込み (10問ずつ表示)
+function loadSection(sectionIndex) {
+    currentSection = sectionIndex;
+    const startQ = sectionIndex * 10;
+    const endQ = startQ + 10;
     
-    const categoryIndex = Math.floor(currentQuestion / 10);
-    const questionInCategory = (currentQuestion % 10) + 1;
+    const container = document.getElementById('questions-container');
+    container.innerHTML = '';
     
-    // 質問テキストを設定
-    const questionTextElement = document.getElementById('questionText');
-    questionTextElement.textContent = questions[currentQuestion];
+    // カテゴリーヘッダーを更新
+    const categoryHeader = document.querySelector('#category-header-fixed h2');
+    categoryHeader.textContent = `カテゴリー${sectionIndex + 1}: ${categories[sectionIndex]}`;
     
-    // カテゴリー5 (Q41-50) の場合、注釈を表示
-    const existingNote = document.querySelector('.category-note');
-    if (existingNote) {
-        existingNote.remove();
-    }
+    // カテゴリー5 (Q41-50) の注釈表示
+    let categoryNote = document.querySelector('.category-note');
+    if (categoryNote) categoryNote.remove();
     
-    if (currentQuestion === 40) { // Q41は配列インデックス40
+    if (sectionIndex === 4) { // カテゴリー5
         const noteDiv = document.createElement('div');
         noteDiv.className = 'category-note';
-        noteDiv.style.fontSize = '0.9em';
-        noteDiv.style.color = '#666';
-        noteDiv.style.marginTop = '10px';
-        noteDiv.style.fontStyle = 'italic';
-        noteDiv.textContent = '※以下の設問における「自部署」とは、あなたが普段一緒に仕事をしているメンバー(チーム・部署)を指します。';
-        questionTextElement.parentNode.insertBefore(noteDiv, questionTextElement.nextSibling);
+        noteDiv.innerHTML = '<p>※以下の設問における「自部署」とは、あなたが普段一緒に仕事をしているメンバー(チーム・部署)を指します。</p>';
+        container.before(noteDiv);
     }
     
-    document.getElementById('categoryBadge').textContent = `${categories[categoryIndex]} (${questionInCategory}/10)`;
-    document.getElementById('progressText').textContent = `質問 ${currentQuestion + 1} / 100`;
-    document.getElementById('progressBar').style.width = ((currentQuestion + 1) / 100 * 100) + '%';
-    
-    // 前の質問ボタンの表示制御
-    document.getElementById('prevBtn').style.display = currentQuestion > 0 ? 'block' : 'none';
-    
-    // 暫定レーダーチャートの更新
-    updatePreviewRadar();
-}
-
-// 回答の選択
-function selectAnswer(score) {
-    answers[currentQuestion] = score;
-    localStorage.setItem('answers', JSON.stringify(answers));
-    currentQuestion++;
-    loadQuestion();
-}
-
-// 前の質問に戻る
-function previousQuestion() {
-    if (currentQuestion > 0) {
-        currentQuestion--;
-        loadQuestion();
-    }
-}
-
-// 暫定レーダーチャートの更新
-function updatePreviewRadar() {
-    const categoryScores = Array(10).fill(0);
-    const categoryCount = Array(10).fill(0);
-    
-    answers.forEach((answer, index) => {
-        const categoryIndex = Math.floor(index / 10);
-        categoryScores[categoryIndex] += answer;
-        categoryCount[categoryIndex]++;
-    });
-    
-    const normalizedScores = categoryScores.map((score, index) => {
-        return categoryCount[index] > 0 ? (score / categoryCount[index] / 5 * 100).toFixed(1) : 0;
-    });
-    
-    const ctx = document.getElementById('previewRadarChart');
-    if (window.previewChart) {
-        window.previewChart.destroy();
-    }
-    
-    window.previewChart = new Chart(ctx, {
-        type: 'radar',
-        data: {
-            labels: categories,
-            datasets: [{
-                label: '現在のスコア',
-                data: normalizedScores,
-                backgroundColor: 'rgba(52, 152, 219, 0.2)',
-                borderColor: 'rgba(52, 152, 219, 1)',
-                pointBackgroundColor: 'rgba(52, 152, 219, 1)',
-                pointBorderColor: '#fff',
-                pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: 'rgba(52, 152, 219, 1)'
-            }]
-        },
-        options: {
-            scales: {
-                r: {
-                    beginAtZero: true,
-                    max: 100,
-                    ticks: {
-                        stepSize: 20
-                    }
-                }
-            },
-            plugins: {
-                legend: {
-                    display: false
-                }
+    // 各質問をレンダリング
+    for (let i = startQ; i < endQ; i++) {
+        const questionBlock = document.createElement('div');
+        questionBlock.className = 'question-block';
+        
+        const questionNum = i + 1;
+        const questionText = document.createElement('div');
+        questionText.className = 'question-text';
+        questionText.textContent = `Q${questionNum}. ${questions[i]}`;
+        
+        const answerOptions = document.createElement('div');
+        answerOptions.className = 'answer-options';
+        
+        for (let score = 1; score <= 5; score++) {
+            const label = document.createElement('label');
+            label.className = 'answer-option';
+            
+            const input = document.createElement('input');
+            input.type = 'radio';
+            input.name = `question${i}`;
+            input.value = score;
+            if (answers[i] === score) {
+                input.checked = true;
             }
+            input.addEventListener('change', () => {
+                answers[i] = parseInt(score);
+            });
+            
+            const span = document.createElement('span');
+            span.textContent = `${score}`;
+            
+            label.appendChild(input);
+            label.appendChild(span);
+            answerOptions.appendChild(label);
         }
-    });
+        
+        questionBlock.appendChild(questionText);
+        questionBlock.appendChild(answerOptions);
+        container.appendChild(questionBlock);
+    }
+    
+    // 進捗バーの更新
+    const answeredCount = Object.keys(answers).length;
+    const progressPercentage = Math.round((answeredCount / 100) * 100);
+    document.getElementById('progress-fill').style.width = progressPercentage + '%';
+    document.getElementById('progress-percentage').textContent = progressPercentage + '%';
+    
+    // ボタンの表示制御
+    document.getElementById('prev-btn').style.display = sectionIndex > 0 ? 'inline-block' : 'none';
+    document.getElementById('next-btn').textContent = sectionIndex < 9 ? '次のセクション' : '結果を見る';
 }
 
-// 結果の計算
-function calculateResults() {
-    // カテゴリー別スコアの計算（100点満点）
+// 次のセクション
+function nextSection() {
+    // 現在のセクションの回答チェック
+    const startQ = currentSection * 10;
+    const endQ = startQ + 10;
+    
+    for (let i = startQ; i < endQ; i++) {
+        if (!answers[i]) {
+            alert('全ての質問に回答してください');
+            return;
+        }
+    }
+    
+    if (currentSection < 9) {
+        loadSection(currentSection + 1);
+        window.scrollTo(0, 0);
+    } else {
+        showResult();
+    }
+}
+
+// 前のセクション
+function previousSection() {
+    if (currentSection > 0) {
+        loadSection(currentSection - 1);
+        window.scrollTo(0, 0);
+    }
+}
+
+// 結果の表示
+function showResult() {
+    // カテゴリー別スコアの計算 (50点満点 → 100点満点に変換)
     const categoryScores = [];
     for (let i = 0; i < 10; i++) {
-        const categoryAnswers = answers.slice(i * 10, (i + 1) * 10);
-        const sum = categoryAnswers.reduce((a, b) => a + b, 0);
-        const score = (sum / 50 * 100).toFixed(1); // 50点満点を100点満点に変換
-        categoryScores.push(parseFloat(score));
+        const startQ = i * 10;
+        const endQ = startQ + 10;
+        let sum = 0;
+        for (let j = startQ; j < endQ; j++) {
+            sum += answers[j];
+        }
+        const score = Math.round((sum / 50) * 100); // 50点満点を100点満点に変換
+        categoryScores.push(score);
     }
     
-    // 総合スコアの計算（100点満点）
-    const totalScore = (categoryScores.reduce((a, b) => a + b, 0) / 10).toFixed(1);
+    // 総合スコアの計算 (500点満点)
+    const totalScore = Object.values(answers).reduce((a, b) => a + b, 0);
     
-    // 結果ページの表示
-    document.getElementById('surveyPage').classList.remove('active');
-    document.getElementById('resultPage').classList.add('active');
-    document.getElementById('totalScore').textContent = totalScore;
+    showPage('result-page');
+    
+    document.getElementById('total-score').textContent = totalScore;
     
     // レーダーチャートの描画
-    drawResultRadar(categoryScores);
+    drawRadarChart(categoryScores);
     
-    // カテゴリー別詳細の表示
-    displayCategoryDetails(categoryScores);
+    // カテゴリー別結果の表示
+    displayCategoryResults(categoryScores);
     
-    // 総合フィードバックの表示
-    displayOverallFeedback(parseFloat(totalScore));
+    // フィードバックの表示
+    displayFeedback(categoryScores);
     
-    // 改善提案の表示
-    displayImprovementSuggestions(categoryScores);
-    
-    // APIに結果を送信
+    // API送信
     submitResults(totalScore, categoryScores);
 }
 
 // レーダーチャートの描画
-function drawResultRadar(scores) {
-    const ctx = document.getElementById('resultRadarChart');
+function drawRadarChart(scores) {
+    const ctx = document.getElementById('radarChart');
     new Chart(ctx, {
         type: 'radar',
         data: {
@@ -339,12 +318,12 @@ function drawResultRadar(scores) {
             datasets: [{
                 label: 'あなたのスコア',
                 data: scores,
-                backgroundColor: 'rgba(52, 152, 219, 0.2)',
-                borderColor: 'rgba(52, 152, 219, 1)',
-                pointBackgroundColor: 'rgba(52, 152, 219, 1)',
+                backgroundColor: 'rgba(93, 173, 226, 0.2)',
+                borderColor: 'rgba(93, 173, 226, 1)',
+                pointBackgroundColor: 'rgba(93, 173, 226, 1)',
                 pointBorderColor: '#fff',
                 pointHoverBackgroundColor: '#fff',
-                pointHoverBorderColor: 'rgba(52, 152, 219, 1)'
+                pointHoverBorderColor: 'rgba(93, 173, 226, 1)'
             }]
         },
         options: {
@@ -352,94 +331,56 @@ function drawResultRadar(scores) {
                 r: {
                     beginAtZero: true,
                     max: 100,
-                    ticks: {
-                        stepSize: 20
-                    }
+                    ticks: { stepSize: 20 }
                 }
             }
         }
     });
 }
 
-// カテゴリー別詳細の表示
-function displayCategoryDetails(scores) {
-    const container = document.getElementById('categoryDetails');
-    container.innerHTML = '';
+// カテゴリー別結果の表示
+function displayCategoryResults(scores) {
+    const container = document.getElementById('category-results');
+    container.innerHTML = '<h2>カテゴリー別スコア</h2>';
     
     scores.forEach((score, index) => {
-        const level = score >= 70 ? '良好' : score >= 50 ? '普通' : '要改善';
-        const levelClass = score >= 70 ? 'level-good' : score >= 50 ? 'level-normal' : 'level-poor';
-        
-        const detail = document.createElement('div');
-        detail.className = 'category-detail';
-        detail.innerHTML = `
-            <div class="category-name">${categories[index]}</div>
-            <div class="category-score">${score} / 100</div>
-            <div class="category-level ${levelClass}">${level}</div>
+        const item = document.createElement('div');
+        item.className = 'category-score-item';
+        item.innerHTML = `
+            <h3>${categories[index]}</h3>
+            <div class="score-bar">
+                <div class="score-fill" style="width: ${score}%"></div>
+            </div>
+            <p>${score} / 100点</p>
         `;
-        container.appendChild(detail);
+        container.appendChild(item);
     });
 }
 
-// 総合フィードバックの表示
-function displayOverallFeedback(totalScore) {
-    const container = document.getElementById('overallFeedback');
-    let feedback = '';
+// フィードバックの表示
+function displayFeedback(scores) {
+    const container = document.getElementById('feedback-section');
+    container.innerHTML = '<h2>改善提案</h2>';
     
-    if (totalScore >= 70) {
-        feedback = '素晴らしい結果です！あなたは現在の職場環境に高い満足度を感じており、エンゲージメントも高い状態にあります。この良好な状態を維持しつつ、さらなる成長を目指しましょう。';
-    } else if (totalScore >= 50) {
-        feedback = 'まずまずの結果です。いくつかの分野では良好な状態ですが、改善の余地がある領域も見られます。特にスコアの低いカテゴリーに注目し、具体的な改善策を検討しましょう。';
-    } else {
-        feedback = '改善が必要な状態です。複数の領域で課題が見られます。まずは最もスコアの低いカテゴリーから優先的に取り組み、上司や人事部門と相談しながら改善策を検討することをお勧めします。';
-    }
-    
-    container.innerHTML = `<p>${feedback}</p>`;
-}
-
-// 改善提案の表示
-function displayImprovementSuggestions(scores) {
-    const container = document.getElementById('improvementSuggestions');
-    container.innerHTML = '';
-    
-    // スコアが低い順にソート
-    const sortedCategories = scores.map((score, index) => ({ score, index }))
+    const sortedCategories = scores.map((score, index) => ({score, index}))
         .sort((a, b) => a.score - b.score)
-        .slice(0, 3); // 上位3つの改善点
+        .slice(0, 3);
     
-    const adviceMap = {
-        '心身の健康': '健康管理を優先し、適切な休息を取りましょう。必要に応じて上司に業務負荷について相談し、心身のバランスを保つことが重要です。',
-        '仕事の充実感': '自分の仕事が組織や社会にどう貢献しているかを明確にしましょう。上司と定期的に話し合い、仕事の目的や意義を再確認することをお勧めします。',
-        '成長機会': '新しいスキルを学ぶ機会を積極的に探しましょう。上司にキャリア開発について相談し、研修やプロジェクトへの参加を申し出てみてください。',
-        '上司のサポート': '上司との1on1ミーティングを定期的に設定し、フィードバックやサポートを求めましょう。コミュニケーションを増やすことで関係性が改善される可能性があります。',
-        '部署内の人間関係': 'チーム内でのコミュニケーションを積極的に取りましょう。ランチや休憩時間を利用して同僚と交流を深めることで、信頼関係が構築されます。',
-        '評価・処遇': '自分の貢献を可視化し、定期的に上司と評価について話し合いましょう。目標設定を明確にし、達成度を記録することで適切な評価につながります。',
-        '会社への信頼': '会社のビジョンや方針について理解を深めましょう。経営層とのコミュニケーション機会があれば積極的に参加し、疑問点は質問してみてください。',
-        '働く環境': '職場環境の改善について具体的な提案をしてみましょう。小さな改善でも積み重ねることで、働きやすい環境が作られます。',
-        '総合満足度': '現在の満足度を高めるため、特にスコアの低いカテゴリーから優先的に改善に取り組みましょう。小さな変化の積み重ねが全体の満足度向上につながります。',
-        '組織へのつながり': '会社の文化や価値観を理解し、自分なりの形で組織に貢献する方法を見つけましょう。社内イベントへの参加も帰属意識を高める一助となります。'
-    };
-    
-    sortedCategories.forEach(({ score, index }) => {
-        const categoryName = categories[index];
-        const advice = adviceMap[categoryName] || '上司や人事部門と相談しながら、改善策を検討することをお勧めします。';
+    sortedCategories.forEach(({score, index}) => {
+        const level = score >= 70 ? '良好' : score >= 50 ? '普通' : '要改善';
+        const levelClass = score >= 70 ? 'feedback-good' : score >= 50 ? 'feedback-normal' : 'feedback-warning';
         
-        const suggestion = document.createElement('div');
-        suggestion.className = 'suggestion-item';
-        suggestion.innerHTML = `
-            <h4>${categoryName}（スコア: ${score}）</h4>
-            <p>${advice}</p>
+        const item = document.createElement('div');
+        item.innerHTML = `
+            <h3 class="${levelClass}">${categories[index]}（${score}点）- ${level}</h3>
+            <p>このカテゴリーのスコア向上に向けて、上司や人事部門と具体的な改善策を検討しましょう。</p>
         `;
-        container.appendChild(suggestion);
+        container.appendChild(item);
     });
 }
 
 // APIに結果を送信
 function submitResults(totalScore, categoryScores) {
-    const employeeCode = localStorage.getItem('employeeCode');
-    const department = localStorage.getItem('department');
-    const gender = localStorage.getItem('gender');
-    
     const categoryScoresObj = {};
     categories.forEach((cat, index) => {
         categoryScoresObj[cat] = categoryScores[index];
@@ -450,33 +391,17 @@ function submitResults(totalScore, categoryScores) {
         department: department,
         gender: gender,
         timestamp: new Date().toISOString(),
-        totalScore: parseFloat(totalScore),
+        totalScore: totalScore,
         categoryScores: categoryScoresObj,
         answers: answers
     };
     
     fetch(`${API_ENDPOINT}/api/diagnostics`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
     })
     .then(response => response.json())
-    .then(result => {
-        console.log('診断結果を送信しました:', result);
-    })
-    .catch(error => {
-        console.error('送信エラー:', error);
-    });
+    .then(result => console.log('診断結果を送信しました:', result))
+    .catch(error => console.error('送信エラー:', error));
 }
-
-// ページ読み込み時の初期化
-window.addEventListener('load', function() {
-    // ローカルストレージから前回の回答を復元（オプション）
-    const savedAnswers = localStorage.getItem('answers');
-    if (savedAnswers) {
-        // answers = JSON.parse(savedAnswers);
-        // 復元機能は必要に応じて実装
-    }
-});
