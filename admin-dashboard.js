@@ -17,6 +17,7 @@ const CRITICAL_QUESTIONS = {
 // グローバル変数
 let allEmployeeData = [];
 let filteredData = [];
+let executiveFilteredData = []; // 経営ダッシュボード専用
 
 // ========================================
 // 初期化
@@ -74,8 +75,11 @@ async function loadAllData() {
         if (!apiData.results || apiData.results.length === 0) {
             allEmployeeData = [];
             filteredData = [];
+            executiveFilteredData = [];
             updateFilters();
             updateDashboard();
+            updateExecutiveFilters();
+            initExecutiveDashboard();
             return;
         }
         
@@ -118,10 +122,13 @@ async function loadAllData() {
         
         // 初期表示
         filteredData = [...allEmployeeData];
+        executiveFilteredData = [...allEmployeeData];
+        
         updateFilters();
         updateDashboard();
         
         // 🆕 経営ダッシュボードを初期化
+        updateExecutiveFilters();
         initExecutiveDashboard();
         
     } catch (error) {
@@ -129,8 +136,11 @@ async function loadAllData() {
         alert('データの読み込みに失敗しました。ネットワーク接続を確認してください。');
         allEmployeeData = [];
         filteredData = [];
+        executiveFilteredData = [];
         updateFilters();
         updateDashboard();
+        updateExecutiveFilters();
+        initExecutiveDashboard();
     }
 }
 
@@ -220,7 +230,7 @@ function detectCriticalAlerts(answers) {
 }
 
 // ========================================
-// フィルター更新
+// フィルター更新(診断データタブ用)
 // ========================================
 function updateFilters() {
     const companies = [...new Set(allEmployeeData.map(e => e.company))];
@@ -249,7 +259,7 @@ function updateFilters() {
 }
 
 // ========================================
-// フィルター適用
+// フィルター適用(診断データタブ用)
 // ========================================
 function applyFilters() {
     const companyValue = document.getElementById('companyFilter').value;
@@ -264,12 +274,10 @@ function applyFilters() {
     });
     
     updateDashboard();
-    // 🆕 フィルター変更時に経営ダッシュボードも更新
-    updateExecutiveDashboard();
 }
 
 // ========================================
-// ダッシュボード更新
+// ダッシュボード更新(診断データタブ用)
 // ========================================
 function updateDashboard() {
     updateStats();
@@ -278,7 +286,7 @@ function updateDashboard() {
 }
 
 // ========================================
-// 統計カード更新
+// 統計カード更新(診断データタブ用)
 // ========================================
 function updateStats() {
     const highRisk = filteredData.filter(e => e.riskLevel === 'high').length;
@@ -298,7 +306,7 @@ function updateStats() {
 }
 
 // ========================================
-// アラート表示更新
+// アラート表示更新(診断データタブ用)
 // ========================================
 function updateAlerts() {
     const criticalAlerts = document.getElementById('criticalAlerts');
@@ -333,7 +341,7 @@ function updateAlerts() {
 }
 
 // ========================================
-// データテーブル更新
+// データテーブル更新(診断データタブ用)
 // ========================================
 function updateDataTable() {
     const tbody = document.getElementById('dataTableBody');
@@ -684,9 +692,53 @@ let currentPeriod = 6; // デフォルト6ヶ月
 let currentTrendView = 'company'; // デフォルト全社表示
 
 // ========================================
-// 経営ダッシュボードの初期化
+// 経営ダッシュボード用フィルター更新
 // ========================================
-function initExecutiveDashboard() {
+function updateExecutiveFilters() {
+    const companies = [...new Set(allEmployeeData.map(e => e.company))];
+    const departments = [...new Set(allEmployeeData.map(e => e.department))];
+    
+    const execCompanyFilter = document.getElementById('execCompanyFilter');
+    const execDepartmentFilter = document.getElementById('execDepartmentFilter');
+    
+    if (!execCompanyFilter || !execDepartmentFilter) return;
+    
+    // 企業フィルター
+    execCompanyFilter.innerHTML = '<option value="">すべての企業</option>';
+    companies.forEach(company => {
+        const option = document.createElement('option');
+        option.value = company;
+        option.textContent = company;
+        execCompanyFilter.appendChild(option);
+    });
+    
+    // 部署フィルター
+    execDepartmentFilter.innerHTML = '<option value="">すべての部署</option>';
+    departments.forEach(dept => {
+        const option = document.createElement('option');
+        option.value = dept;
+        option.textContent = dept;
+        execDepartmentFilter.appendChild(option);
+    });
+}
+
+// ========================================
+// 経営ダッシュボード用フィルター適用
+// ========================================
+function applyExecutiveFilters() {
+    const companyValue = document.getElementById('execCompanyFilter').value;
+    const departmentValue = document.getElementById('execDepartmentFilter').value;
+    const riskValue = document.getElementById('execRiskFilter').value;
+    
+    executiveFilteredData = allEmployeeData.filter(employee => {
+        if (companyValue && employee.company !== companyValue) return false;
+        if (departmentValue && employee.department !== departmentValue) return false;
+        if (riskValue && employee.riskLevel !== riskValue) return false;
+        return true;
+    });
+    
+    // 全ての要素を更新
+    updateExecutiveStats();
     updateExecutiveAlerts();
     updateExecutiveRadarChart();
     updateTrendSelectors();
@@ -694,11 +746,33 @@ function initExecutiveDashboard() {
 }
 
 // ========================================
-// 経営ダッシュボードの更新(フィルター変更時)
+// 経営ダッシュボードの統計カード更新
 // ========================================
-function updateExecutiveDashboard() {
+function updateExecutiveStats() {
+    const highRisk = executiveFilteredData.filter(e => e.riskLevel === 'high').length;
+    const mediumRisk = executiveFilteredData.filter(e => e.riskLevel === 'medium').length;
+    const lowRisk = executiveFilteredData.filter(e => e.riskLevel === 'low').length;
+    const total = executiveFilteredData.length;
+    
+    const avgScore = total > 0 
+        ? (executiveFilteredData.reduce((sum, e) => sum + e.totalScore, 0) / total).toFixed(2)
+        : 0;
+    
+    document.getElementById('execHighRiskCount').textContent = highRisk;
+    document.getElementById('execMediumRiskCount').textContent = mediumRisk;
+    document.getElementById('execLowRiskCount').textContent = lowRisk;
+    document.getElementById('execTotalCount').textContent = total;
+    document.getElementById('execAvgScore').textContent = avgScore;
+}
+
+// ========================================
+// 経営ダッシュボードの初期化
+// ========================================
+function initExecutiveDashboard() {
+    updateExecutiveStats();
     updateExecutiveAlerts();
     updateExecutiveRadarChart();
+    updateTrendSelectors();
     updateTrendChart();
 }
 
@@ -712,7 +786,7 @@ function updateExecutiveAlerts() {
     if (!highRiskAlertsDiv || !managerAlertsDiv) return;
     
     // 高リスク従業員
-    const highRiskEmployees = filteredData.filter(e => e.riskLevel === 'high');
+    const highRiskEmployees = executiveFilteredData.filter(e => e.riskLevel === 'high');
     
     if (highRiskEmployees.length === 0) {
         highRiskAlertsDiv.innerHTML = '<p style="color: #2ecc71;">✅ 現在、高リスク従業員はいません</p>';
@@ -733,7 +807,7 @@ function updateExecutiveAlerts() {
     // 要支援マネージャー(上司のサポートスコアが低い部署)
     const deptManagerScores = {};
     
-    filteredData.forEach(emp => {
+    executiveFilteredData.forEach(emp => {
         if (!deptManagerScores[emp.department]) {
             deptManagerScores[emp.department] = [];
         }
@@ -775,7 +849,7 @@ function updateExecutiveRadarChart() {
         executiveRadarChart.destroy();
     }
 
-    if (filteredData.length === 0) {
+    if (executiveFilteredData.length === 0) {
         return;
     }
 
@@ -786,7 +860,7 @@ function updateExecutiveRadarChart() {
                        '評価・処遇', '会社への信頼', '働く環境', '総合満足度', '組織へのつながり'];
 
     const currentScores = categories.map(cat => {
-        const scores = filteredData.map(e => parseFloat(e.categoryScores[cat]) || 0);
+        const scores = executiveFilteredData.map(e => parseFloat(e.categoryScores[cat]) || 0);
         const avg = scores.reduce((sum, s) => sum + s, 0) / scores.length;
         return parseFloat(avg.toFixed(2));
     });
@@ -868,7 +942,7 @@ function updateTrendSelectors() {
     if (!deptSelect || !personSelect) return;
     
     // 部署選択肢を生成
-    const departments = [...new Set(filteredData.map(e => e.department))].filter(d => d !== '不明');
+    const departments = [...new Set(executiveFilteredData.map(e => e.department))].filter(d => d !== '不明');
     deptSelect.innerHTML = '<option value="">部署を選択</option>';
     departments.forEach(dept => {
         const option = document.createElement('option');
@@ -879,7 +953,7 @@ function updateTrendSelectors() {
     
     // 個人選択肢を生成
     personSelect.innerHTML = '<option value="">従業員を選択</option>';
-    filteredData.forEach(emp => {
+    executiveFilteredData.forEach(emp => {
         const option = document.createElement('option');
         option.value = emp.employeeCode;
         option.textContent = `${emp.employeeCode} (${emp.department})`;
@@ -928,7 +1002,7 @@ function updateTrendChart() {
     }
 
     // データがない場合
-    if (filteredData.length === 0) {
+    if (executiveFilteredData.length === 0) {
         if (messageDiv) {
             messageDiv.textContent = 'データがありません';
             messageDiv.style.display = 'block';
@@ -953,18 +1027,18 @@ function updateTrendChart() {
     }
 
     // 最新月のデータを実際の平均スコアに置き換え
-    let targetData = filteredData;
+    let targetData = executiveFilteredData;
     
     // 表示タイプに応じてデータをフィルタリング
     if (currentTrendView === 'department') {
         const selectedDept = document.getElementById('trendDeptSelect')?.value;
         if (selectedDept) {
-            targetData = filteredData.filter(e => e.department === selectedDept);
+            targetData = executiveFilteredData.filter(e => e.department === selectedDept);
         }
     } else if (currentTrendView === 'individual') {
         const selectedPerson = document.getElementById('trendPersonSelect')?.value;
         if (selectedPerson) {
-            targetData = filteredData.filter(e => e.employeeCode === selectedPerson);
+            targetData = executiveFilteredData.filter(e => e.employeeCode === selectedPerson);
         }
     }
     
