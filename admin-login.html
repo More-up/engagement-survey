@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>管理者ログイン - エンゲージメント・ナビ</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -18,6 +21,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            padding: 20px;
         }
 
         .login-container {
@@ -172,10 +176,395 @@
             color: #4caf50;
             font-weight: bold;
         }
+
+        /* ダッシュボードのスタイル */
+        .dashboard-container {
+            display: none;
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .dashboard-container.active {
+            display: block;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+            color: white;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 3px solid #667eea;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            background: #f8f9fa;
+            border: none;
+            font-size: 1.1em;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            background: #e9ecef;
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+            animation: fadeIn 0.5s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .filter-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .filter-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1em;
+            background: white;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        .filter-group select:hover {
+            border-color: #667eea;
+        }
+
+        .filter-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-card.danger {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .stat-card.warning {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            color: #333;
+        }
+
+        .stat-card.success {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #333;
+        }
+
+        .stat-card h3 {
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .stat-card .value {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .label {
+            font-size: 0.85em;
+            opacity: 0.8;
+        }
+
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f8f9fa;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-bottom: 20px;
+        }
+
+        .trend-section .chart-container {
+            height: 400px;
+        }
+
+        .trend-section canvas {
+            height: 400px !important;
+        }
+
+        .radar-chart-section canvas {
+            max-height: 500px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn.active {
+            background: #667eea;
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .alert-item {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+
+        .alert-item.danger {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+        }
+
+        .alert-item strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #721c24;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .risk-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        .risk-high {
+            background: #dc3545;
+            color: white;
+        }
+
+        .risk-medium {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .risk-low {
+            background: #28a745;
+            color: white;
+        }
+
+        .comparison-section {
+            margin-top: 30px;
+        }
+
+        .department-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .department-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .department-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .department-card h3 {
+            margin-bottom: 10px;
+        }
+
+        .department-card .score {
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .toggle-switch {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .toggle-btn {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .toggle-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .gender-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .gender-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .gender-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .gender-card .ratio {
+            font-size: 2em;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .gender-card .count {
+            color: #6c757d;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
-    <div class="login-container">
+    <!-- ログイン画面 -->
+    <div class="login-container" id="loginSection">
         <div class="logo">🔐</div>
         <h1>管理者ログイン</h1>
         <p class="subtitle">エンゲージメント・ナビ</p>
@@ -221,6 +610,204 @@
         </div>
     </div>
 
+    <!-- ダッシュボード画面 -->
+    <div class="dashboard-container" id="dashboardSection">
+        <div class="header">
+            <h1>📊 管理者ダッシュボード</h1>
+            <p>エンゲージメント・ナビ 経営管理システム</p>
+        </div>
+
+        <!-- タブナビゲーション -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab(0)">📊 経営ダッシュボード</button>
+            <button class="tab" onclick="switchTab(1)">📋 診断データ</button>
+            <button class="tab" onclick="switchTab(2)">📈 部署別比較</button>
+            <button class="tab" onclick="switchTab(3)">📄 レポート出力</button>
+        </div>
+
+        <!-- タブ0: 経営ダッシュボード -->
+        <div id="tab0" class="tab-content active">
+            <!-- フィルター -->
+            <div class="filters">
+                <div class="filter-group">
+                    <label>企業選択</label>
+                    <select id="companyFilter" onchange="applyFilters()">
+                        <option value="all">全社</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>部署選択</label>
+                    <select id="departmentFilter" onchange="applyFilters()">
+                        <option value="all">全部署</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>リスクレベル</label>
+                    <select id="riskFilter" onchange="applyFilters()">
+                        <option value="all">全て</option>
+                        <option value="high">高リスク</option>
+                        <option value="medium">中リスク</option>
+                        <option value="low">低リスク</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>性別</label>
+                    <select id="genderFilter" onchange="applyFilters()">
+                        <option value="all">全て</option>
+                        <option value="男性">男性</option>
+                        <option value="女性">女性</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 統計カード -->
+            <div class="stats-grid">
+                <div class="stat-card danger">
+                    <h3>高リスク従業員</h3>
+                    <div class="value" id="highRiskCount">0</div>
+                    <div class="label">人</div>
+                </div>
+                <div class="stat-card warning">
+                    <h3>中リスク従業員</h3>
+                    <div class="value" id="mediumRiskCount">0</div>
+                    <div class="label">人</div>
+                </div>
+                <div class="stat-card success">
+                    <h3>低リスク従業員</h3>
+                    <div class="value" id="lowRiskCount">0</div>
+                    <div class="label">人</div>
+                </div>
+                <div class="stat-card">
+                    <h3>診断済み従業員</h3>
+                    <div class="value" id="totalCount">0</div>
+                    <div class="label">人</div>
+                </div>
+                <div class="stat-card">
+                    <h3>平均スコア</h3>
+                    <div class="value" id="avgScore">0</div>
+                    <div class="label">/ 100点</div>
+                </div>
+            </div>
+
+            <!-- 男女比統計 -->
+            <div class="section">
+                <h2>👥 男女比統計</h2>
+                <div class="gender-stats">
+                    <div class="gender-card">
+                        <h3>男性</h3>
+                        <div class="ratio" id="maleRatio">0%</div>
+                        <div class="count" id="maleCount">0人</div>
+                        <div style="margin-top: 10px; color: #667eea; font-weight: bold;">
+                            平均スコア: <span id="maleAvgScore">0</span>点
+                        </div>
+                    </div>
+                    <div class="gender-card">
+                        <h3>女性</h3>
+                        <div class="ratio" id="femaleRatio">0%</div>
+                        <div class="count" id="femaleCount">0人</div>
+                        <div style="margin-top: 10px; color: #667eea; font-weight: bold;">
+                            平均スコア: <span id="femaleAvgScore">0</span>点
+                        </div>
+                    </div>
+                    <div class="gender-card">
+                        <h3>スコア差</h3>
+                        <div class="ratio" id="genderScoreDiff">0</div>
+                        <div class="count">ポイント差</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 改善トレンド -->
+            <div class="section trend-section">
+                <h2>📈 改善トレンド</h2>
+                <div class="controls">
+                    <button class="toggle-btn active" onclick="changeTrendView('all')">全社</button>
+                    <button class="toggle-btn" onclick="changeTrendView('department')">部署別</button>
+                    <button class="toggle-btn" onclick="changeTrendView('individual')">個人別</button>
+                    <button class="btn btn-secondary" onclick="changeTrendPeriod(3)">3ヶ月</button>
+                    <button class="btn btn-secondary active" onclick="changeTrendPeriod(6)">6ヶ月</button>
+                    <button class="btn btn-secondary" onclick="changeTrendPeriod(12)">12ヶ月</button>
+                </div>
+                <div class="chart-container">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 緊急アラート -->
+            <div class="section">
+                <h2>🚨 緊急アラート</h2>
+                <div id="alertsContainer"></div>
+            </div>
+
+            <!-- 10カテゴリー別レーダーチャート -->
+            <div class="section radar-chart-section">
+                <h2>📊 10カテゴリー別分析</h2>
+                <div class="controls">
+                    <label>
+                        <input type="checkbox" id="showPreviousComparison" onchange="togglePreviousComparison()">
+                        前回診断と比較
+                    </label>
+                </div>
+                <div class="chart-container">
+                    <canvas id="executiveRadarChart"></canvas>
+                </div>
+            </div>
+
+            <!-- PDF出力ボタン -->
+            <div class="section">
+                <h2>📄 役員会用レポート</h2>
+                <button class="btn btn-primary" onclick="generateExecutivePDF()">📥 PDFレポートをダウンロード</button>
+            </div>
+        </div>
+
+        <!-- タブ1: 診断データ -->
+        <div id="tab1" class="tab-content">
+            <div class="section">
+                <h2>診断データ一覧</h2>
+                <table class="data-table" id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>社員コード</th>
+                            <th>部署</th>
+                            <th>性別</th>
+                            <th>診断日時</th>
+                            <th>総合スコア</th>
+                            <th>リスクレベル</th>
+                            <th>アクション</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- タブ2: 部署別比較 -->
+        <div id="tab2" class="tab-content">
+            <div class="section">
+                <h2>部署別パフォーマンス比較</h2>
+                <div class="department-cards" id="departmentCards"></div>
+            </div>
+            <div class="section comparison-section">
+                <h2>詳細比較</h2>
+                <div class="chart-container">
+                    <canvas id="comparisonChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- タブ3: レポート出力 -->
+        <div id="tab3" class="tab-content">
+            <div class="section">
+                <h2>レポート出力</h2>
+                <div class="controls">
+                    <button class="btn btn-primary" onclick="exportCSV()">📊 CSVエクスポート</button>
+                    <button class="btn btn-primary" onclick="generateDetailedReport()">📄 詳細レポート生成</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="admin-dashboard.js"></script>
     <script>
         const ADMIN_PASSWORD = 'moreup-japan';
 
@@ -231,9 +818,14 @@
             const errorMessage = document.getElementById('error-message');
             
             if (password === ADMIN_PASSWORD) {
-                sessionStorage.setItem('adminPassword', password);
-                sessionStorage.setItem('adminLoginTime', Date.now());
-                window.location.href = 'admin-dashboard.html';
+                // ログイン成功 → ダッシュボードを表示
+                document.getElementById('loginSection').style.display = 'none';
+                document.getElementById('dashboardSection').classList.add('active');
+                document.body.style.display = 'block';
+                document.body.style.alignItems = 'flex-start';
+                
+                // データ読み込み
+                loadData();
             } else {
                 errorMessage.style.display = 'block';
                 document.getElementById('password').value = '';
