@@ -151,6 +151,7 @@ function showPage(pageId) {
         page.classList.remove('active');
     });
     document.getElementById(pageId).classList.add('active');
+    window.scrollTo(0, 0);
 }
 
 // 基本情報の保存と診断開始
@@ -196,6 +197,7 @@ function loadSection(sectionIndex) {
     for (let i = startQ; i < endQ; i++) {
         const questionBlock = document.createElement('div');
         questionBlock.className = 'question-block';
+        questionBlock.id = `question-${i}`;
         
         const questionNum = i + 1;
         const questionText = document.createElement('div');
@@ -218,6 +220,8 @@ function loadSection(sectionIndex) {
             }
             input.addEventListener('change', () => {
                 answers[i] = parseInt(score);
+                updateProgressBar();
+                autoScrollToNext(i);
             });
             
             const span = document.createElement('span');
@@ -234,14 +238,46 @@ function loadSection(sectionIndex) {
     }
     
     // 進捗バーの更新
-    const answeredCount = Object.keys(answers).length;
-    const progressPercentage = Math.round((answeredCount / 100) * 100);
-    document.getElementById('progress-fill').style.width = progressPercentage + '%';
-    document.getElementById('progress-percentage').textContent = progressPercentage + '%';
+    updateProgressBar();
     
     // ボタンの表示制御
     document.getElementById('prev-btn').style.display = sectionIndex > 0 ? 'inline-block' : 'none';
     document.getElementById('next-btn').textContent = sectionIndex < 9 ? '次のセクション' : '結果を見る';
+    
+    // ページトップにスクロール
+    window.scrollTo(0, 0);
+}
+
+// 自動スクロール機能
+function autoScrollToNext(currentQuestionIndex) {
+    const startQ = currentSection * 10;
+    const endQ = startQ + 10;
+    const nextQuestionIndex = currentQuestionIndex + 1;
+    
+    // 現在のセクション内に次の質問がある場合
+    if (nextQuestionIndex < endQ) {
+        setTimeout(() => {
+            const nextQuestion = document.getElementById(`question-${nextQuestionIndex}`);
+            if (nextQuestion) {
+                const headerHeight = 230; // 固定ヘッダーの高さ
+                const elementPosition = nextQuestion.getBoundingClientRect().top + window.pageYOffset;
+                const offsetPosition = elementPosition - headerHeight - 20; // 20pxの余白
+                
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
+            }
+        }, 300);
+    }
+}
+
+// 進捗バーの更新
+function updateProgressBar() {
+    const answeredCount = Object.keys(answers).length;
+    const progressPercentage = Math.round((answeredCount / 100) * 100);
+    document.getElementById('progress-fill').style.width = progressPercentage + '%';
+    document.getElementById('progress-percentage').textContent = progressPercentage + '%';
 }
 
 // 次のセクション
@@ -259,7 +295,6 @@ function nextSection() {
     
     if (currentSection < 9) {
         loadSection(currentSection + 1);
-        window.scrollTo(0, 0);
     } else {
         showResult();
     }
@@ -269,7 +304,6 @@ function nextSection() {
 function previousSection() {
     if (currentSection > 0) {
         loadSection(currentSection - 1);
-        window.scrollTo(0, 0);
     }
 }
 
