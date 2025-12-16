@@ -3,183 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>エンゲージメント・ナビ - 従業員エンゲージメント診断ツール</title>
+    <title>エンゲージメント・ナビ - スマートに可視化する</title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <!-- トップページ -->
-    <div id="topPage" class="page active">
+    <div id="top-page" class="page active">
         <div class="container">
-            <div class="logo">
-                <h1>エンゲージメント・ナビ</h1>
-                <p class="subtitle">従業員エンゲージメント診断ツール</p>
-            </div>
-            <div class="card">
-                <h2>あなたの働きがいを可視化します</h2>
-                <p class="description">
-                    このツールは、あなたの職場での体験を10の観点から診断し、<br>
-                    あなた自身の強みと改善点を明確にします。<br>
-                    所要時間は約15分です。
-                </p>
-                <button onclick="showOrientation()" class="btn-primary">診断を開始する</button>
-            </div>
-        </div>
-    </div>
+            <h1>エンゲージメント・ナビ</h1>
 
-    <!-- オリエンテーション画面 -->
-    <div id="orientationPage" class="page">
-        <div class="container">
-            <div class="card">
-                <h2>診断を始める前に</h2>
-                <div class="orientation-content">
-                    <div class="info-box">
-                        <h3>📋 診断内容</h3>
-                        <p>全100問の質問に5段階で回答していただきます</p>
-                    </div>
-                    <div class="info-box">
-                        <h3>⏱️ 所要時間</h3>
-                        <p>約15分（中断・再開可能）</p>
-                    </div>
-                    <div class="info-box">
-                        <h3>🔒 プライバシー</h3>
-                        <p>個人が特定される情報は収集しません</p>
-                    </div>
-                    <div class="info-box">
-                        <h3>💡 診断結果</h3>
-                        <p>10カテゴリーのスコアと改善提案を即座に表示</p>
-                    </div>
+            <div class="features">
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>10の視点から</h3>
                 </div>
-                <button onclick="showBasicInfo()" class="btn-primary">次へ進む</button>
+                <div class="feature-card">
+                    <div class="feature-icon">⏱️</div>
+                    <h3>約15～20分</h3>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📈</div>
+                    <h3>分析と改善に</h3>
+                </div>
             </div>
+
+            <button class="btn-primary" onclick="showPage('orientation-page')">診断を開始する</button>
         </div>
     </div>
 
-    <!-- 基本情報入力画面 -->
-    <div id="basicInfoPage" class="page">
+    <!-- オリエンテーション＋基本情報入力ページ（統合） -->
+    <div id="orientation-page" class="page">
         <div class="container">
-            <div class="card">
-                <h2>基本情報の入力</h2>
-                <p class="description">診断結果の分析に使用します。個人は特定されません。</p>
-                <form id="basicInfoForm">
-                    <div class="form-group">
-                        <label for="employeeCode">社員コード *</label>
-                        <input type="text" id="employeeCode" required placeholder="例: EMP001">
-                        <small>※管理者が結果を確認する際に使用します</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="department">所属部署 *</label>
-                        <select id="department" required>
-                            <option value="">選択してください</option>
-                            <option value="営業部">営業部</option>
-                            <option value="開発部">開発部</option>
-                            <option value="マーケティング部">マーケティング部</option>
-                            <option value="人事部">人事部</option>
-                            <option value="総務部">総務部</option>
-                            <option value="経理部">経理部</option>
-                            <option value="カスタマーサポート">カスタマーサポート</option>
-                            <option value="その他">その他</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="gender">性別 *</label>
-                        <select id="gender" required>
-                            <option value="">選択してください</option>
-                            <option value="男性">男性</option>
-                            <option value="女性">女性</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="btn-primary">診断を開始</button>
-                </form>
+            <h1>診断を始める前に</h1>
+            
+            <div class="orientation-content">
+                <h2>📋 診断について</h2>
+                <p><strong>全100問（10のセクションに分類）</strong></p>
+                <p>各質問に対して、以下の5段階で回答してください：</p>
+                <ul>
+                    <li>5: とてもそう思う</li>
+                    <li>4: そう思う</li>
+                    <li>3: どちらともいえない</li>
+                    <li>2: そう思わない</li>
+                    <li>1: 全くそう思わない</li>
+                </ul>
+
+                <h2>⏱️ 所要時間</h2>
+                <p>約15～20分程度で完了します</p>
+
+                <h2>🔒 プライバシー</h2>
+                <p>(株)モアップが回答を匿名で分析し、貴社には個人が特定されない形で改善提案を提供します</p>
+
+                <h2>💡 回答のコツ</h2>
+                <p>深く考えすぎず、直感で答えてください</p>
             </div>
+
+            <div class="divider"></div>
+
+            <!-- 基本情報入力 -->
+            <h2>👤 基本情報の入力</h2>
+            <form id="department-form">
+                <div class="form-group">
+                    <label for="employee-code">社員コード</label>
+                    <input type="text" id="employee-code" required placeholder="例: EMP001">
+                </div>
+
+                <div class="form-group">
+                    <label for="department">所属部署</label>
+                    <select id="department" required>
+                        <option value="">選択してください</option>
+                        <option value="総務部">総務部</option>
+                        <option value="人事部">人事部</option>
+                        <option value="経理部">経理部</option>
+                        <option value="財務部">財務部</option>
+                        <option value="法務部">法務部</option>
+                        <option value="広報部">広報部</option>
+                        <option value="IR部">IR部</option>
+                        <option value="内部監査部">内部監査部</option>
+                        <option value="営業部">営業部</option>
+                        <option value="企画部">企画部</option>
+                        <option value="マーケティング部">マーケティング部</option>
+                        <option value="販売促進部">販売促進部</option>
+                        <option value="カスタマーサポート部">カスタマーサポート部</option>
+                        <option value="製造部">製造部</option>
+                        <option value="生産管理部">生産管理部</option>
+                        <option value="品質管理部">品質管理部</option>
+                        <option value="技術部">技術部</option>
+                        <option value="研究開発部">研究開発部</option>
+                        <option value="情報システム部">情報システム部</option>
+                        <option value="DX推進部">DX推進部</option>
+                        <option value="サイバーセキュリティ部">サイバーセキュリティ部</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="gender">性別</label>
+                    <select id="gender" required>
+                        <option value="">選択してください</option>
+                        <option value="男性">男性</option>
+                        <option value="女性">女性</option>
+                    </select>
+                </div>
+
+                <button type="button" onclick="saveDepartmentAndStart()" class="btn-primary">診断を開始</button>
+            </form>
         </div>
     </div>
 
     <!-- 診断ページ -->
-    <div id="surveyPage" class="page">
-        <div class="progress-container">
-            <div class="progress-bar" id="progressBar"></div>
-            <div class="progress-text" id="progressText">質問 1 / 100</div>
-        </div>
-        
-        <div class="container">
-            <div class="card survey-card">
-                <div class="category-badge" id="categoryBadge">カテゴリー 1</div>
-                <h2 class="question-text" id="questionText">質問文がここに表示されます</h2>
-                
-                <div class="answer-options">
-                    <button class="answer-btn" onclick="selectAnswer(5)">
-                        <span class="answer-number">5</span>
-                        <span class="answer-label">強くそう思う</span>
-                    </button>
-                    <button class="answer-btn" onclick="selectAnswer(4)">
-                        <span class="answer-number">4</span>
-                        <span class="answer-label">そう思う</span>
-                    </button>
-                    <button class="answer-btn" onclick="selectAnswer(3)">
-                        <span class="answer-number">3</span>
-                        <span class="answer-label">どちらともいえない</span>
-                    </button>
-                    <button class="answer-btn" onclick="selectAnswer(2)">
-                        <span class="answer-number">2</span>
-                        <span class="answer-label">そう思わない</span>
-                    </button>
-                    <button class="answer-btn" onclick="selectAnswer(1)">
-                        <span class="answer-number">1</span>
-                        <span class="answer-label">全くそう思わない</span>
-                    </button>
-                </div>
-                
-                <div class="navigation-buttons">
-                    <button onclick="previousQuestion()" class="btn-secondary" id="prevBtn" style="display: none;">前の質問に戻る</button>
+    <div id="survey-page" class="page">
+        <!-- 固定ヘッダー（進捗バー + カテゴリータイトル + 評価凡例） -->
+        <div id="fixed-header">
+            <!-- 進捗バー -->
+            <div id="progress-bar-container">
+                <div id="progress-bar">
+                    <div id="progress-fill"></div>
+                    <div id="progress-percentage">0%</div>
                 </div>
             </div>
             
-            <!-- リアルタイムレーダーチャート -->
-            <div class="card radar-preview">
-                <h3>現在のスコア(暫定)</h3>
-                <canvas id="previewRadarChart"></canvas>
+            <!-- カテゴリータイトル（固定） -->
+            <div id="category-header-fixed" class="category-header">
+                <h2>カテゴリー1: 心身の健康</h2>
+            </div>
+
+            <!-- 評価凡例（横1行） -->
+            <div id="rating-legend">
+                <div class="rating-item">
+                    <span class="rating-num">①</span>
+                    <span>全くそう思わない</span>
+                </div>
+                <div class="rating-item">
+                    <span class="rating-num">②</span>
+                    <span>そう思わない</span>
+                </div>
+                <div class="rating-item">
+                    <span class="rating-num">③</span>
+                    <span>どちらともいえない</span>
+                </div>
+                <div class="rating-item">
+                    <span class="rating-num">④</span>
+                    <span>そう思う</span>
+                </div>
+                <div class="rating-item">
+                    <span class="rating-num">⑤</span>
+                    <span>とてもそう思う</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 質問コンテンツ -->
+        <div id="survey-content">
+            <div class="section-container" id="questions-container"></div>
+            
+            <div class="nav-buttons">
+                <button id="prev-btn" class="btn-secondary" onclick="previousSection()" style="display:none;">前のセクション</button>
+                <button id="next-btn" class="btn-primary" onclick="nextSection()">次のセクション</button>
             </div>
         </div>
     </div>
 
     <!-- 結果ページ -->
-    <div id="resultPage" class="page">
+    <div id="result-page" class="page">
         <div class="container">
-            <div class="card result-header">
-                <h2>診断結果</h2>
-                <div class="total-score">
-                    <span class="score-label">総合スコア</span>
-                    <span class="score-value" id="totalScore">0</span>
-                    <span class="score-max">/ 100</span>
-                </div>
+            <h1>診断結果</h1>
+            
+            <div class="result-summary">
+                <h2>あなたの総合スコア</h2>
+                <div class="total-score" id="total-score">0</div>
+                <p>（500点満点）</p>
             </div>
 
-            <!-- レーダーチャート -->
-            <div class="card">
-                <h3>10カテゴリー別スコア</h3>
-                <canvas id="resultRadarChart"></canvas>
+            <div class="chart-container">
+                <canvas id="radarChart"></canvas>
             </div>
 
-            <!-- カテゴリー別詳細 -->
-            <div class="card">
-                <h3>カテゴリー別詳細</h3>
-                <div id="categoryDetails"></div>
-            </div>
+            <div class="category-results" id="category-results"></div>
 
-            <!-- 総合フィードバック -->
-            <div class="card">
-                <h3>総合フィードバック</h3>
-                <div id="overallFeedback"></div>
-            </div>
+            <div class="feedback-section" id="feedback-section"></div>
 
-            <!-- 改善提案 -->
-            <div class="card">
-                <h3>改善提案</h3>
-                <div id="improvementSuggestions"></div>
-            </div>
-
-            <button onclick="location.reload()" class="btn-primary">診断を終了する</button>
+            <button class="btn-primary" onclick="location.reload()">もう一度診断する</button>
         </div>
     </div>
 
