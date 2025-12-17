@@ -420,17 +420,24 @@ function submitResults(totalScore, categoryScores) {
         categoryScoresObj[cat] = categoryScores[index];
     });
     
+    const now = new Date();
+    const yearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const surveyDate = now.toISOString().split('T')[0];
+    
     const data = {
+        companyCode: '未設定',
         employeeCode: employeeCode,
         department: department,
         gender: gender,
-        timestamp: new Date().toISOString(),
+        yearMonth: yearMonth,
+        surveyDate: surveyDate,
         totalScore: totalScore,
         categoryScores: categoryScoresObj,
         answers: answers
     };
     
-    fetch(`${API_ENDPOINT}/api/diagnostics`, {
+    fetch(`${API_ENDPOINT}/api/survey/submit`, {
+
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
