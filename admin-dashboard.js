@@ -73,9 +73,19 @@ async function loadData() {
 
 // フィルターの初期化
 function initializeFilters() {
-    // 企業フィルター（現在は全社のみ）
+    // 企業フィルター
+    const companies = [...new Set(allData.map(d => d.companyCode))];
     const companyFilter = document.getElementById('companyFilter');
     companyFilter.innerHTML = '<option value="all">全社</option>';
+    companies.forEach(company => {
+        const option = document.createElement('option');
+        option.value = company;
+        option.textContent = company;
+        if (company === '株式会社テスト') {
+            option.selected = true;
+        }
+        companyFilter.appendChild(option);
+    });
     
     // 部署フィルター
     const departments = [...new Set(allData.map(d => d.department))];
@@ -87,15 +97,24 @@ function initializeFilters() {
         option.textContent = dept;
         departmentFilter.appendChild(option);
     });
+    
+    // 初期フィルター適用（株式会社テストのみ）
+    applyFilters();
 }
 
 // フィルターの適用
 function applyFilters() {
+    const companyFilter = document.getElementById('companyFilter').value;
     const departmentFilter = document.getElementById('departmentFilter').value;
     const riskFilter = document.getElementById('riskFilter').value;
     const genderFilter = document.getElementById('genderFilter').value;
     
     filteredData = allData.filter(item => {
+        // 企業フィルター
+        if (companyFilter !== 'all' && item.companyCode !== companyFilter) {
+            return false;
+        }
+        
         // 部署フィルター
         if (departmentFilter !== 'all' && item.department !== departmentFilter) {
             return false;
@@ -150,13 +169,14 @@ function updateStatCards() {
         totalScore += item.totalScore;
     });
     
+    // 100点満点換算
+    const avgScore = filteredData.length > 0 ? (totalScore / filteredData.length) / 5 : 0;
+    
     document.getElementById('highRiskCount').textContent = highRisk;
     document.getElementById('mediumRiskCount').textContent = mediumRisk;
     document.getElementById('lowRiskCount').textContent = lowRisk;
     document.getElementById('totalCount').textContent = filteredData.length;
-    document.getElementById('avgScore').textContent = filteredData.length > 0 
-        ? (totalScore / filteredData.length).toFixed(1) 
-        : '0';
+    document.getElementById('avgScore').textContent = avgScore.toFixed(1);
 }
 
 // 男女比統計の更新
@@ -172,12 +192,12 @@ function updateGenderStats() {
     const maleRatio = total > 0 ? ((maleCount / total) * 100).toFixed(1) : 0;
     const femaleRatio = total > 0 ? ((femaleCount / total) * 100).toFixed(1) : 0;
     
-    // 平均スコア計算
+    // 平均スコア計算（100点満点換算）
     const maleAvg = maleCount > 0 
-        ? (maleData.reduce((sum, d) => sum + d.totalScore, 0) / maleCount).toFixed(1) 
+        ? ((maleData.reduce((sum, d) => sum + d.totalScore, 0) / maleCount) / 5).toFixed(1)
         : 0;
     const femaleAvg = femaleCount > 0 
-        ? (femaleData.reduce((sum, d) => sum + d.totalScore, 0) / femaleCount).toFixed(1) 
+        ? ((femaleData.reduce((sum, d) => sum + d.totalScore, 0) / femaleCount) / 5).toFixed(1)
         : 0;
     
     // スコア差
@@ -195,11 +215,11 @@ function updateGenderStats() {
     document.getElementById('genderScoreDiff').textContent = scoreDiff;
 }
 
-// リスクレベルの計算
+// リスクレベルの計算（100点満点換算）
 function calculateRiskLevel(item) {
-    const score = item.totalScore;
-    if (score < 250) return 'high';
-    if (score < 350) return 'medium';
+    const score = item.totalScore / 5; // 100点満点換算
+    if (score < 50) return 'high';
+    if (score < 70) return 'medium';
     return 'low';
 }
 
@@ -216,7 +236,7 @@ function updateExecutiveAlerts() {
         alert.className = 'alert-item danger';
         alert.innerHTML = `
             <strong>⚠️ 高リスク従業員: ${highRiskEmployees.length}名</strong>
-            <p>総合スコア250点未満の従業員が${highRiskEmployees.length}名います。早急な面談とサポートが必要です。</p>
+            <p>総合スコア50点未満の従業員が${highRiskEmployees.length}名います。早急な面談とサポートが必要です。</p>
         `;
         alertsContainer.appendChild(alert);
     }
@@ -371,10 +391,10 @@ function drawTrendChart() {
         date.setMonth(date.getMonth() - i);
         months.push(`${date.getFullYear()}/${date.getMonth() + 1}`);
         
-        // ベーススコアに変動を加える
-        const baseScore = 325;
-        const trend = (currentTrendPeriod - i) * 2.5; // 改善トレンド
-        const noise = (Math.random() - 0.5) * 25; // ランダムな変動
+        // ベーススコアに変動を加える（100点満点）
+        const baseScore = 65;
+        const trend = (currentTrendPeriod - i) * 0.5;
+        const noise = (Math.random() - 0.5) * 5;
         dataPoints.push((baseScore + trend + noise).toFixed(1));
     }
     
@@ -397,9 +417,9 @@ function drawTrendChart() {
             scales: {
                 y: {
                     beginAtZero: true,
-                    max: 500,
+                    max: 100,
                     ticks: {
-                        stepSize: 100
+                        stepSize: 20
                     }
                 }
             },
@@ -442,18 +462,32 @@ function updateDataTable() {
     const tbody = document.getElementById('dataTableBody');
     tbody.innerHTML = '';
     
-    filteredData.forEach(item => {
+    // 従業員コードでソート（若い順）
+    const sortedData = [...filteredData].sort((a, b) => {
+        const codeA = a.employeeCode.replace(/[^0-9]/g, '');
+        const codeB = b.employeeCode.replace(/[^0-9]/g, '');
+        return parseInt(codeA) - parseInt(codeB);
+    });
+    
+    sortedData.forEach(item => {
         const row = document.createElement('tr');
         const risk = calculateRiskLevel(item);
         const riskClass = risk === 'high' ? 'risk-high' : risk === 'medium' ? 'risk-medium' : 'risk-low';
         const riskText = risk === 'high' ? '高' : risk === 'medium' ? '中' : '低';
         
+        // 100点満点換算
+        const score100 = (item.totalScore / 5).toFixed(1);
+        
+        // 日本時間に変換
+        const timestamp = new Date(item.timestamp + 'Z'); // UTCとして扱う
+        const jpTime = new Date(timestamp.getTime() + (9 * 60 * 60 * 1000)); // +9時間
+        
         row.innerHTML = `
             <td>${item.employeeCode}</td>
             <td>${item.department}</td>
             <td>${item.gender || '-'}</td>
-            <td>${new Date(item.timestamp).toLocaleString('ja-JP')}</td>
-            <td>${item.totalScore.toFixed(1)}</td>
+            <td>${jpTime.toLocaleString('ja-JP')}</td>
+            <td>${score100}</td>
             <td><span class="risk-badge ${riskClass}">${riskText}</span></td>
             <td><button class="btn btn-primary" onclick="viewDetail('${item.employeeCode}')">詳細</button></td>
         `;
@@ -465,7 +499,8 @@ function updateDataTable() {
 function viewDetail(employeeCode) {
     const item = allData.find(d => d.employeeCode === employeeCode);
     if (item) {
-        alert(`社員コード: ${item.employeeCode}\n部署: ${item.department}\n性別: ${item.gender || '-'}\n総合スコア: ${item.totalScore.toFixed(1)}\n\n詳細機能は今後実装予定です。`);
+        const score100 = (item.totalScore / 5).toFixed(1);
+        alert(`社員コード: ${item.employeeCode}\n部署: ${item.department}\n性別: ${item.gender || '-'}\n総合スコア: ${score100}点\n\n詳細機能は今後実装予定です。`);
     }
 }
 
@@ -479,7 +514,8 @@ function updateDepartmentComparison() {
     
     departments.forEach(dept => {
         const deptData = filteredData.filter(d => d.department === dept);
-        const avgScore = deptData.reduce((sum, d) => sum + d.totalScore, 0) / deptData.length;
+        // 平均スコア（100点満点換算）
+        const avgScore = (deptData.reduce((sum, d) => sum + d.totalScore, 0) / deptData.length) / 5;
         departmentScores[dept] = avgScore.toFixed(1);
         
         const card = document.createElement('div');
@@ -535,19 +571,23 @@ function drawComparisonChart(departmentScores) {
         });
         
         const colors = [
-            'rgba(52, 152, 219, 0.6)',
-            'rgba(46, 204, 113, 0.6)',
-            'rgba(155, 89, 182, 0.6)',
-            'rgba(241, 196, 15, 0.6)',
-            'rgba(231, 76, 60, 0.6)'
+            { bg: 'rgba(52, 152, 219, 0.3)', border: 'rgba(52, 152, 219, 1)' },
+            { bg: 'rgba(46, 204, 113, 0.3)', border: 'rgba(46, 204, 113, 1)' },
+            { bg: 'rgba(155, 89, 182, 0.3)', border: 'rgba(155, 89, 182, 1)' },
+            { bg: 'rgba(241, 196, 15, 0.3)', border: 'rgba(241, 196, 15, 1)' },
+            { bg: 'rgba(231, 76, 60, 0.3)', border: 'rgba(231, 76, 60, 1)' }
         ];
+        
+        const color = colors[index % colors.length];
         
         return {
             label: dept,
             data: scores,
-            backgroundColor: colors[index % colors.length],
-            borderColor: colors[index % colors.length].replace('0.6', '1'),
-            borderWidth: 2
+            backgroundColor: color.bg,
+            borderColor: color.border,
+            borderWidth: 3,
+            pointRadius: 4,
+            pointHoverRadius: 6
         };
     });
     
@@ -566,6 +606,12 @@ function drawComparisonChart(departmentScores) {
                         stepSize: 20
                     }
                 }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
             }
         }
     });
@@ -580,10 +626,23 @@ function showDepartmentDetail(department) {
 function exportCSV() {
     let csv = '社員コード,部署,性別,診断日時,総合スコア,リスクレベル\n';
     
-    filteredData.forEach(item => {
+    // 従業員コードでソート（若い順）
+    const sortedData = [...filteredData].sort((a, b) => {
+        const codeA = a.employeeCode.replace(/[^0-9]/g, '');
+        const codeB = b.employeeCode.replace(/[^0-9]/g, '');
+        return parseInt(codeA) - parseInt(codeB);
+    });
+    
+    sortedData.forEach(item => {
         const risk = calculateRiskLevel(item);
         const riskText = risk === 'high' ? '高' : risk === 'medium' ? '中' : '低';
-        csv += `${item.employeeCode},${item.department},${item.gender || '-'},${new Date(item.timestamp).toLocaleString('ja-JP')},${item.totalScore.toFixed(1)},${riskText}\n`;
+        const score100 = (item.totalScore / 5).toFixed(1);
+        
+        // 日本時間に変換
+        const timestamp = new Date(item.timestamp + 'Z');
+        const jpTime = new Date(timestamp.getTime() + (9 * 60 * 60 * 1000));
+        
+        csv += `${item.employeeCode},${item.department},${item.gender || '-'},${jpTime.toLocaleString('ja-JP')},${score100},${riskText}\n`;
     });
     
     const blob = new Blob([csv], { type: 'text/csv' });
