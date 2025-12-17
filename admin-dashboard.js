@@ -251,6 +251,12 @@ function updateExecutiveAlerts() {
 
 // レーダーチャートの更新
 function updateExecutiveRadarChart() {
+    // Chart.jsが読み込まれているか確認
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.jsが読み込まれていません');
+        return;
+    }
+    
     const categories = [
         "心身の健康",
         "仕事の充実感",
@@ -280,7 +286,8 @@ function updateExecutiveRadarChart() {
     
     const ctx = document.getElementById('executiveRadarChart');
     
-    if (window.executiveRadarChart) {
+    // 既存のチャートを破棄
+    if (window.executiveRadarChart && typeof window.executiveRadarChart.destroy === 'function') {
         window.executiveRadarChart.destroy();
     }
     
@@ -342,9 +349,16 @@ function togglePreviousComparison() {
 
 // トレンドチャートの描画
 function drawTrendChart() {
+    // Chart.jsが読み込まれているか確認
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.jsが読み込まれていません');
+        return;
+    }
+    
     const ctx = document.getElementById('trendChart');
     
-    if (window.trendChart) {
+    // 既存のチャートを破棄
+    if (window.trendChart && typeof window.trendChart.destroy === 'function') {
         window.trendChart.destroy();
     }
     
@@ -485,9 +499,16 @@ function updateDepartmentComparison() {
 
 // 比較チャートの描画
 function drawComparisonChart(departmentScores) {
+    // Chart.jsが読み込まれているか確認
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.jsが読み込まれていません');
+        return;
+    }
+    
     const ctx = document.getElementById('comparisonChart');
     
-    if (window.comparisonChart) {
+    // 既存のチャートを破棄
+    if (window.comparisonChart && typeof window.comparisonChart.destroy === 'function') {
         window.comparisonChart.destroy();
     }
     
