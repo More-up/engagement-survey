@@ -30,9 +30,35 @@ function authenticate() {
 async function loadData() {
     try {
         const response = await fetch(`${API_ENDPOINT}/api/diagnostics`);
+        
+        // レスポンスの確認
+        if (!response.ok) {
+            throw new Error(`HTTPエラー: ${response.status}`);
+        }
+        
         const data = await response.json();
-        allData = data;
-        filteredData = data;
+        
+        // データが配列かチェック
+        if (Array.isArray(data)) {
+            allData = data;
+            filteredData = data;
+        } else if (data && Array.isArray(data.results)) {
+            // APIが {results: [...]} 形式で返す場合
+            allData = data.results;
+            filteredData = data.results;
+        } else {
+            // データがない場合は空配列
+            console.warn('データが配列形式ではありません:', data);
+            allData = [];
+            filteredData = [];
+        }
+        
+        // データが0件の場合の処理
+        if (allData.length === 0) {
+            console.log('データが0件です。テストデータを作成してください。');
+            alert('診断データがまだありません。\n\n30人分のテストデータを作成しますか？');
+        }
+
         
         // フィルターの初期化
         initializeFilters();
