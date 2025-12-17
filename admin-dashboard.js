@@ -29,7 +29,7 @@ function authenticate() {
 // データの読み込み
 async function loadData() {
     try {
-        const response = await fetch(`${API_ENDPOINT}/api/diagnostics`);
+        const response = await fetch(`${API_ENDPOINT}/api/survey/results`);
         
         // レスポンスの確認
         if (!response.ok) {
@@ -67,7 +67,7 @@ async function loadData() {
         updateAllTabs();
     } catch (error) {
         console.error('データ読み込みエラー:', error);
-        alert('データの読み込みに失敗しました');
+        alert('データの読み込みに失敗しました: ' + error.message);
     }
 }
 
@@ -198,8 +198,8 @@ function updateGenderStats() {
 // リスクレベルの計算
 function calculateRiskLevel(item) {
     const score = item.totalScore;
-    if (score < 50) return 'high';
-    if (score < 70) return 'medium';
+    if (score < 250) return 'high';
+    if (score < 350) return 'medium';
     return 'low';
 }
 
@@ -216,7 +216,7 @@ function updateExecutiveAlerts() {
         alert.className = 'alert-item danger';
         alert.innerHTML = `
             <strong>⚠️ 高リスク従業員: ${highRiskEmployees.length}名</strong>
-            <p>総合スコア50点未満の従業員が${highRiskEmployees.length}名います。早急な面談とサポートが必要です。</p>
+            <p>総合スコア250点未満の従業員が${highRiskEmployees.length}名います。早急な面談とサポートが必要です。</p>
         `;
         alertsContainer.appendChild(alert);
     }
@@ -227,7 +227,8 @@ function updateExecutiveAlerts() {
         if (!departmentSupport[item.department]) {
             departmentSupport[item.department] = [];
         }
-        departmentSupport[item.department].push(item.categoryScores['上司のサポート']);
+        const supportScore = item.categoryScores['上司のサポート'] || 0;
+        departmentSupport[item.department].push(supportScore);
     });
     
     Object.keys(departmentSupport).forEach(dept => {
@@ -251,21 +252,21 @@ function updateExecutiveAlerts() {
 // レーダーチャートの更新
 function updateExecutiveRadarChart() {
     const categories = [
-        "仕事の意義",
+        "心身の健康",
+        "仕事の充実感",
         "成長機会",
         "上司のサポート",
         "部署内の人間関係",
-        "心理的安全性",
-        "ワークライフバランス",
-        "評価と報酬",
-        "自律性",
-        "組織への信頼",
-        "職場環境"
+        "評価・処遇",
+        "会社への信頼",
+        "働く環境",
+        "総合満足度",
+        "組織へのつながり"
     ];
     
     // 現在のスコア計算
     const currentScores = categories.map(cat => {
-        const scores = filteredData.map(item => item.categoryScores[cat]);
+        const scores = filteredData.map(item => item.categoryScores[cat] || 0);
         return scores.length > 0 
             ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1)
             : 0;
@@ -357,9 +358,9 @@ function drawTrendChart() {
         months.push(`${date.getFullYear()}/${date.getMonth() + 1}`);
         
         // ベーススコアに変動を加える
-        const baseScore = 65;
-        const trend = (currentTrendPeriod - i) * 0.5; // 改善トレンド
-        const noise = (Math.random() - 0.5) * 5; // ランダムな変動
+        const baseScore = 325;
+        const trend = (currentTrendPeriod - i) * 2.5; // 改善トレンド
+        const noise = (Math.random() - 0.5) * 25; // ランダムな変動
         dataPoints.push((baseScore + trend + noise).toFixed(1));
     }
     
@@ -382,9 +383,9 @@ function drawTrendChart() {
             scales: {
                 y: {
                     beginAtZero: true,
-                    max: 100,
+                    max: 500,
                     ticks: {
-                        stepSize: 20
+                        stepSize: 100
                     }
                 }
             },
@@ -491,22 +492,22 @@ function drawComparisonChart(departmentScores) {
     }
     
     const categories = [
-        "仕事の意義",
+        "心身の健康",
+        "仕事の充実感",
         "成長機会",
         "上司のサポート",
         "部署内の人間関係",
-        "心理的安全性",
-        "ワークライフバランス",
-        "評価と報酬",
-        "自律性",
-        "組織への信頼",
-        "職場環境"
+        "評価・処遇",
+        "会社への信頼",
+        "働く環境",
+        "総合満足度",
+        "組織へのつながり"
     ];
     
     const datasets = Object.keys(departmentScores).map((dept, index) => {
         const deptData = filteredData.filter(d => d.department === dept);
         const scores = categories.map(cat => {
-            const catScores = deptData.map(item => item.categoryScores[cat]);
+            const catScores = deptData.map(item => item.categoryScores[cat] || 0);
             return catScores.length > 0 
                 ? (catScores.reduce((a, b) => a + b, 0) / catScores.length).toFixed(1)
                 : 0;
