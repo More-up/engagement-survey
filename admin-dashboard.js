@@ -44,10 +44,19 @@ async function loadData() {
 
 // フィルターの初期化
 function initializeFilters() {
+    // 企業フィルターの初期化
+    const companies = [...new Set(allData.map(d => d.company))];
     const companyFilter = document.getElementById('companyFilter');
     companyFilter.innerHTML = '<option value="all">全社</option>';
+    companies.forEach(company => {
+        const option = document.createElement('option');
+        option.value = company;
+        option.textContent = company;
+        companyFilter.appendChild(option);
+    });
     companyFilter.value = 'all';
     
+    // 部署フィルターの初期化
     const departments = [...new Set(allData.map(d => d.department))];
     const departmentFilter = document.getElementById('departmentFilter');
     departmentFilter.innerHTML = '<option value="all">全部署</option>';
@@ -58,14 +67,20 @@ function initializeFilters() {
         departmentFilter.appendChild(option);
     });
 }
+}
 
 // フィルターの適用
 function applyFilters() {
     const departmentFilter = document.getElementById('departmentFilter').value;
+    const companyFilter = document.getElementById('companyFilter').value;
     const riskFilter = document.getElementById('riskFilter').value;
     const genderFilter = document.getElementById('genderFilter').value;
     
     filteredData = allData.filter(item => {
+        if (companyFilter !== 'all' && item.company !== companyFilter) {
+            return false;
+        }
+
         if (departmentFilter !== 'all' && item.department !== departmentFilter) {
             return false;
         }
