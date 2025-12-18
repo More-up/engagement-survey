@@ -458,7 +458,7 @@ function drawTrendChart() {
     const ctx = document.getElementById('trendChart');
     if (!ctx) return;
     
-    if (window.trendChart) {
+    if (window.trendChart && typeof window.trendChart.destroy === 'function') {
         window.trendChart.destroy();
     }
     
