@@ -192,16 +192,13 @@ function updateGenderStats() {
     const maleRatio = total > 0 ? ((maleCount / total) * 100).toFixed(1) : 0;
     const femaleRatio = total > 0 ? ((femaleCount / total) * 100).toFixed(1) : 0;
     
-    // 平均スコア計算（100点満点換算）
+    // 平均スコア計算 (100点満点に変換)
     const maleAvg = maleCount > 0 
         ? ((maleData.reduce((sum, d) => sum + d.totalScore, 0) / maleCount) / 5).toFixed(1)
         : 0;
     const femaleAvg = femaleCount > 0 
         ? ((femaleData.reduce((sum, d) => sum + d.totalScore, 0) / femaleCount) / 5).toFixed(1)
         : 0;
-    
-    // スコア差
-    const scoreDiff = Math.abs(maleAvg - femaleAvg).toFixed(1);
     
     // 表示更新
     document.getElementById('maleRatio').textContent = `${maleRatio}%`;
@@ -212,7 +209,91 @@ function updateGenderStats() {
     document.getElementById('femaleCount').textContent = `${femaleCount}人`;
     document.getElementById('femaleAvgScore').textContent = femaleAvg;
     
-    document.getElementById('genderScoreDiff').textContent = scoreDiff;
+    // 男女別レーダーチャート更新
+    updateGenderRadarChart();
+    // 男女別レーダーチャート更新関数
+function updateGenderRadarChart() {
+    const maleData = filteredData.filter(d => d.gender === '男性');
+    const femaleData = filteredData.filter(d => d.gender === '女性');
+    
+    const categories = [
+        '心身の健康', '仕事の充実感', '成長機会', '上司のサポート', '部署内の人間関係',
+        '評価・処遇', '会社への信頼', '働く環境', '総合満足度', '組織へのつながり'
+    ];
+    
+    // 男性カテゴリ平均
+    const maleAvgScores = categories.map(cat => {
+        if (maleData.length === 0) return 0;
+        const scores = maleData.map(d => d.categoryScores[cat] || 0);
+        return (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1);
+    });
+    
+    // 女性カテゴリ平均
+    const femaleAvgScores = categories.map(cat => {
+        if (femaleData.length === 0) return 0;
+        const scores = femaleData.map(d => d.categoryScores[cat] || 0);
+        return (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1);
+    });
+    
+    const canvas = document.getElementById('genderRadarChart');
+    const ctx = canvas.getContext('2d');
+    
+    // 既存のチャートがあれば破棄
+    if (window.genderRadarChartInstance) {
+        window.genderRadarChartInstance.destroy();
+    }
+    
+    // 新しいチャート作成
+    window.genderRadarChartInstance = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: categories,
+            datasets: [
+                {
+                    label: '男性',
+                    data: maleAvgScores,
+                    backgroundColor: 'rgba(102, 126, 234, 0.2)',
+                    borderColor: 'rgba(102, 126, 234, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(102, 126, 234, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(102, 126, 234, 1)'
+                },
+                {
+                    label: '女性',
+                    data: femaleAvgScores,
+                    backgroundColor: 'rgba(240, 147, 251, 0.2)',
+                    borderColor: 'rgba(240, 147, 251, 1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: 'rgba(240, 147, 251, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(240, 147, 251, 1)'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        stepSize: 20
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            }
+        }
+    });
+}
+
 }
 
 // リスクレベルの計算（100点満点換算）
