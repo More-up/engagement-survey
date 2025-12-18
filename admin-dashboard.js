@@ -160,39 +160,25 @@ function updateGenderRadarChart(maleData, femaleData) {
         window.genderComparisonRadarChart.destroy();
     }
     
+    // レーダーチャート用の短縮ラベル（正しい表記）
     const categories = [
-        '心身健康', '仕事充実', '成長機会', '上司サポ', '部署関係',
-        '評価処遇', '会社信頼', '働く環境', '総合満足', '組織つながり'
+        '心身の健康', '仕事の充実感', '成長機会', '上司のサポート', '部署内の人間関係',
+        '評価・処遇', '会社への信頼', '働く環境', '総合満足度', '組織へのつながり'
     ];
     
-    const categoryMapping = {
-        '心身健康': '心身の健康',
-        '仕事充実': '仕事の充実感',
-        '成長機会': '成長機会',
-        '上司サポ': '上司のサポート',
-        '部署関係': '部署内の人間関係',
-        '評価処遇': '評価・処遇',
-        '会社信頼': '会社への信頼',
-        '働く環境': '働く環境',
-        '総合満足': '総合満足度',
-        '組織つながり': '組織へのつながり'
-    };
-    
     const maleScores = categories.map(cat => {
-        const fullCat = categoryMapping[cat];
         if (maleData.length === 0) return 0;
         const scores = maleData
-            .map(item => item.categoryScores[fullCat])
+            .map(item => item.categoryScores[cat])
             .filter(score => score !== undefined && score !== null);
         return scores.length > 0 ? 
             (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : 0;
     });
     
     const femaleScores = categories.map(cat => {
-        const fullCat = categoryMapping[cat];
         if (femaleData.length === 0) return 0;
         const scores = femaleData
-            .map(item => item.categoryScores[fullCat])
+            .map(item => item.categoryScores[cat])
             .filter(score => score !== undefined && score !== null);
         return scores.length > 0 ? 
             (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : 0;
@@ -269,7 +255,7 @@ function updateAlerts() {
             alertDiv.className = 'alert-item';
             alertDiv.innerHTML = `
                 <strong>📉 部署アラート</strong>
-                <p>${dept}の上司サポート平均スコアが低下しています (${avgSupport.toFixed(1)}点)</p>
+                <p>${dept}の上司のサポート平均スコアが低下しています (${avgSupport.toFixed(1)}点)</p>
             `;
             alertsContainer.appendChild(alertDiv);
         }
