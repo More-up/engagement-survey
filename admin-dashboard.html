@@ -520,23 +520,36 @@
                     </div>
                 </div>
 
-                                <!-- 男女比統計 -->
+                <!-- 男女比統計 -->
                 <div class="section">
                     <h2>👥 男女比統計</h2>
-                    <div class="gender-stats">
-                        <div class="gender-card">
-                            <h3>男性</h3>
-                            <div class="avg-score" id="maleAvgScore" style="font-size: 3rem; color: #667eea; font-weight: 700; margin: 10px 0;">0</div>
-                            <div style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">平均スコア</div>
-                            <div class="count" id="maleCount">0人</div>
-                            <div class="ratio" id="maleRatio" style="font-size: 1.2rem; color: #999; margin-top: 5px;">0%</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <!-- 男性カード -->
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; text-align: center;">
+                            <h3 style="color: #667eea; margin-bottom: 15px;">👨 男性</h3>
+                            <!-- 平均スコア（大きく表示） -->
+                            <div id="maleAvgScore" style="font-size: 3rem; color: #667eea; font-weight: 700; margin: 10px 0;">0</div>
+                            <div style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">平均スコア</div>
+                            <!-- 人数（中サイズ） -->
+                            <div id="maleCount" style="font-size: 1.5rem; font-weight: 600; color: #495057; margin: 8px 0;">0人</div>
+                            <div style="font-size: 0.85rem; color: #999; margin-bottom: 15px;">人数</div>
+                            <!-- シェア率（小サイズ） -->
+                            <div id="maleRatio" style="font-size: 1.2rem; color: #999; margin: 5px 0;">0%</div>
+                            <div style="font-size: 0.8rem; color: #999;">シェア率</div>
                         </div>
-                        <div class="gender-card">
-                            <h3>女性</h3>
-                            <div class="avg-score" id="femaleAvgScore" style="font-size: 3rem; color: #f093fb; font-weight: 700; margin: 10px 0;">0</div>
-                            <div style="font-size: 0.9rem; color: #666; margin-bottom: 10px;">平均スコア</div>
-                            <div class="count" id="femaleCount">0人</div>
-                            <div class="ratio" id="femaleRatio" style="font-size: 1.2rem; color: #999; margin-top: 5px;">0%</div>
+                        
+                        <!-- 女性カード -->
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; text-align: center;">
+                            <h3 style="color: #f093fb; margin-bottom: 15px;">👩 女性</h3>
+                            <!-- 平均スコア（大きく表示） -->
+                            <div id="femaleAvgScore" style="font-size: 3rem; color: #f093fb; font-weight: 700; margin: 10px 0;">0</div>
+                            <div style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">平均スコア</div>
+                            <!-- 人数（中サイズ） -->
+                            <div id="femaleCount" style="font-size: 1.5rem; font-weight: 600; color: #495057; margin: 8px 0;">0人</div>
+                            <div style="font-size: 0.85rem; color: #999; margin-bottom: 15px;">人数</div>
+                            <!-- シェア率（小サイズ） -->
+                            <div id="femaleRatio" style="font-size: 1.2rem; color: #999; margin: 5px 0;">0%</div>
+                            <div style="font-size: 0.8rem; color: #999;">シェア率</div>
                         </div>
                     </div>
                 </div>
@@ -548,7 +561,6 @@
                         <canvas id="genderRadarChart" style="max-height: 400px;"></canvas>
                     </div>
                 </div>
-
 
                 <!-- 改善トレンド -->
                 <div class="section trend-section">
