@@ -19,7 +19,99 @@ const categoryQuestions = {
 let allData = [];
 let filteredData = [];
 let currentTrendView = 'overall'; // 'overall', 'category', 'risk'
-let currentTrendPeriod = 6;
+let currentTrendPeriod = 'Q4'; // Q1, Q2, Q3, Q4
+// 四半期別ダミーデータ定義
+const quarterlyData = {
+    'Q1': {
+        labels: ['2024年4月', '2024年5月', '2024年6月'],
+        overall: [52, 55, 58],
+        categories: {
+            '心身の健康': [50, 53, 56],
+            '仕事の充実感': [54, 57, 60],
+            '成長機会': [48, 51, 54],
+            '上司のサポート': [52, 55, 58],
+            '部署内の人間関係': [56, 59, 62],
+            '評価・処遇': [46, 49, 52],
+            '会社への信頼': [51, 54, 57],
+            '働く環境': [55, 58, 61],
+            '総合満足度': [50, 53, 56],
+            '組織へのつながり': [48, 51, 54]
+        },
+        risk: {
+            high: [24, 22, 20],
+            medium: [26, 25, 25],
+            low: [10, 13, 15]
+        }
+    },
+    'Q2': {
+        labels: ['2024年7月', '2024年8月', '2024年9月'],
+        overall: [58, 61, 65],
+        categories: {
+            '心身の健康': [56, 59, 62],
+            '仕事の充実感': [60, 63, 66],
+            '成長機会': [54, 57, 60],
+            '上司のサポート': [58, 61, 64],
+            '部署内の人間関係': [62, 65, 68],
+            '評価・処遇': [52, 55, 58],
+            '会社への信頼': [57, 60, 63],
+            '働く環境': [61, 64, 67],
+            '総合満足度': [56, 59, 62],
+            '組織へのつながり': [54, 57, 60]
+        },
+        risk: {
+            high: [20, 18, 16],
+            medium: [25, 24, 24],
+            low: [15, 18, 20]
+        }
+    },
+    'Q3': {
+        labels: ['2024年10月', '2024年11月', '2024年12月'],
+        overall: [65, 68, 71],
+        categories: {
+            '心身の健康': [62, 65, 68],
+            '仕事の充実感': [66, 69, 72],
+            '成長機会': [60, 63, 66],
+            '上司のサポート': [64, 67, 70],
+            '部署内の人間関係': [68, 71, 74],
+            '評価・処遇': [58, 61, 64],
+            '会社への信頼': [63, 66, 69],
+            '働く環境': [67, 70, 73],
+            '総合満足度': [62, 65, 68],
+            '組織へのつながり': [60, 63, 66]
+        },
+        risk: {
+            high: [16, 14, 12],
+            medium: [24, 23, 23],
+            low: [20, 23, 25]
+        }
+    },
+    'Q4': {
+        labels: ['2025年1月', '2025年2月', '2025年3月'],
+        overall: [71, 74, 78],
+        categories: {
+            '心身の健康': [68, 71, 75],
+            '仕事の充実感': [72, 75, 78],
+            '成長機会': [66, 69, 73],
+            '上司のサポート': [70, 73, 77],
+            '部署内の人間関係': [74, 77, 80],
+            '評価・処遇': [64, 67, 71],
+            '会社への信頼': [69, 72, 76],
+            '働く環境': [73, 76, 79],
+            '総合満足度': [68, 71, 75],
+            '組織へのつながり': [66, 69, 73]
+        },
+        risk: {
+            high: [12, 10, 8],
+            medium: [23, 22, 22],
+            low: [25, 28, 30]
+        }
+    }
+};
+
+// 四半期データを取得する関数
+function getQuarterlyData(quarter) {
+    return quarterlyData[quarter] || quarterlyData['Q4'];
+}
 
 // データの読み込み
 async function loadData() {
@@ -470,6 +562,7 @@ function changeTrendView(view) {
 
 // 期間変更(まだダミーデータなので未実装)
 function changeTrendPeriod(period) {
+    currentTrendPeriod = period;
     // 期間ボタンのアクティブ状態を更新
     document.querySelectorAll('.trend-period-btn').forEach(btn => {
         btn.classList.remove('active');
@@ -502,13 +595,14 @@ function drawTrendChart() {
 
 // ① 総合スコア推移(折れ線グラフ・1本)
 function drawOverallTrend(ctx) {
+    const qData = getQuarterlyData(currentTrendPeriod);
     window.trendChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: ['2024年10月', '2024年11月', '2024年12月', '2025年1月', '2025年2月', '2025年3月'],
+            labels: qData.labels,
             datasets: [{
                 label: '平均エンゲージメントスコア',
-                data: [58, 61, 65, 68, 71, 74],
+                data: qData.overall,
                 borderColor: 'rgba(0, 123, 255, 1)',
                 backgroundColor: 'rgba(0, 123, 255, 0.1)',
                 tension: 0.4,
@@ -541,22 +635,22 @@ function drawOverallTrend(ctx) {
 
 // ② カテゴリー別推移(折れ線グラフ・10本)
 function drawCategoryTrend(ctx) {
+    const qData = getQuarterlyData(currentTrendPeriod);
     const categories = [
-        { name: '心身の健康', color: 'rgba(255, 99, 132, 1)', data: [55, 58, 62, 65, 68, 71] },
-        { name: '仕事の充実感', color: 'rgba(54, 162, 235, 1)', data: [60, 62, 64, 66, 69, 72] },
-        { name: '成長機会', color: 'rgba(255, 206, 86, 1)', data: [52, 55, 58, 61, 65, 68] },
-        { name: '上司のサポート', color: 'rgba(75, 192, 192, 1)', data: [58, 60, 63, 66, 70, 73] },
-        { name: '部署内の人間関係', color: 'rgba(153, 102, 255, 1)', data: [62, 64, 66, 68, 71, 74] },
-        { name: '評価・処遇', color: 'rgba(255, 159, 64, 1)', data: [50, 53, 56, 59, 63, 67] },
-        { name: '会社への信頼', color: 'rgba(201, 203, 207, 1)', data: [57, 59, 62, 65, 68, 71] },
-        { name: '働く環境', color: 'rgba(255, 99, 255, 1)', data: [61, 63, 65, 68, 71, 74] },
-        { name: '総合満足度', color: 'rgba(0, 204, 102, 1)', data: [56, 59, 62, 66, 69, 72] },
-        { name: '組織へのつながり', color: 'rgba(102, 51, 0, 1)', data: [54, 57, 60, 64, 67, 70] }
-    ];
+        { name: '心身の健康', color: 'rgba(255, 99, 132, 1)' },
+        { name: '仕事の充実感', color: 'rgba(54, 162, 235, 1)' },
+        { name: '成長機会', color: 'rgba(255, 206, 86, 1)' },
+        { name: '上司のサポート', color: 'rgba(75, 192, 192, 1)' },
+        { name: '部署内の人間関係', color: 'rgba(153, 102, 255, 1)' },
+        { name: '評価・処遇', color: 'rgba(255, 159, 64, 1)' },
+        { name: '会社への信頼', color: 'rgba(201, 203, 207, 1)' },
+        { name: '働く環境', color: 'rgba(255, 99, 255, 1)' },
+        { name: '総合満足度', color: 'rgba(0, 204, 102, 1)' },
+        { name: '組織へのつながり', color: 'rgba(102, 51, 0, 1)' }
     
     const datasets = categories.map(cat => ({
         label: cat.name,
-        data: cat.data,
+        data: qData.categories[cat.name],
         borderColor: cat.color,
         backgroundColor: cat.color.replace('1)', '0.1)'),
         tension: 0.3,
@@ -567,7 +661,7 @@ function drawCategoryTrend(ctx) {
     window.trendChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: ['2024年10月', '2024年11月', '2024年12月', '2025年1月', '2025年2月', '2025年3月'],
+            labels: qData.labels,
             datasets: datasets
         },
         options: {
@@ -602,27 +696,28 @@ function drawCategoryTrend(ctx) {
 // ③ リスク人数推移(縦棒グラフ・3色×月)
 function drawRiskTrend(ctx) {
     window.trendChart = new Chart(ctx, {
+    const qData = getQuarterlyData(currentTrendPeriod);
         type: 'bar',
         data: {
-            labels: ['2024年10月', '2024年11月', '2024年12月', '2025年1月', '2025年2月', '2025年3月'],
+            labels: qData.labels,
             datasets: [
                 {
                     label: '高リスク(<50点)',
-                    data: [20, 18, 15, 12, 10, 8],
+                    data: qData.risk.high,
                     backgroundColor: 'rgba(255, 99, 132, 0.8)',
                     borderColor: 'rgba(255, 99, 132, 1)',
                     borderWidth: 1
                 },
                 {
                     label: '中リスク(50-70点)',
-                    data: [25, 24, 26, 25, 23, 22],
+                    data: qData.risk.medium,
                     backgroundColor: 'rgba(255, 159, 64, 0.8)',
                     borderColor: 'rgba(255, 159, 64, 1)',
                     borderWidth: 1
                 },
                 {
                     label: '低リスク(70点以上)',
-                    data: [15, 18, 19, 23, 27, 30],
+                    data: qData.risk.low,
                     backgroundColor: 'rgba(75, 192, 192, 0.8)',
                     borderColor: 'rgba(75, 192, 192, 1)',
                     borderWidth: 1
