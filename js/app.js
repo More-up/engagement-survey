@@ -399,25 +399,18 @@ function displayCategoryResults(scores) {
 // フィードバックの表示
 function displayFeedback(scores) {
     const container = document.getElementById('feedback-section');
-    container.innerHTML = '<h2>改善提案</h2>';
-    
-    const sortedCategories = scores.map((score, index) => ({score, index}))
-        .sort((a, b) => a.score - b.score)
-        .slice(0, 3);
-    
-    sortedCategories.forEach(({score, index}) => {
-        const level = score >= 70 ? '良好' : score >= 50 ? '普通' : '要改善';
-        const levelClass = score >= 70 ? 'feedback-good' : score >= 50 ? 'feedback-normal' : 'feedback-warning';
-        
-        const item = document.createElement('div');
-        item.innerHTML = `
-            <h3 class="${levelClass}">${categories[index]}（${score}点）- ${level}</h3>
-            <p>このカテゴリーのスコア向上に向けて、上司や人事部門と具体的な改善策を検討しましょう。</p>
-        `;
-        container.appendChild(item);
-    });
+    container.innerHTML = `
+        <div style="text-align: center; padding: 30px;">
+            <h2 style="font-size: 2.5em; margin-bottom: 30px;">✅ 診断完了！</h2>
+            <div style="line-height: 2.0; font-size: 1.1em;">
+                <p>診断にご協力いただき、ありがとうございました。</p>
+                <p>あなたの回答は、より良い職場環境づくりのための貴重なデータとして活用させていただきます。</p>
+                <p>回答データは匿名で集計され、個人が特定されることはありません。</p>
+                <p><strong>お疲れさまでした。</strong></p>
+            </div>
+        </div>
+    `;
 }
-
 // APIに結果を送信
 function submitResults(totalScore, categoryScores) {
     const categoryScoresObj = {};
