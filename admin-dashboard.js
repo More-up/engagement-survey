@@ -1,25 +1,18 @@
 // API設定
 const API_ENDPOINT = 'https://engagement-survey-api.more-up.workers.dev';
 
-// 10カテゴリと設問番号の正しいマッピング（app.jsと完全一致）
+// 10カテゴリ定義（app.jsと完全一致）
 const categoryQuestions = {
-    "心身の健康": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],                 // Q1-Q10
-    "仕事の充実感": [11, 12, 13, 14, 15, 16, 17, 18, 19, 20],      // Q11-Q20
-    "成長機会": [21, 22, 23, 24, 25, 26, 27, 28, 29, 30],          // Q21-Q30
-    "上司のサポート": [31, 32, 33, 34, 35, 36, 37, 38, 39, 40],    // Q31-Q40
-    "部署内の人間関係": [41, 42, 43, 44, 45, 46, 47, 48, 49, 50],  // Q41-Q50
-    "評価・処遇": [51, 52, 53, 54, 55, 56, 57, 58, 59, 60],        // Q51-Q60
-    "会社への信頼": [61, 62, 63, 64, 65, 66, 67, 68, 69, 70],      // Q61-Q70
-    "働く環境": [71, 72, 73, 74, 75, 76, 77, 78, 79, 80],          // Q71-Q80
-    "総合満足度": [81, 82, 83, 84, 85, 86, 87, 88, 89, 90],        // Q81-Q90
-    "組織へのつながり": [91, 92, 93, 94, 95, 96, 97, 98, 99, 100]  // Q91-Q100
-};
-
-// 重要設問（アラート検出用）
-const criticalQuestions = {
     "心身の健康": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    "仕事の充実感": [11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
+    "成長機会": [21, 22, 23, 24, 25, 26, 27, 28, 29, 30],
     "上司のサポート": [31, 32, 33, 34, 35, 36, 37, 38, 39, 40],
-    "部署内の人間関係": [41, 42, 43, 44, 45, 46, 47, 48, 49, 50]
+    "部署内の人間関係": [41, 42, 43, 44, 45, 46, 47, 48, 49, 50],
+    "評価・処遇": [51, 52, 53, 54, 55, 56, 57, 58, 59, 60],
+    "会社への信頼": [61, 62, 63, 64, 65, 66, 67, 68, 69, 70],
+    "働く環境": [71, 72, 73, 74, 75, 76, 77, 78, 79, 80],
+    "総合満足度": [81, 82, 83, 84, 85, 86, 87, 88, 89, 90],
+    "組織へのつながり": [91, 92, 93, 94, 95, 96, 97, 98, 99, 100]
 };
 
 // グローバル変数
@@ -28,41 +21,15 @@ let filteredData = [];
 let currentTrendView = 'all';
 let currentTrendPeriod = 6;
 
-// データの読み込みと前処理
+// データの読み込み
 async function loadData() {
     try {
         const response = await fetch(`${API_ENDPOINT}/api/diagnostics`);
         const data = await response.json();
         
-        // categoryScoresを計算
-        allData = data.map(item => {
-            const categoryScores = {};
-            
-            // 各カテゴリのスコアを計算
-            Object.keys(categoryQuestions).forEach(category => {
-                const questions = categoryQuestions[category];
-                let totalScore = 0;
-                let count = 0;
-                
-                questions.forEach(qNum => {
-                    const score = item[`q${qNum}`];
-                    if (score !== undefined && score !== null) {
-                        totalScore += score;
-                        count++;
-                    }
-                });
-                
-                // カテゴリ平均スコア（0-100点に変換）
-                categoryScores[category] = count > 0 ? (totalScore / count) * 20 : 0;
-            });
-            
-            return {
-                ...item,
-                categoryScores
-            };
-        });
-        
-        filteredData = allData;
+        // APIから返ってきたデータをそのまま使用（既にcategoryScoresとtotalScoreが含まれている）
+        allData = data;
+        filteredData = data;
         
         // フィルターの初期化
         initializeFilters();
@@ -77,12 +44,10 @@ async function loadData() {
 
 // フィルターの初期化
 function initializeFilters() {
-    // 企業フィルター（現在は全社のみ）
     const companyFilter = document.getElementById('companyFilter');
     companyFilter.innerHTML = '<option value="all">全社</option>';
-    companyFilter.value = 'all'; // 強制的に全社を選択
+    companyFilter.value = 'all';
     
-    // 部署フィルター
     const departments = [...new Set(allData.map(d => d.department))];
     const departmentFilter = document.getElementById('departmentFilter');
     departmentFilter.innerHTML = '<option value="all">全部署</option>';
@@ -101,12 +66,10 @@ function applyFilters() {
     const genderFilter = document.getElementById('genderFilter').value;
     
     filteredData = allData.filter(item => {
-        // 部署フィルター
         if (departmentFilter !== 'all' && item.department !== departmentFilter) {
             return false;
         }
         
-        // リスクレベルフィルター
         if (riskFilter !== 'all') {
             const riskLevel = getRiskLevel(item.totalScore);
             if (riskLevel !== riskFilter) {
@@ -114,7 +77,6 @@ function applyFilters() {
             }
         }
         
-        // 性別フィルター
         if (genderFilter !== 'all' && item.gender !== genderFilter) {
             return false;
         }
@@ -168,7 +130,6 @@ function updateGenderStats() {
     const femaleData = filteredData.filter(d => d.gender === '女性');
     const total = filteredData.length;
     
-    // 男性統計
     const maleCount = maleData.length;
     const maleRatio = total > 0 ? ((maleCount / total) * 100).toFixed(1) : 0;
     const maleAvg = maleCount > 0 ? 
@@ -178,7 +139,6 @@ function updateGenderStats() {
     document.getElementById('maleRatio').textContent = `${maleRatio}%`;
     document.getElementById('maleAvgScore').textContent = `${maleAvg}点`;
     
-    // 女性統計
     const femaleCount = femaleData.length;
     const femaleRatio = total > 0 ? ((femaleCount / total) * 100).toFixed(1) : 0;
     const femaleAvg = femaleCount > 0 ? 
@@ -188,7 +148,6 @@ function updateGenderStats() {
     document.getElementById('femaleRatio').textContent = `${femaleRatio}%`;
     document.getElementById('femaleAvgScore').textContent = `${femaleAvg}点`;
     
-    // 男女別レーダーチャートの更新
     updateGenderRadarChart(maleData, femaleData);
 }
 
@@ -197,26 +156,15 @@ function updateGenderRadarChart(maleData, femaleData) {
     const ctx = document.getElementById('genderComparisonRadarChart');
     if (!ctx) return;
     
-    // 既存のチャートを破棄
     if (window.genderComparisonRadarChart && typeof window.genderComparisonRadarChart.destroy === 'function') {
         window.genderComparisonRadarChart.destroy();
     }
     
-    // 10カテゴリ（表示用略称）
     const categories = [
-        '心身健康',
-        '仕事充実',
-        '成長機会',
-        '上司サポ',
-        '部署関係',
-        '評価処遇',
-        '会社信頼',
-        '働く環境',
-        '総合満足',
-        '組織つながり'
+        '心身健康', '仕事充実', '成長機会', '上司サポ', '部署関係',
+        '評価処遇', '会社信頼', '働く環境', '総合満足', '組織つながり'
     ];
     
-    // カテゴリの完全名とのマッピング
     const categoryMapping = {
         '心身健康': '心身の健康',
         '仕事充実': '仕事の充実感',
@@ -230,7 +178,6 @@ function updateGenderRadarChart(maleData, femaleData) {
         '組織つながり': '組織へのつながり'
     };
     
-    // 男性の平均スコア計算
     const maleScores = categories.map(cat => {
         const fullCat = categoryMapping[cat];
         if (maleData.length === 0) return 0;
@@ -241,7 +188,6 @@ function updateGenderRadarChart(maleData, femaleData) {
             (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : 0;
     });
     
-    // 女性の平均スコア計算
     const femaleScores = categories.map(cat => {
         const fullCat = categoryMapping[cat];
         if (femaleData.length === 0) return 0;
@@ -252,7 +198,6 @@ function updateGenderRadarChart(maleData, femaleData) {
             (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : 0;
     });
     
-    // レーダーチャート描画
     window.genderComparisonRadarChart = new Chart(ctx, {
         type: 'radar',
         data: {
@@ -281,15 +226,11 @@ function updateGenderRadarChart(maleData, femaleData) {
                 r: {
                     beginAtZero: true,
                     max: 100,
-                    ticks: {
-                        stepSize: 20
-                    }
+                    ticks: { stepSize: 20 }
                 }
             },
             plugins: {
-                legend: {
-                    position: 'bottom'
-                }
+                legend: { position: 'bottom' }
             }
         }
     });
@@ -300,7 +241,6 @@ function updateAlerts() {
     const alertsContainer = document.getElementById('alertsContainer');
     alertsContainer.innerHTML = '';
     
-    // 高リスク従業員の検出
     const highRiskEmployees = filteredData.filter(d => d.totalScore < 50);
     if (highRiskEmployees.length > 0) {
         highRiskEmployees.forEach(emp => {
@@ -314,7 +254,6 @@ function updateAlerts() {
         });
     }
     
-    // 部署別の上司サポート低下検出
     const departmentSupport = {};
     filteredData.forEach(item => {
         if (!departmentSupport[item.department]) {
@@ -346,26 +285,15 @@ function updateExecutiveRadarChart() {
     const ctx = document.getElementById('executiveRadarChart');
     if (!ctx) return;
     
-    // 既存のチャートを破棄
-    if (window.executiveRadarChart) {
+    if (window.executiveRadarChart && typeof window.executiveRadarChart.destroy === 'function') {
         window.executiveRadarChart.destroy();
     }
     
-    // カテゴリ（完全名）
     const categories = [
-        "心身の健康",
-        "仕事の充実感",
-        "成長機会",
-        "上司のサポート",
-        "部署内の人間関係",
-        "評価・処遇",
-        "会社への信頼",
-        "働く環境",
-        "総合満足度",
-        "組織へのつながり"
+        "心身の健康", "仕事の充実感", "成長機会", "上司のサポート", "部署内の人間関係",
+        "評価・処遇", "会社への信頼", "働く環境", "総合満足度", "組織へのつながり"
     ];
     
-    // 現在のスコア計算
     const currentScores = categories.map(cat => {
         const scores = filteredData
             .map(item => item.categoryScores[cat])
@@ -374,7 +302,6 @@ function updateExecutiveRadarChart() {
             (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : 0;
     });
     
-    // レーダーチャート描画
     window.executiveRadarChart = new Chart(ctx, {
         type: 'radar',
         data: {
@@ -394,9 +321,7 @@ function updateExecutiveRadarChart() {
                 r: {
                     beginAtZero: true,
                     max: 100,
-                    ticks: {
-                        stepSize: 20
-                    }
+                    ticks: { stepSize: 20 }
                 }
             }
         }
@@ -447,7 +372,6 @@ function updateDepartmentComparison() {
         departmentCards.appendChild(card);
     });
     
-    // 部署別比較チャート
     updateDepartmentChart(departments);
 }
 
@@ -507,7 +431,6 @@ function updateDepartmentChart(departments) {
 
 // タブ切り替え
 function switchTab(tabIndex) {
-    // タブボタンのアクティブ状態を更新
     const tabs = document.querySelectorAll('.tab');
     tabs.forEach((tab, index) => {
         if (index === tabIndex) {
@@ -517,7 +440,6 @@ function switchTab(tabIndex) {
         }
     });
     
-    // タブコンテンツの表示切り替え
     const tabContents = document.querySelectorAll('.tab-content');
     tabContents.forEach((content, index) => {
         if (index === tabIndex) {
@@ -553,7 +475,6 @@ function drawTrendChart() {
         window.trendChart.destroy();
     }
     
-    // プレースホルダー: 今後実装
     window.trendChart = new Chart(ctx, {
         type: 'line',
         data: {
