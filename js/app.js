@@ -331,7 +331,8 @@ function showResult() {
     
     showPage('result-page');
     
-    document.getElementById('total-score').textContent = totalScore;
+    const totalScore100 = Math.round((totalScore / 500) * 100);
+document.getElementById('total-score').textContent = totalScore100;
     
     // レーダーチャートの描画
     drawRadarChart(categoryScores);
