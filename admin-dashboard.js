@@ -210,9 +210,9 @@ function updateGenderRadarChart(maleData, femaleData) {
     const ctx = canvas.getContext('2d');
     
     // 既存のチャートを破棄
-    if (window.genderComparisonRadarChart) {
-        window.genderComparisonRadarChart.destroy();
-    }
+    if (window.genderComparisonRadarChart && typeof window.genderComparisonRadarChart.destroy === 'function') {
+    window.genderComparisonRadarChart.destroy();
+}
     
     // 10カテゴリー
     const categories = [
