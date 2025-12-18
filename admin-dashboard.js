@@ -1,7 +1,7 @@
 // API エンドポイント
 const API_ENDPOINT = 'https://engagement-survey-api.more-up.workers.dev';
 
-// 重要設問の定義（リスク判定に使用）
+// 重要設問の定義(リスク判定に使用)
 const criticalQuestions = {
     "心理的安全性": [40, 41, 42, 43, 44, 45, 46, 47, 48, 49],
     "上司のサポート": [20, 21, 22, 23, 24, 25, 26, 27, 28, 29],
@@ -11,6 +11,7 @@ const criticalQuestions = {
 // グローバル変数
 let allData = [];
 let filteredData = [];
+let currentData = []; // updateGenderRadarChart用に追加
 let currentTrendView = 'all';
 let currentTrendPeriod = 6;
 
@@ -28,6 +29,11 @@ function authenticate() {
 
 // データの読み込み
 async function loadData() {
+    // Chart.jsの読み込みを待機
+    while (typeof Chart === 'undefined') {
+        await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
     try {
         const response = await fetch(`${API_ENDPOINT}/api/survey/results`);
         
@@ -42,21 +48,24 @@ async function loadData() {
         if (Array.isArray(data)) {
             allData = data;
             filteredData = data;
+            currentData = data;
         } else if (data && Array.isArray(data.results)) {
             // APIが {results: [...]} 形式で返す場合
             allData = data.results;
             filteredData = data.results;
+            currentData = data.results;
         } else {
             // データがない場合は空配列
             console.warn('データが配列形式ではありません:', data);
             allData = [];
             filteredData = [];
+            currentData = [];
         }
         
         // データが0件の場合の処理
         if (allData.length === 0) {
             console.log('データが0件です。テストデータを作成してください。');
-            alert('診断データがまだありません。\n\n30人分のテストデータを作成しますか？');
+            alert('診断データがまだありません。\n\n30人分のテストデータを作成しますか?');
         }
 
         
@@ -98,7 +107,7 @@ function initializeFilters() {
         departmentFilter.appendChild(option);
     });
     
-    // 初期フィルター適用（株式会社テストのみ）
+    // 初期フィルター適用(株式会社テストのみ)
     applyFilters();
 }
 
@@ -136,6 +145,7 @@ function applyFilters() {
         return true;
     });
     
+    currentData = filteredData;
     updateAllTabs();
 }
 
@@ -211,10 +221,28 @@ function updateGenderStats() {
     
     // 男女別レーダーチャート更新
     updateGenderRadarChart();
-    // 男女別レーダーチャート更新関数
+}
+
+// 男女別レーダーチャート更新関数
 function updateGenderRadarChart() {
-    const maleData = filteredData.filter(d => d.gender === '男性');
-    const femaleData = filteredData.filter(d => d.gender === '女性');
+    const canvas = document.getElementById('genderRadarChart');
+    
+    // Canvas要素が存在しない場合は処理を中断
+    if (!canvas) {
+        console.warn('Canvas not found');
+        return;
+    }
+    
+    // Chart.jsが読み込まれていない場合は処理を中断
+    if (typeof Chart === 'undefined') {
+        console.warn('Chart.js not loaded');
+        return;
+    }
+    
+    const ctx = canvas.getContext('2d');
+    
+    const maleData = currentData.filter(d => d.gender === '男性');
+    const femaleData = currentData.filter(d => d.gender === '女性');
     
     const categories = [
         '心身の健康', '仕事の充実感', '成長機会', '上司のサポート', '部署内の人間関係',
@@ -234,9 +262,6 @@ function updateGenderRadarChart() {
         const scores = femaleData.map(d => d.categoryScores[cat] || 0);
         return (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1);
     });
-    
-    const canvas = document.getElementById('genderRadarChart');
-    const ctx = canvas.getContext('2d');
     
     // 既存のチャートがあれば破棄
     if (window.genderRadarChartInstance) {
@@ -294,9 +319,7 @@ function updateGenderRadarChart() {
     });
 }
 
-}
-
-// リスクレベルの計算（100点満点換算）
+// リスクレベルの計算(100点満点換算)
 function calculateRiskLevel(item) {
     const score = item.totalScore / 5; // 100点満点換算
     if (score < 50) return 'high';
@@ -379,7 +402,7 @@ function updateExecutiveRadarChart() {
             : 0;
     });
     
-    // 前回スコア（シミュレーションデータ - 実際はAPIから取得）
+    // 前回スコア(シミュレーションデータ - 実際はAPIから取得)
     const previousScores = currentScores.map(score => {
         const variation = (Math.random() - 0.5) * 10;
         return Math.max(0, Math.min(100, parseFloat(score) + variation)).toFixed(1);
@@ -463,7 +486,7 @@ function drawTrendChart() {
         window.trendChart.destroy();
     }
     
-    // シミュレーションデータ生成（実際はAPIから取得）
+    // シミュレーションデータ生成(実際はAPIから取得)
     const months = [];
     const dataPoints = [];
     
@@ -472,7 +495,7 @@ function drawTrendChart() {
         date.setMonth(date.getMonth() - i);
         months.push(`${date.getFullYear()}/${date.getMonth() + 1}`);
         
-        // ベーススコアに変動を加える（100点満点）
+        // ベーススコアに変動を加える(100点満点)
         const baseScore = 65;
         const trend = (currentTrendPeriod - i) * 0.5;
         const noise = (Math.random() - 0.5) * 5;
@@ -543,7 +566,7 @@ function updateDataTable() {
     const tbody = document.getElementById('dataTableBody');
     tbody.innerHTML = '';
     
-    // 従業員コードでソート（若い順）
+    // 従業員コードでソート(若い順)
     const sortedData = [...filteredData].sort((a, b) => {
         const codeA = a.employeeCode.replace(/[^0-9]/g, '');
         const codeB = b.employeeCode.replace(/[^0-9]/g, '');
@@ -595,7 +618,7 @@ function updateDepartmentComparison() {
     
     departments.forEach(dept => {
         const deptData = filteredData.filter(d => d.department === dept);
-        // 平均スコア（100点満点換算）
+        // 平均スコア(100点満点換算)
         const avgScore = (deptData.reduce((sum, d) => sum + d.totalScore, 0) / deptData.length) / 5;
         departmentScores[dept] = avgScore.toFixed(1);
         
@@ -707,7 +730,7 @@ function showDepartmentDetail(department) {
 function exportCSV() {
     let csv = '社員コード,部署,性別,診断日時,総合スコア,リスクレベル\n';
     
-    // 従業員コードでソート（若い順）
+    // 従業員コードでソート(若い順)
     const sortedData = [...filteredData].sort((a, b) => {
         const codeA = a.employeeCode.replace(/[^0-9]/g, '');
         const codeB = b.employeeCode.replace(/[^0-9]/g, '');
@@ -739,7 +762,7 @@ function generateDetailedReport() {
     alert('詳細レポート生成機能は今後実装予定です。');
 }
 
-// 役員会用PDF生成（プレースホルダー）
+// 役員会用PDF生成(プレースホルダー)
 function generateExecutivePDF() {
     alert('PDF生成機能は今後実装予定です。\n\n予定される内容:\n- エグゼクティブサマリー\n- 組織全体のトレンド分析\n- 部署別比較\n- リスク分析\n- 改善提案\n等、8-12ページのレポートを生成します。');
 }
