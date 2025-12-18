@@ -67,7 +67,6 @@ function initializeFilters() {
         departmentFilter.appendChild(option);
     });
 }
-}
 
 // フィルターの適用
 function applyFilters() {
