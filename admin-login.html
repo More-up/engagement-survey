@@ -722,9 +722,10 @@
                     <button class="toggle-btn trend-view-btn active" onclick="changeTrendView('overall')">総合スコア</button>
                     <button class="toggle-btn trend-view-btn" onclick="changeTrendView('category')">カテゴリー別</button>
                     <button class="toggle-btn trend-view-btn" onclick="changeTrendView('risk')">リスク人数推移</button>
-                    <button class="btn btn-secondary" onclick="changeTrendPeriod(3)">3ヶ月</button>
-                    <button class="btn btn-secondary active" onclick="changeTrendPeriod(6)">6ヶ月</button>
-                    <button class="btn btn-secondary" onclick="changeTrendPeriod(12)">12ヶ月</button>
+                    <button class="btn btn-secondary trend-period-btn" onclick="changeTrendPeriod('Q1')">Q1(4-6月)</button>
+                    <button class="btn btn-secondary trend-period-btn" onclick="changeTrendPeriod('Q2')">Q2(7-9月)</button>
+                    <button class="btn btn-secondary trend-period-btn" onclick="changeTrendPeriod('Q3')">Q3(10-12月)</button>
+                    <button class="btn btn-secondary trend-period-btn active" onclick="changeTrendPeriod('Q4')">Q4(1-3月)</button>
                 </div>
                 <div class="chart-container">
                     <canvas id="trendChart"></canvas>
