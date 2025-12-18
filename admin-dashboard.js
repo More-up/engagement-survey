@@ -107,6 +107,7 @@ function updateExecutiveDashboard() {
     updateGenderStats();
     updateExecutiveRadarChart();
     updateAlerts();
+    drawTrendChart();
 }
 
 // 統計カードの更新
@@ -464,13 +465,14 @@ function drawTrendChart() {
     window.trendChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
+            labels: ['2024年10月', '2024年11月', '2024年12月', '2025年1月', '2025年2月', '2025年3月'],
             datasets: [{
-                label: '平均スコア',
-                data: [65, 67, 70, 68, 72, 75],
+                label: '平均エンゲージメントスコア',
+                data: [58, 61, 65, 68, 71, 74],
                 borderColor: 'rgba(0, 123, 255, 1)',
-                backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                tension: 0.4
+                backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                tension: 0.4,
+                fill: true
             }]
         },
         options: {
