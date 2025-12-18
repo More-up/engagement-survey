@@ -1,3 +1,7 @@
+// URLパラメータから会社名を取得
+const urlParams = new URLSearchParams(window.location.search);
+const companyName = urlParams.get('company') || '未設定';
+
 // API エンドポイント
 const API_ENDPOINT = 'https://engagement-survey-api.more-up.workers.dev';
 
@@ -425,7 +429,7 @@ function submitResults(totalScore, categoryScores) {
     const surveyDate = now.toISOString().split('T')[0];
     
     const data = {
-        companyCode: '未設定',
+        companyCode: companyName,
         employeeCode: employeeCode,
         department: department,
         gender: gender,
@@ -437,7 +441,6 @@ function submitResults(totalScore, categoryScores) {
     };
     
     fetch(`${API_ENDPOINT}/api/survey/submit`, {
-
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
