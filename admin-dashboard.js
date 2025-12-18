@@ -79,11 +79,9 @@ function initializeFilters() {
         const option = document.createElement('option');
         option.value = company;
         option.textContent = company;
-        if (company === '株式会社テスト') {
-            option.selected = true;
-        }
         companyFilter.appendChild(option);
     });
+    companyFilter.value = 'all'; // 強制的に全社を選択
     
     const departments = [...new Set(allData.map(d => d.department))];
     const departmentFilter = document.getElementById('departmentFilter');
@@ -190,65 +188,69 @@ function updateGenderStats() {
         ? ((femaleData.reduce((sum, d) => sum + d.totalScore, 0) / femaleCount) / 5).toFixed(1)
         : 0;
     
-    document.getElementById('maleAvgScore').textContent = maleAvg;
+    document.getElementById('maleAvgScore').textContent = `${maleAvg}点`;
     document.getElementById('maleCount').textContent = `${maleCount}人`;
     document.getElementById('maleRatio').textContent = `${maleRatio}%`;
     
-    document.getElementById('femaleAvgScore').textContent = femaleAvg;
+    document.getElementById('femaleAvgScore').textContent = `${femaleAvg}点`;
     document.getElementById('femaleCount').textContent = `${femaleCount}人`;
     document.getElementById('femaleRatio').textContent = `${femaleRatio}%`;
     
-    updateGenderRadarChart();
+    updateGenderRadarChart(maleData, femaleData);
 }
 
-// 男女別レーダーチャート更新関数
-function updateGenderRadarChart() {
-    const canvas = document.getElementById('genderRadarChart');
-    
+// 男女別レーダーチャート更新
+function updateGenderRadarChart(maleData, femaleData) {
+    const canvas = document.getElementById('genderComparisonRadarChart');
     if (!canvas) {
-        console.warn('Canvas not found');
-        return;
-    }
-    
-    if (typeof Chart === 'undefined') {
-        console.warn('Chart.js not loaded');
+        console.warn('genderComparisonRadarChart canvas not found');
         return;
     }
     
     const ctx = canvas.getContext('2d');
     
-    const maleData = currentData.filter(d => d.gender === '男性');
-    const femaleData = currentData.filter(d => d.gender === '女性');
-    
-    const categories = [
-        '心身の健康', '仕事の充実感', '成長機会', '上司のサポート', '部署内の人間関係',
-        '評価・処遇', '会社への信頼', '働く環境', '総合満足度', '組織へのつながり'
-    ];
-    
-    const maleAvgScores = categories.map(cat => {
-        if (maleData.length === 0) return 0;
-        const scores = maleData.map(d => d.categoryScores[cat] || 0);
-        return (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1);
-    });
-    
-    const femaleAvgScores = categories.map(cat => {
-        if (femaleData.length === 0) return 0;
-        const scores = femaleData.map(d => d.categoryScores[cat] || 0);
-        return (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1);
-    });
-    
-    if (window.genderRadarChartInstance) {
-        window.genderRadarChartInstance.destroy();
+    // 既存のチャートを破棄
+    if (window.genderComparisonRadarChart) {
+        window.genderComparisonRadarChart.destroy();
     }
     
-    window.genderRadarChartInstance = new Chart(ctx, {
+    // 10カテゴリー
+    const categories = [
+        "仕事の意義",
+        "成長機会",
+        "上司のサポート",
+        "部署内の人間関係",
+        "心理的安全性",
+        "ワークライフバランス",
+        "評価と報酬",
+        "自律性",
+        "組織への信頼",
+        "職場環境"
+    ];
+    
+    // 男性の平均スコア計算
+    const maleScores = categories.map(cat => {
+        if (maleData.length === 0) return 0;
+        const scores = maleData.map(item => item.categoryScores[cat] || 0);
+        return (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1);
+    });
+    
+    // 女性の平均スコア計算
+    const femaleScores = categories.map(cat => {
+        if (femaleData.length === 0) return 0;
+        const scores = femaleData.map(item => item.categoryScores[cat] || 0);
+        return (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1);
+    });
+    
+    // レーダーチャート描画
+    window.genderComparisonRadarChart = new Chart(ctx, {
         type: 'radar',
         data: {
             labels: categories,
             datasets: [
                 {
                     label: '男性',
-                    data: maleAvgScores,
+                    data: maleScores,
                     backgroundColor: 'rgba(102, 126, 234, 0.2)',
                     borderColor: 'rgba(102, 126, 234, 1)',
                     borderWidth: 2,
@@ -259,7 +261,7 @@ function updateGenderRadarChart() {
                 },
                 {
                     label: '女性',
-                    data: femaleAvgScores,
+                    data: femaleScores,
                     backgroundColor: 'rgba(240, 147, 251, 0.2)',
                     borderColor: 'rgba(240, 147, 251, 1)',
                     borderWidth: 2,
@@ -278,13 +280,33 @@ function updateGenderRadarChart() {
                     beginAtZero: true,
                     max: 100,
                     ticks: {
-                        stepSize: 20
+                        stepSize: 20,
+                        font: {
+                            size: 10
+                        }
+                    },
+                    pointLabels: {
+                        font: {
+                            size: 11
+                        }
                     }
                 }
             },
             plugins: {
                 legend: {
                     position: 'top',
+                    labels: {
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + context.parsed.r + '点';
+                        }
+                    }
                 }
             }
         }
