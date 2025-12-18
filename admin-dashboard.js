@@ -20,6 +20,8 @@ let allData = [];
 let filteredData = [];
 let currentTrendView = 'overall'; // 'overall', 'category', 'risk'
 let currentTrendPeriod = 'Q4'; // Q1, Q2, Q3, Q4
+
+
 // 四半期別ダミーデータ定義
 const quarterlyData = {
     'Q1': {
@@ -37,11 +39,7 @@ const quarterlyData = {
             '総合満足度': [50, 53, 56],
             '組織へのつながり': [48, 51, 54]
         },
-        risk: {
-            high: [24, 22, 20],
-            medium: [26, 25, 25],
-            low: [10, 13, 15]
-        }
+        risk: { high: [24, 22, 20], medium: [26, 25, 25], low: [10, 13, 15] }
     },
     'Q2': {
         labels: ['2024年7月', '2024年8月', '2024年9月'],
@@ -58,11 +56,7 @@ const quarterlyData = {
             '総合満足度': [56, 59, 62],
             '組織へのつながり': [54, 57, 60]
         },
-        risk: {
-            high: [20, 18, 16],
-            medium: [25, 24, 24],
-            low: [15, 18, 20]
-        }
+        risk: { high: [20, 18, 16], medium: [25, 24, 24], low: [15, 18, 20] }
     },
     'Q3': {
         labels: ['2024年10月', '2024年11月', '2024年12月'],
@@ -79,11 +73,7 @@ const quarterlyData = {
             '総合満足度': [62, 65, 68],
             '組織へのつながり': [60, 63, 66]
         },
-        risk: {
-            high: [16, 14, 12],
-            medium: [24, 23, 23],
-            low: [20, 23, 25]
-        }
+        risk: { high: [16, 14, 12], medium: [24, 23, 23], low: [20, 23, 25] }
     },
     'Q4': {
         labels: ['2025年1月', '2025年2月', '2025年3月'],
@@ -100,15 +90,10 @@ const quarterlyData = {
             '総合満足度': [68, 71, 75],
             '組織へのつながり': [66, 69, 73]
         },
-        risk: {
-            high: [12, 10, 8],
-            medium: [23, 22, 22],
-            low: [25, 28, 30]
-        }
+        risk: { high: [12, 10, 8], medium: [23, 22, 22], low: [25, 28, 30] }
     }
 };
 
-// 四半期データを取得する関数
 function getQuarterlyData(quarter) {
     return quarterlyData[quarter] || quarterlyData['Q4'];
 }
@@ -647,6 +632,7 @@ function drawCategoryTrend(ctx) {
         { name: '働く環境', color: 'rgba(255, 99, 255, 1)' },
         { name: '総合満足度', color: 'rgba(0, 204, 102, 1)' },
         { name: '組織へのつながり', color: 'rgba(102, 51, 0, 1)' }
+    ];
     
     const datasets = categories.map(cat => ({
         label: cat.name,
@@ -695,8 +681,8 @@ function drawCategoryTrend(ctx) {
 
 // ③ リスク人数推移(縦棒グラフ・3色×月)
 function drawRiskTrend(ctx) {
-    window.trendChart = new Chart(ctx, {
     const qData = getQuarterlyData(currentTrendPeriod);
+    window.trendChart = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: qData.labels,
