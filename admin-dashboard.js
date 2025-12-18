@@ -27,7 +27,7 @@ async function loadData() {
         const response = await fetch(`${API_ENDPOINT}/api/diagnostics`);
         const data = await response.json();
         
-        // APIから返ってきたデータをそのまま使用（既にcategoryScoresとtotalScoreが含まれている）
+        // APIから返ってきたデータをそのまま使用（既にcategoryScoresとtotalScoreが100点満点で含まれている）
         allData = data;
         filteredData = data;
         
@@ -248,7 +248,7 @@ function updateAlerts() {
             alertDiv.className = 'alert-item danger';
             alertDiv.innerHTML = `
                 <strong>⚠️ 高リスク従業員検出</strong>
-                <p>社員コード: ${emp.employeeCode} | 部署: ${emp.department} | スコア: ${emp.totalScore}点</p>
+                <p>社員コード: ${emp.employeeCode} | 部署: ${emp.department} | スコア: ${emp.totalScore.toFixed(1)}点</p>
             `;
             alertsContainer.appendChild(alertDiv);
         });
@@ -344,7 +344,7 @@ function updateDataTable() {
             <td>${item.department}</td>
             <td>${item.gender}</td>
             <td>${new Date(item.timestamp).toLocaleString('ja-JP')}</td>
-            <td>${item.totalScore}点</td>
+            <td>${item.totalScore.toFixed(1)}点</td>
             <td><span class="risk-badge ${riskClass}">${riskLabel}</span></td>
             <td><button class="btn btn-primary" onclick="viewDetail('${item.employeeCode}')">詳細</button></td>
         `;
@@ -380,7 +380,7 @@ function updateDepartmentChart(departments) {
     const ctx = document.getElementById('comparisonChart');
     if (!ctx) return;
     
-    if (window.comparisonChart) {
+    if (window.comparisonChart && typeof window.comparisonChart.destroy === 'function') {
         window.comparisonChart.destroy();
     }
     
@@ -517,7 +517,7 @@ function exportCSV() {
         item.department,
         item.gender,
         new Date(item.timestamp).toLocaleString('ja-JP'),
-        item.totalScore,
+        item.totalScore.toFixed(1),
         getRiskLevel(item.totalScore)
     ]);
     
@@ -549,5 +549,5 @@ function viewDetail(employeeCode) {
     const employee = allData.find(d => d.employeeCode === employeeCode);
     if (!employee) return;
     
-    alert(`社員コード: ${employee.employeeCode}\n部署: ${employee.department}\n総合スコア: ${employee.totalScore}点\n\n詳細表示機能は今後実装予定です`);
+    alert(`社員コード: ${employee.employeeCode}\n部署: ${employee.department}\n総合スコア: ${employee.totalScore.toFixed(1)}点\n\n詳細表示機能は今後実装予定です`);
 }
