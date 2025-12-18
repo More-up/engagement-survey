@@ -1,7 +1,3 @@
-// URLパラメータから会社名を取得
-const urlParams = new URLSearchParams(window.location.search);
-const companyName = urlParams.get('company') || '未設定';
-
 // API エンドポイント
 const API_ENDPOINT = 'https://engagement-survey-api.more-up.workers.dev';
 
@@ -278,8 +274,8 @@ function autoScrollToNext(currentQuestionIndex) {
 
 // 進捗バーの更新
 function updateProgressBar() {
-    const answeredCount = Object.keys(answers).filter(key => key >= 0 && key < 100).length;
-    const progressPercentage = Math.min(100, Math.round((answeredCount / 100) * 100));
+    const answeredCount = Object.keys(answers).length;
+    const progressPercentage = Math.round((answeredCount / 100) * 100);
     document.getElementById('progress-fill').style.width = progressPercentage + '%';
     document.getElementById('progress-percentage').textContent = progressPercentage + '%';
 }
@@ -313,17 +309,16 @@ function previousSection() {
 
 // 結果の表示
 function showResult() {
-    // カテゴリー別スコアの計算 (50点満点 → 100点満点に変換)
+    // カテゴリー別スコアの計算 (50点満点のまま保存)
     const categoryScores = [];
     for (let i = 0; i < 10; i++) {
-        const startQ = i * 10;
+        const startQ = i * 10 + 1;  // Q1から開始 (i=0 → Q1-Q10)
         const endQ = startQ + 10;
         let sum = 0;
         for (let j = startQ; j < endQ; j++) {
-            sum += answers[j];
+            sum += answers[j] || 0;  // undefined対策
         }
-        const score = Math.round((sum / 50) * 100); // 50点満点を100点満点に変換
-        categoryScores.push(score);
+        categoryScores.push(sum);  // 50点満点のまま保存
     }
     
     // 総合スコアの計算 (500点満点)
@@ -331,8 +326,7 @@ function showResult() {
     
     showPage('result-page');
     
-    const totalScore100 = Math.round((totalScore / 500) * 100);
-document.getElementById('total-score').textContent = totalScore100;
+    document.getElementById('total-score').textContent = totalScore;
     
     // レーダーチャートの描画
     drawRadarChart(categoryScores);
@@ -356,7 +350,7 @@ function drawRadarChart(scores) {
             labels: categories,
             datasets: [{
                 label: 'あなたのスコア',
-                data: scores,
+                data: scores.map(s => Math.round((s / 50) * 100)),  // 50点満点を100点満点に変換して表示
                 backgroundColor: 'rgba(93, 173, 226, 0.2)',
                 borderColor: 'rgba(93, 173, 226, 1)',
                 pointBackgroundColor: 'rgba(93, 173, 226, 1)',
@@ -379,10 +373,12 @@ function drawRadarChart(scores) {
 
 // カテゴリー別結果の表示
 function displayCategoryResults(scores) {
+    // 50点満点を100点満点に変換
+    const scoresDisplay = scores.map(s => Math.round((s / 50) * 100));
     const container = document.getElementById('category-results');
     container.innerHTML = '<h2>カテゴリー別スコア</h2>';
     
-    scores.forEach((score, index) => {
+    scoresDisplay.forEach((score, index) => {
         const item = document.createElement('div');
         item.className = 'category-score-item';
         item.innerHTML = `
@@ -399,18 +395,25 @@ function displayCategoryResults(scores) {
 // フィードバックの表示
 function displayFeedback(scores) {
     const container = document.getElementById('feedback-section');
-    container.innerHTML = `
-        <div style="text-align: center; padding: 30px;">
-            <h2 style="font-size: 2.5em; margin-bottom: 30px;">✅ 診断完了！</h2>
-            <div style="line-height: 2.0; font-size: 1.1em;">
-                <p>診断にご協力いただき、ありがとうございました。</p>
-                <p>あなたの回答は、より良い職場環境づくりのための貴重なデータとして活用させていただきます。</p>
-                <p>回答データは匿名で集計され、個人が特定されることはありません。</p>
-                <p><strong>お疲れさまでした。</strong></p>
-            </div>
-        </div>
-    `;
+    container.innerHTML = '<h2>改善提案</h2>';
+    
+    const sortedCategories = scores.map((score, index) => ({score, index}))
+        .sort((a, b) => a.score - b.score)
+        .slice(0, 3);
+    
+    sortedCategories.forEach(({score, index}) => {
+        const level = score >= 70 ? '良好' : score >= 50 ? '普通' : '要改善';
+        const levelClass = score >= 70 ? 'feedback-good' : score >= 50 ? 'feedback-normal' : 'feedback-warning';
+        
+        const item = document.createElement('div');
+        item.innerHTML = `
+            <h3 class="${levelClass}">${categories[index]}（${score}点）- ${level}</h3>
+            <p>このカテゴリーのスコア向上に向けて、上司や人事部門と具体的な改善策を検討しましょう。</p>
+        `;
+        container.appendChild(item);
+    });
 }
+
 // APIに結果を送信
 function submitResults(totalScore, categoryScores) {
     const categoryScoresObj = {};
@@ -418,23 +421,17 @@ function submitResults(totalScore, categoryScores) {
         categoryScoresObj[cat] = categoryScores[index];
     });
     
-    const now = new Date();
-    const yearMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    const surveyDate = now.toISOString().split('T')[0];
-    
     const data = {
-        companyCode: companyName,
         employeeCode: employeeCode,
         department: department,
         gender: gender,
-        yearMonth: yearMonth,
-        surveyDate: surveyDate,
+        timestamp: new Date().toISOString(),
         totalScore: totalScore,
         categoryScores: categoryScoresObj,
         answers: answers
     };
     
-    fetch(`${API_ENDPOINT}/api/survey/submit`, {
+    fetch(`${API_ENDPOINT}/api/diagnostics`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
