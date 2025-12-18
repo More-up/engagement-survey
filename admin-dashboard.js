@@ -18,7 +18,7 @@ const categoryQuestions = {
 // グローバル変数
 let allData = [];
 let filteredData = [];
-let currentTrendView = 'all';
+let currentTrendView = 'overall'; // 'overall', 'category', 'risk'
 let currentTrendPeriod = 6;
 
 // データの読み込み
@@ -438,30 +438,56 @@ function switchTab(tabIndex) {
 }
 
 // トレンドビューの変更
+// グローバル変数として現在の表示モードを保持
+
+// 改善トレンド表示の切り替え
 function changeTrendView(view) {
     currentTrendView = view;
-    document.querySelectorAll('.toggle-btn').forEach(btn => {
+    
+    // ボタンのアクティブ状態を更新
+    document.querySelectorAll('.trend-view-btn').forEach(btn => {
         btn.classList.remove('active');
     });
     event.target.classList.add('active');
+    
+    // グラフを再描画
     drawTrendChart();
 }
 
-// トレンド期間の変更
-function changeTrendPeriod(months) {
-    currentTrendPeriod = months;
+// 期間変更(まだダミーデータなので未実装)
+function changeTrendPeriod(period) {
+    // 期間ボタンのアクティブ状態を更新
+    document.querySelectorAll('.trend-period-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    // グラフを再描画
     drawTrendChart();
 }
 
-// トレンドチャートの描画
+// トレンドチャートの描画(メイン関数)
 function drawTrendChart() {
     const ctx = document.getElementById('trendChart');
     if (!ctx) return;
     
+    // 既存のチャートを破棄
     if (window.trendChart && typeof window.trendChart.destroy === 'function') {
         window.trendChart.destroy();
     }
     
+    // 表示モードに応じてチャートタイプとデータを切り替え
+    if (currentTrendView === 'overall') {
+        drawOverallTrend(ctx);
+    } else if (currentTrendView === 'category') {
+        drawCategoryTrend(ctx);
+    } else if (currentTrendView === 'risk') {
+        drawRiskTrend(ctx);
+    }
+}
+
+// ① 総合スコア推移(折れ線グラフ・1本)
+function drawOverallTrend(ctx) {
     window.trendChart = new Chart(ctx, {
         type: 'line',
         data: {
@@ -472,7 +498,8 @@ function drawTrendChart() {
                 borderColor: 'rgba(0, 123, 255, 1)',
                 backgroundColor: 'rgba(0, 123, 255, 0.1)',
                 tension: 0.4,
-                fill: true
+                fill: true,
+                borderWidth: 3
             }]
         },
         options: {
@@ -481,13 +508,140 @@ function drawTrendChart() {
             scales: {
                 y: {
                     beginAtZero: true,
-                    max: 100
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: 'スコア(100点満点)'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
                 }
             }
         }
     });
 }
 
+// ② カテゴリー別推移(折れ線グラフ・10本)
+function drawCategoryTrend(ctx) {
+    const categories = [
+        { name: '心身の健康', color: 'rgba(255, 99, 132, 1)', data: [55, 58, 62, 65, 68, 71] },
+        { name: '仕事の充実感', color: 'rgba(54, 162, 235, 1)', data: [60, 62, 64, 66, 69, 72] },
+        { name: '成長機会', color: 'rgba(255, 206, 86, 1)', data: [52, 55, 58, 61, 65, 68] },
+        { name: '上司のサポート', color: 'rgba(75, 192, 192, 1)', data: [58, 60, 63, 66, 70, 73] },
+        { name: '部署内の人間関係', color: 'rgba(153, 102, 255, 1)', data: [62, 64, 66, 68, 71, 74] },
+        { name: '評価・処遇', color: 'rgba(255, 159, 64, 1)', data: [50, 53, 56, 59, 63, 67] },
+        { name: '会社への信頼', color: 'rgba(201, 203, 207, 1)', data: [57, 59, 62, 65, 68, 71] },
+        { name: '働く環境', color: 'rgba(255, 99, 255, 1)', data: [61, 63, 65, 68, 71, 74] },
+        { name: '総合満足度', color: 'rgba(0, 204, 102, 1)', data: [56, 59, 62, 66, 69, 72] },
+        { name: '組織へのつながり', color: 'rgba(102, 51, 0, 1)', data: [54, 57, 60, 64, 67, 70] }
+    ];
+    
+    const datasets = categories.map(cat => ({
+        label: cat.name,
+        data: cat.data,
+        borderColor: cat.color,
+        backgroundColor: cat.color.replace('1)', '0.1)'),
+        tension: 0.3,
+        fill: false,
+        borderWidth: 2
+    }));
+    
+    window.trendChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: ['2024年10月', '2024年11月', '2024年12月', '2025年1月', '2025年2月', '2025年3月'],
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: 'スコア(100点満点)'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'right',
+                    labels: {
+                        boxWidth: 12,
+                        font: {
+                            size: 10
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// ③ リスク人数推移(縦棒グラフ・3色×月)
+function drawRiskTrend(ctx) {
+    window.trendChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['2024年10月', '2024年11月', '2024年12月', '2025年1月', '2025年2月', '2025年3月'],
+            datasets: [
+                {
+                    label: '高リスク(<50点)',
+                    data: [20, 18, 15, 12, 10, 8],
+                    backgroundColor: 'rgba(255, 99, 132, 0.8)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: '中リスク(50-70点)',
+                    data: [25, 24, 26, 25, 23, 22],
+                    backgroundColor: 'rgba(255, 159, 64, 0.8)',
+                    borderColor: 'rgba(255, 159, 64, 1)',
+                    borderWidth: 1
+                },
+                {
+                    label: '低リスク(70点以上)',
+                    data: [15, 18, 19, 23, 27, 30],
+                    backgroundColor: 'rgba(75, 192, 192, 0.8)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    stacked: false
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: '人数(名)'
+                    },
+                    ticks: {
+                        stepSize: 5
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                }
+            }
+        }
+    });
+}
 // 前回診断との比較切り替え
 function togglePreviousComparison() {
     const checkbox = document.getElementById('showPreviousComparison');
