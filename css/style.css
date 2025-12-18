@@ -516,6 +516,8 @@ body {
     padding: 40px;
     border-radius: 20px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    word-break: keep-all;
+    overflow-wrap: break-word;
 }
 
 .result-summary h2 {
@@ -533,10 +535,19 @@ body {
 
 .chart-container {
     background: white;
-    padding: 40px;
+    padding: 30px;
     border-radius: 20px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-    margin-bottom: 40px;
+    margin-bottom: 30px;
+    max-height: 350px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.chart-container canvas {
+    max-height: 300px !important;
+    max-width: 100% !important;
 }
 
 .category-results {
@@ -545,6 +556,15 @@ body {
     border-radius: 20px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
     margin-bottom: 40px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+@media (max-width: 768px) {
+    .category-results {
+        grid-template-columns: 1fr;
+    }
 }
 
 .category-score-item {
