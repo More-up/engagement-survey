@@ -278,8 +278,8 @@ function autoScrollToNext(currentQuestionIndex) {
 
 // 進捗バーの更新
 function updateProgressBar() {
-    const answeredCount = Object.keys(answers).length;
-    const progressPercentage = Math.round((answeredCount / 100) * 100);
+    const answeredCount = Object.keys(answers).filter(key => key >= 0 && key < 100).length;
+    const progressPercentage = Math.min(100, Math.round((answeredCount / 100) * 100));
     document.getElementById('progress-fill').style.width = progressPercentage + '%';
     document.getElementById('progress-percentage').textContent = progressPercentage + '%';
 }
