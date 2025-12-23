@@ -540,11 +540,11 @@ function submitResults(totalScore, categoryScores) {
         answers: answers
     };
     
-    fetch(`${API_ENDPOINT}/api/diagnostics`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    })
+    fetch(`${API_ENDPOINT}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+})
     .then(response => response.json())
     .then(result => console.log('診断結果を送信しました:', result))
     .catch(error => console.error('送信エラー:', error));
