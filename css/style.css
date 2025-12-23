@@ -313,25 +313,28 @@ body {
     font-weight: 700;
 }
 
-/* 評価凡例（縦並び・修正版） */
+/* 評価凡例（PC・スマホ共通で横並び） */
 #rating-legend {
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-    gap: 8px;
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    gap: 10px;
     padding: 15px 20px;
     background: #f8f9fa;
     border-bottom: 2px solid #e0e0e0;
     font-size: 13px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
 }
 
 .rating-item {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 4px;
     white-space: nowrap;
+    min-width: fit-content;
 }
 
 .rating-num {
@@ -341,8 +344,9 @@ body {
 }
 
 .rating-item span:not(.rating-num) {
-    font-size: 12px;
+    font-size: 11px;
     color: #666;
+    text-align: center;
 }
 
 /* カテゴリー5の説明文 */
@@ -696,7 +700,7 @@ body {
 
     /* 診断ページ */
     #survey-page {
-        padding-top: 340px;
+        padding-top: 250px;
     }
 
     .category-header h2 {
@@ -707,7 +711,26 @@ body {
 
     /* 評価凡例(スマホ最適化) */
     #rating-legend {
-        padding: 12px 15px;
+        gap: 8px;
+        padding: 12px 10px;
+        justify-content: space-between;
+    }
+
+    .rating-item {
+        gap: 3px;
+        min-width: auto;
+        flex: 1;
+    }
+
+    .rating-num {
+        font-size: 14px;
+    }
+
+    .rating-item span:not(.rating-num) {
+        font-size: 9px;
+        line-height: 1.1;
+        max-width: 100%;
+        word-break: keep-all;
     }
 
     /* 質問ブロック */
