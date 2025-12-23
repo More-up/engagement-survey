@@ -47,7 +47,6 @@ body {
     margin-bottom: 15px;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
     font-weight: 700;
-    white-space: nowrap;
 }
 
 #top-page > p {
@@ -314,41 +313,36 @@ body {
     font-weight: 700;
 }
 
-/* 評価凡例（横1行表示・修正版） */
+/* 評価凡例（縦並び・修正版） */
 #rating-legend {
     display: flex;
+    flex-direction: column;
     justify-content: center;
-    align-items: center;
-    gap: 15px;
-    padding: 18px 10px;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 15px 20px;
     background: #f8f9fa;
     border-bottom: 2px solid #e0e0e0;
     font-size: 13px;
-    flex-wrap: nowrap;
-    overflow-x: auto;
 }
 
 .rating-item {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
-    gap: 4px;
+    gap: 8px;
     white-space: nowrap;
-    min-width: fit-content;
 }
 
 .rating-num {
     font-weight: bold;
     color: #5dade2;
     font-size: 16px;
-    display: block;
 }
 
 .rating-item span:not(.rating-num) {
-    font-size: 11px;
+    font-size: 12px;
     color: #666;
-    display: block;
-    text-align: center;
 }
 
 /* カテゴリー5の説明文 */
@@ -401,7 +395,7 @@ body {
     margin-bottom: 20px;
     font-weight: 600;
     text-align: left;
-    line-height: 1.6;
+    line-height: 1.7;
 }
 
 /* ===================================
@@ -656,7 +650,6 @@ body {
     /* トップページ */
     #top-page h1 {
         font-size: 1.8rem;
-        white-space: normal;
     }
 
     #top-page > p {
@@ -703,7 +696,7 @@ body {
 
     /* 診断ページ */
     #survey-page {
-        padding-top: 320px;
+        padding-top: 340px;
     }
 
     .category-header h2 {
@@ -712,26 +705,9 @@ body {
         padding: 0 10px;
     }
 
-    /* 評価凡例をスマホ最適化 */
+    /* 評価凡例(スマホ最適化) */
     #rating-legend {
-        gap: 8px;
-        padding: 15px 8px;
-        justify-content: space-around;
-    }
-
-    .rating-item {
-        gap: 3px;
-        min-width: auto;
-    }
-
-    .rating-num {
-        font-size: 15px;
-    }
-
-    .rating-item span:not(.rating-num) {
-        font-size: 10px;
-        max-width: 50px;
-        line-height: 1.2;
+        padding: 12px 15px;
     }
 
     /* 質問ブロック */
