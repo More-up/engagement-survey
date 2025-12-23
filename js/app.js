@@ -144,6 +144,19 @@ let answers = {}; // {questionIndex: score} の形式で保存
 let employeeCode = '';
 let department = '';
 let gender = '';
+let companyName = ''; // URLパラメータから取得する会社名
+
+// URLパラメータから会社名を取得
+function getCompanyFromURL() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('company') || '未設定';
+}
+
+// ページ読み込み時に会社名を取得
+window.addEventListener('DOMContentLoaded', function() {
+    companyName = getCompanyFromURL();
+    console.log('会社名:', companyName);
+});
 
 // ページ遷移関数
 function showPage(pageId) {
@@ -422,6 +435,7 @@ function submitResults(totalScore, categoryScores) {
     });
     
     const data = {
+        company: companyName,
         employeeCode: employeeCode,
         department: department,
         gender: gender,
