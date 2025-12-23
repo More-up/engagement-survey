@@ -389,6 +389,9 @@ body {
     margin-bottom: 20px;
     font-weight: 600;
     text-align: center;
+    line-height: 1.6;
+    word-break: keep-all;
+    overflow-wrap: break-word;
 }
 
 /* ===================================
@@ -462,33 +465,6 @@ body {
     box-shadow: 0 4px 15px rgba(93, 173, 226, 0.4);
 }
 
-/* スマホ対応 */
-@media (max-width: 768px) {
-    .answer-options {
-        gap: 12px;
-    }
-    
-    .answer-option:nth-child(1) span,
-    .answer-option:nth-child(5) span {
-        width: 50px;
-        height: 50px;
-        font-size: 1.2rem;
-    }
-    
-    .answer-option:nth-child(2) span,
-    .answer-option:nth-child(4) span {
-        width: 44px;
-        height: 44px;
-        font-size: 1.1rem;
-    }
-    
-    .answer-option:nth-child(3) span {
-        width: 38px;
-        height: 38px;
-        font-size: 0.9rem;
-    }
-}
-
 /* ===================================
    ナビゲーションボタン
 =================================== */
@@ -524,6 +500,7 @@ body {
     font-size: 2rem;
     color: #2c3e50;
     margin-bottom: 20px;
+    line-height: 1.4;
 }
 
 .total-score {
@@ -558,6 +535,13 @@ body {
     margin-bottom: 40px;
 }
 
+.category-results h2 {
+    color: #2c3e50;
+    margin-bottom: 30px;
+    font-size: 1.8rem;
+    text-align: center;
+}
+
 .category-score-item {
     margin-bottom: 20px;
 }
@@ -584,6 +568,7 @@ body {
     transition: width 0.5s ease;
 }
 
+/* フィードバックセクション */
 .feedback-section {
     background: white;
     padding: 40px;
@@ -593,13 +578,31 @@ body {
 
 .feedback-section h2 {
     color: #2c3e50;
-    margin-bottom: 20px;
+    margin-bottom: 30px;
+    font-size: 1.8rem;
+    text-align: center;
 }
 
-.feedback-section h3 {
+.feedback-item {
+    background: #f8f9fa;
+    padding: 25px;
+    margin-bottom: 25px;
+    border-radius: 15px;
+    border-left: 5px solid #5dade2;
+}
+
+.feedback-item h3 {
     color: #34495e;
-    margin-top: 30px;
     margin-bottom: 15px;
+    font-size: 1.2rem;
+    line-height: 1.4;
+}
+
+.feedback-message {
+    color: #4a5568;
+    font-size: 1.05rem;
+    line-height: 1.8;
+    margin: 0;
 }
 
 .feedback-good {
@@ -617,12 +620,38 @@ body {
     font-weight: 700;
 }
 
+.feedback-summary {
+    background: linear-gradient(135deg, #e8f4f8 0%, #d4e9f2 100%);
+    padding: 30px;
+    margin-top: 40px;
+    border-radius: 15px;
+    border: 2px solid #5dade2;
+}
+
+.feedback-summary h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-size: 1.3rem;
+}
+
+.feedback-summary p {
+    color: #4a5568;
+    font-size: 1.05rem;
+    line-height: 1.8;
+    margin-bottom: 15px;
+}
+
 /* ===================================
    レスポンシブ対応（スマホ）
 =================================== */
 @media (max-width: 768px) {
+    /* トップページ */
     #top-page h1 {
         font-size: 2rem;
+    }
+
+    #top-page > p {
+        font-size: 1.3rem;
     }
 
     .features {
@@ -638,11 +667,15 @@ body {
         font-size: 1.6rem;
     }
 
+    /* ボタン */
     .btn-primary, .btn-secondary {
-        padding: 18px 50px;
-        font-size: 1.4rem;
+        padding: 18px 40px;
+        font-size: 1.3rem;
+        width: 100%;
+        max-width: 320px;
     }
 
+    /* オリエンテーション */
     #orientation-page .container {
         padding: 30px 20px;
     }
@@ -651,37 +684,154 @@ body {
         font-size: 1.8rem;
     }
 
+    #orientation-page h2 {
+        font-size: 1.3rem;
+    }
+
+    #orientation-page form {
+        padding: 25px 20px;
+    }
+
+    /* 診断ページ */
     #survey-page {
-        padding-top: 260px;
+        padding-top: 290px;
     }
 
     .category-header h2 {
         font-size: 1.3rem;
+        line-height: 1.4;
+        padding: 0 10px;
     }
 
+    /* 評価凡例を読みやすく */
     #rating-legend {
-        font-size: 11px;
-        gap: 10px;
-        padding: 10px 5px;
+        font-size: 12px;
+        gap: 8px;
+        padding: 12px 8px;
+        line-height: 1.4;
+    }
+
+    .rating-item {
+        gap: 4px;
+    }
+
+    .rating-item span:not(.rating-num) {
+        max-width: 70px;
+        word-break: keep-all;
     }
 
     .rating-num {
         font-size: 14px;
     }
 
-    .question-text {
-        font-size: 1.1rem;
+    /* 質問ブロック */
+    .question-block {
+        padding: 20px 15px;
     }
 
+    .question-text {
+        font-size: 1.05rem;
+        line-height: 1.7;
+        text-align: left;
+    }
+
+    /* 回答ボタン */
     .answer-options {
         gap: 10px;
+        margin-top: 25px;
+    }
+    
+    .answer-option:nth-child(1) span,
+    .answer-option:nth-child(5) span {
+        width: 52px;
+        height: 52px;
+        font-size: 1.2rem;
+    }
+    
+    .answer-option:nth-child(2) span,
+    .answer-option:nth-child(4) span {
+        width: 46px;
+        height: 46px;
+        font-size: 1.1rem;
+    }
+    
+    .answer-option:nth-child(3) span {
+        width: 40px;
+        height: 40px;
+        font-size: 1rem;
     }
 
+    /* ナビゲーションボタン */
     .nav-buttons {
         flex-direction: column;
+        padding: 0 20px;
+    }
+
+    .nav-buttons .btn-primary,
+    .nav-buttons .btn-secondary {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    /* 結果ページ */
+    .result-summary {
+        padding: 30px 20px;
+    }
+
+    .result-summary h2 {
+        font-size: 1.5rem;
     }
 
     .total-score {
         font-size: 3.5rem;
+    }
+
+    .chart-container {
+        padding: 20px 15px;
+        max-height: 350px;
+    }
+
+    .chart-container canvas {
+        max-height: 280px !important;
+    }
+
+    .category-results {
+        padding: 30px 20px;
+    }
+
+    .category-results h2 {
+        font-size: 1.5rem;
+    }
+
+    .feedback-section {
+        padding: 30px 20px;
+    }
+
+    .feedback-section h2 {
+        font-size: 1.5rem;
+    }
+
+    .feedback-item {
+        padding: 20px 15px;
+    }
+
+    .feedback-item h3 {
+        font-size: 1.1rem;
+    }
+
+    .feedback-message {
+        font-size: 1rem;
+    }
+
+    .feedback-summary {
+        padding: 20px 15px;
+    }
+
+    .feedback-summary h3 {
+        font-size: 1.2rem;
+    }
+
+    .feedback-summary p {
+        font-size: 1rem;
     }
 }
