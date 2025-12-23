@@ -101,7 +101,7 @@ function getQuarterlyData(quarter) {
 // データの読み込み
 async function loadData() {
     try {
-        const response = await fetch(`${API_ENDPOINT}/api/diagnostics`);
+        const response = await fetch(`${API_ENDPOINT}`);
         const data = await response.json();
         
         // APIから返ってきたデータをそのまま使用（既にcategoryScoresとtotalScoreが100点満点で含まれている）
