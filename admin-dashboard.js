@@ -142,9 +142,9 @@ const questions = [
 let allData = [];
 let filteredData = [];
 let currentTrendView = 'overall';
-let currentTrendPeriod = 'month';
 let selectedDepartments = [];
-let departmentChartType = 'radar'; // 'radar' or 'bar'
+let departmentChartType = 'radar';
+let showPreviousData = false;
 
 // データの読み込み
 async function loadData() {
@@ -356,7 +356,7 @@ function updateGenderRadarChart(maleData, femaleData) {
     });
 }
 
-// 【新機能】男女別棒グラフの更新（差分を色分け表示）
+// 男女別棒グラフの更新（差分を色分け表示）
 function updateGenderBarChart(maleData, femaleData) {
     const ctx = document.getElementById('genderComparisonBarChart');
     if (!ctx) return;
@@ -379,11 +379,10 @@ function updateGenderBarChart(maleData, femaleData) {
         return scores.length > 0 ? (scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
     });
     
-    // 差分を計算して色分け
     const differences = maleScores.map((male, i) => male - femaleScores[i]);
     const backgroundColors = differences.map(diff => {
-        if (Math.abs(diff) <= 5) return 'rgba(128, 128, 128, 0.6)'; // グレー（差が小さい）
-        return diff > 0 ? 'rgba(0, 123, 255, 0.6)' : 'rgba(255, 20, 147, 0.6)'; // 青（男性高）、ピンク（女性高）
+        if (Math.abs(diff) <= 5) return 'rgba(128, 128, 128, 0.6)';
+        return diff > 0 ? 'rgba(0, 123, 255, 0.6)' : 'rgba(255, 20, 147, 0.6)';
     });
     
     window.genderComparisonBarChart = new Chart(ctx, {
@@ -440,14 +439,13 @@ function updateGenderBarChart(maleData, femaleData) {
     });
 }
 
-// 【強化】緊急アラートの更新（設問別低スコアアラート追加）
+// 緊急アラートの更新（設問別低スコアアラート追加）
 function updateAlerts() {
     const alertsContainer = document.getElementById('alertsContainer');
     alertsContainer.innerHTML = '';
     
     let alertCount = 0;
     
-    // 1. 高リスク従業員アラート
     const highRiskEmployees = filteredData.filter(d => d.totalScore < 50);
     if (highRiskEmployees.length > 0) {
         highRiskEmployees.forEach(emp => {
@@ -462,7 +460,6 @@ function updateAlerts() {
         });
     }
     
-    // 2. 部署別低スコアアラート
     const departmentSupport = {};
     filteredData.forEach(item => {
         if (!departmentSupport[item.department]) {
@@ -485,7 +482,6 @@ function updateAlerts() {
         }
     });
     
-    // 3. 【新機能】設問別低スコアアラート（平均2.5以下、該当5人以上）
     const questionAlerts = detectLowScoreQuestions();
     questionAlerts.forEach(alert => {
         const alertDiv = document.createElement('div');
@@ -504,7 +500,7 @@ function updateAlerts() {
     }
 }
 
-// 【新機能】設問別低スコア検出
+// 設問別低スコア検出
 function detectLowScoreQuestions() {
     const alerts = [];
     const categories = Object.keys(categoryQuestions);
@@ -565,17 +561,34 @@ function updateExecutiveRadarChart() {
             (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : 0;
     });
     
+    // 【新機能】前回データとの比較
+    let datasets = [{
+        label: '現在のスコア',
+        data: currentScores,
+        borderColor: 'rgba(0, 123, 255, 1)',
+        backgroundColor: 'rgba(0, 123, 255, 0.2)',
+        borderWidth: 2
+    }];
+    
+    if (showPreviousData) {
+        const previousScores = getPreviousPeriodScores(categories);
+        if (previousScores) {
+            datasets.push({
+                label: '前回のスコア',
+                data: previousScores,
+                borderColor: 'rgba(255, 159, 64, 1)',
+                backgroundColor: 'rgba(255, 159, 64, 0.2)',
+                borderWidth: 2,
+                borderDash: [5, 5]
+            });
+        }
+    }
+    
     window.executiveRadarChart = new Chart(ctx, {
         type: 'radar',
         data: {
             labels: categories,
-            datasets: [{
-                label: '現在のスコア',
-                data: currentScores,
-                borderColor: 'rgba(0, 123, 255, 1)',
-                backgroundColor: 'rgba(0, 123, 255, 0.2)',
-                borderWidth: 2
-            }]
+            datasets: datasets
         },
         options: {
             responsive: true,
@@ -588,6 +601,38 @@ function updateExecutiveRadarChart() {
                 }
             }
         }
+    });
+}
+
+// 【新機能】前回期間のスコアを取得
+function getPreviousPeriodScores(categories) {
+    // 実データから前回期間を自動判定
+    const monthlyData = {};
+    filteredData.forEach(item => {
+        const date = new Date(item.timestamp);
+        const yearMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        
+        if (!monthlyData[yearMonth]) {
+            monthlyData[yearMonth] = [];
+        }
+        monthlyData[yearMonth].push(item);
+    });
+    
+    const sortedMonths = Object.keys(monthlyData).sort();
+    if (sortedMonths.length < 2) {
+        return null; // 前回データがない
+    }
+    
+    // 最新月と前回月を取得
+    const previousMonth = sortedMonths[sortedMonths.length - 2];
+    const previousData = monthlyData[previousMonth];
+    
+    return categories.map(cat => {
+        const scores = previousData
+            .map(item => item.categoryScores[cat])
+            .filter(score => score !== undefined && score !== null);
+        return scores.length > 0 ? 
+            (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : 0;
     });
 }
 
@@ -615,11 +660,10 @@ function updateDataTable() {
     });
 }
 
-// 【強化】部署別比較の更新（部署選択機能追加）
+// 部署別比較の更新（部署選択機能追加）
 function updateDepartmentComparison() {
     const departments = [...new Set(filteredData.map(d => d.department))];
     
-    // 部署選択UIの生成
     const departmentSelectionContainer = document.getElementById('departmentSelection');
     if (departmentSelectionContainer) {
         departmentSelectionContainer.innerHTML = '<h4>比較する部署を選択:</h4>';
@@ -634,12 +678,10 @@ function updateDepartmentComparison() {
         });
     }
     
-    // 初期選択（全部署）
     if (selectedDepartments.length === 0) {
         selectedDepartments = departments;
     }
     
-    // 部署カード表示
     const departmentCards = document.getElementById('departmentCards');
     if (departmentCards) {
         departmentCards.innerHTML = '';
@@ -664,7 +706,6 @@ function updateDepartmentComparison() {
     updateDepartmentChart();
 }
 
-// 【新機能】部署選択トグル
 function toggleDepartmentSelection(department) {
     const index = selectedDepartments.indexOf(department);
     if (index > -1) {
@@ -675,7 +716,6 @@ function toggleDepartmentSelection(department) {
     updateDepartmentComparison();
 }
 
-// 【新機能】部署比較チャート表示形式切り替え
 function switchDepartmentChartType(type) {
     departmentChartType = type;
     document.querySelectorAll('.chart-type-btn').forEach(btn => btn.classList.remove('active'));
@@ -683,7 +723,6 @@ function switchDepartmentChartType(type) {
     updateDepartmentChart();
 }
 
-// 【強化】部署別比較チャートの更新（レーダー・棒グラフ切り替え）
 function updateDepartmentChart() {
     const ctx = document.getElementById('comparisonChart');
     if (!ctx) return;
@@ -763,7 +802,7 @@ function switchTab(tabIndex) {
     });
 }
 
-// 【修正】トレンドチャート（実データから月次推移を自動計算）
+// 【修正】トレンドチャート（実データから月次推移を自動計算、ダミーデータ削除）
 function drawTrendChart() {
     const ctx = document.getElementById('trendChart');
     if (!ctx) return;
@@ -772,7 +811,6 @@ function drawTrendChart() {
         window.trendChart.destroy();
     }
     
-    // 実データから月次データを抽出
     const monthlyData = {};
     filteredData.forEach(item => {
         const date = new Date(item.timestamp);
@@ -941,15 +979,13 @@ function changeTrendView(view) {
     drawTrendChart();
 }
 
+// 【新機能】前回診断との比較切り替え
 function togglePreviousComparison() {
     const checkbox = document.getElementById('showPreviousComparison');
-    if (checkbox.checked) {
-        alert('前回診断データとの比較機能は今後実装予定です');
-        checkbox.checked = false;
-    }
+    showPreviousData = checkbox.checked;
+    updateExecutiveRadarChart();
 }
 
-// CSV エクスポート
 function exportCSV() {
     const headers = ['社員コード', '部署', '性別', '診断日時', '総合スコア', 'リスクレベル'];
     const rows = filteredData.map(item => [
@@ -974,7 +1010,6 @@ function exportCSV() {
     a.click();
 }
 
-// レポート自動生成機能（Excel形式）
 function generateDetailedReport() {
     if (filteredData.length === 0) {
         alert('データがありません。フィルタを確認してください。');
