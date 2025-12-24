@@ -1199,7 +1199,14 @@ function createDetailDataSheet() {
     return XLSX.utils.aoa_to_sheet(data);
 }
 
-// ========================================
+// viewDetail関数を追加
+function viewDetail(employeeCode) {
+    const employee = allData.find(d => d.employeeCode === employeeCode);
+    if (!employee) return;
+    
+    alert(`社員コード: ${employee.employeeCode}\n部署: ${employee.department}\n総合スコア: ${employee.totalScore.toFixed(1)}点\n\n詳細表示機能は今後実装予定です`);
+}
+
 // PDF企業向けレポート生成機能（日本語対応版）
 // Canvas→画像変換→PDF埋め込み方式
 // ========================================
@@ -1249,7 +1256,8 @@ async function generateExecutivePDF() {
                     scale: 2,
                     backgroundColor: '#ffffff',
                     logging: false,
-                    useCORS: true
+                    useCORS: true,
+                    allowTaint: true
                 });
                 
                 // CanvasをPDFに追加
@@ -1395,7 +1403,7 @@ async function generateExecutivePDF() {
         // 3. カテゴリー別レーダーチャート（既存のCanvasを利用）
         // ========================================
         doc.addPage();
-        const radarCanvas = document.getElementById('dashboard10CategoryRadar');
+        const radarCanvas = document.getElementById('executiveRadarChart');
         if (radarCanvas) {
             const radarImgData = radarCanvas.toDataURL('image/png');
             const radarWidth = contentWidth;
