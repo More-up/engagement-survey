@@ -1,7 +1,7 @@
 // API設定
 const API_ENDPOINT = 'https://engagement-survey-api.more-up.workers.dev';
 
-// 10カテゴリ定義（app.jsと完全一致）
+// 10カテゴリ定義(app.jsと完全一致)
 const categoryQuestions = {
     "心身の健康": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
     "仕事の充実感": [11, 12, 13, 14, 15, 16, 17, 18, 19, 20],
@@ -101,10 +101,10 @@ function getQuarterlyData(quarter) {
 // データの読み込み
 async function loadData() {
     try {
-        const response = await fetch(`${API_ENDPOINT}`);
+        const response = await fetch(`${API_ENDPOINT}/api/diagnostics`);
         const data = await response.json();
         
-        // APIから返ってきたデータをそのまま使用（既にcategoryScoresとtotalScoreが100点満点で含まれている）
+        // APIから返ってきたデータをそのまま使用(既にcategoryScoresとtotalScoreが100点満点で含まれている)
         allData = data;
         filteredData = data;
         
@@ -252,7 +252,7 @@ function updateGenderRadarChart(maleData, femaleData) {
         window.genderComparisonRadarChart.destroy();
     }
     
-    // レーダーチャート用の短縮ラベル（正しい表記）
+    // レーダーチャート用の短縮ラベル(正しい表記)
     const categories = [
         '心身の健康', '仕事の充実感', '成長機会', '上司のサポート', '部署内の人間関係',
         '評価・処遇', '会社への信頼', '働く環境', '総合満足度', '組織へのつながり'
