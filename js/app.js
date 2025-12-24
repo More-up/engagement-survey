@@ -15,7 +15,7 @@ const categories = [
     "組織へのつながり"
 ];
 
-// 100問の質問（各カテゴリー10問）
+// 100問の質問(各カテゴリー10問)
 const questions = [
     // カテゴリー1: 心身の健康 (Q1-10)
     "働きながらも、心身の健康を保てていると感じる",
@@ -494,7 +494,7 @@ function displayFeedback(scores) {
         const item = document.createElement('div');
         item.className = 'feedback-item';
         item.innerHTML = `
-            <h3 class="${levelClass}">📌 ${categories[index]}（${score}点）- ${level}</h3>
+            <h3 class="${levelClass}">📌 ${categories[index]}(${score}点)- ${level}</h3>
             <p class="feedback-message">${message}</p>
         `;
         container.appendChild(item);
@@ -540,11 +540,11 @@ function submitResults(totalScore, categoryScores) {
         answers: answers
     };
     
-    fetch(`${API_ENDPOINT}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data)
-})
+    fetch(`${API_ENDPOINT}/api/diagnostics`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
     .then(response => response.json())
     .then(result => console.log('診断結果を送信しました:', result))
     .catch(error => console.error('送信エラー:', error));
