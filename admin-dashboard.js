@@ -737,6 +737,7 @@ function drawRiskTrend(ctx) {
         }
     });
 }
+
 // 前回診断との比較切り替え
 function togglePreviousComparison() {
     const checkbox = document.getElementById('showPreviousComparison');
@@ -771,9 +772,224 @@ function exportCSV() {
     a.click();
 }
 
-// 詳細レポート生成
+// ===========================
+// レポート自動生成機能（Excel形式）
+// ===========================
+
 function generateDetailedReport() {
-    alert('詳細レポート生成機能は今後実装予定です');
+    if (filteredData.length === 0) {
+        alert('データがありません。フィルタを確認してください。');
+        return;
+    }
+    
+    // Excelワークブックを作成
+    const workbook = XLSX.utils.book_new();
+    
+    // ① サマリーシート
+    const summarySheet = createSummarySheet();
+    XLSX.utils.book_append_sheet(workbook, summarySheet, "サマリー");
+    
+    // ② カテゴリー別スコアシート
+    const categorySheet = createCategoryScoreSheet();
+    XLSX.utils.book_append_sheet(workbook, categorySheet, "カテゴリー別スコア");
+    
+    // ③ 部署別集計シート
+    const departmentSheet = createDepartmentSheet();
+    XLSX.utils.book_append_sheet(workbook, departmentSheet, "部署別集計");
+    
+    // ④ 性別比較シート
+    const genderSheet = createGenderComparisonSheet();
+    XLSX.utils.book_append_sheet(workbook, genderSheet, "性別比較");
+    
+    // ⑤ 各設問の回答分布シート
+    const questionSheet = createQuestionDistributionSheet();
+    XLSX.utils.book_append_sheet(workbook, questionSheet, "設問別回答分布");
+    
+    // ⑥ 個別データシート
+    const detailSheet = createDetailDataSheet();
+    XLSX.utils.book_append_sheet(workbook, detailSheet, "個別データ");
+    
+    // Excelファイルをダウンロード
+    const fileName = `エンゲージメント調査レポート_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+    
+    alert(`レポート「${fileName}」を生成しました`);
+}
+
+// ① サマリーシート作成
+function createSummarySheet() {
+    const total = filteredData.length;
+    const avgScore = (filteredData.reduce((sum, d) => sum + d.totalScore, 0) / total).toFixed(1);
+    const highRisk = filteredData.filter(d => d.totalScore < 50).length;
+    const mediumRisk = filteredData.filter(d => d.totalScore >= 50 && d.totalScore < 70).length;
+    const lowRisk = filteredData.filter(d => d.totalScore >= 70).length;
+    
+    const data = [
+        ['エンゲージメント調査サマリー'],
+        [],
+        ['生成日時', new Date().toLocaleString('ja-JP')],
+        ['対象データ件数', total + '件'],
+        [],
+        ['全体平均スコア', avgScore + '点'],
+        [],
+        ['リスク分布'],
+        ['高リスク（<50点）', highRisk + '人', ((highRisk/total)*100).toFixed(1) + '%'],
+        ['中リスク（50-70点）', mediumRisk + '人', ((mediumRisk/total)*100).toFixed(1) + '%'],
+        ['低リスク（70点以上）', lowRisk + '人', ((lowRisk/total)*100).toFixed(1) + '%']
+    ];
+    
+    return XLSX.utils.aoa_to_sheet(data);
+}
+
+// ② カテゴリー別スコアシート作成
+function createCategoryScoreSheet() {
+    const categories = Object.keys(categoryQuestions);
+    const data = [
+        ['カテゴリー', '平均スコア', '最高スコア', '最低スコア']
+    ];
+    
+    categories.forEach(cat => {
+        const scores = filteredData
+            .map(item => item.categoryScores[cat])
+            .filter(score => score !== undefined && score !== null);
+        
+        if (scores.length > 0) {
+            const avg = (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1);
+            const max = Math.max(...scores).toFixed(1);
+            const min = Math.min(...scores).toFixed(1);
+            data.push([cat, avg, max, min]);
+        }
+    });
+    
+    return XLSX.utils.aoa_to_sheet(data);
+}
+
+// ③ 部署別集計シート作成
+function createDepartmentSheet() {
+    const departments = [...new Set(filteredData.map(d => d.department))];
+    const categories = Object.keys(categoryQuestions);
+    
+    const header = ['部署', '人数', '平均スコア', ...categories];
+    const data = [header];
+    
+    departments.forEach(dept => {
+        const deptData = filteredData.filter(d => d.department === dept);
+        const count = deptData.length;
+        const avgTotal = (deptData.reduce((sum, d) => sum + d.totalScore, 0) / count).toFixed(1);
+        
+        const categoryAvgs = categories.map(cat => {
+            const scores = deptData.map(item => item.categoryScores[cat]);
+            return (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1);
+        });
+        
+        data.push([dept, count, avgTotal, ...categoryAvgs]);
+    });
+    
+    return XLSX.utils.aoa_to_sheet(data);
+}
+
+// ④ 性別比較シート作成
+function createGenderComparisonSheet() {
+    const categories = Object.keys(categoryQuestions);
+    const maleData = filteredData.filter(d => d.gender === '男性');
+    const femaleData = filteredData.filter(d => d.gender === '女性');
+    
+    const data = [
+        ['カテゴリー', '男性平均', '女性平均', '差分']
+    ];
+    
+    categories.forEach(cat => {
+        const maleScores = maleData.map(item => item.categoryScores[cat]);
+        const femaleScores = femaleData.map(item => item.categoryScores[cat]);
+        
+        const maleAvg = maleScores.length > 0 ? 
+            (maleScores.reduce((a, b) => a + b, 0) / maleScores.length).toFixed(1) : 0;
+        const femaleAvg = femaleScores.length > 0 ? 
+            (femaleScores.reduce((a, b) => a + b, 0) / femaleScores.length).toFixed(1) : 0;
+        const diff = (maleAvg - femaleAvg).toFixed(1);
+        
+        data.push([cat, maleAvg, femaleAvg, diff]);
+    });
+    
+    // 総合スコア
+    const maleTotalAvg = maleData.length > 0 ?
+        (maleData.reduce((sum, d) => sum + d.totalScore, 0) / maleData.length).toFixed(1) : 0;
+    const femaleTotalAvg = femaleData.length > 0 ?
+        (femaleData.reduce((sum, d) => sum + d.totalScore, 0) / femaleData.length).toFixed(1) : 0;
+    const totalDiff = (maleTotalAvg - femaleTotalAvg).toFixed(1);
+    
+    data.push([]);
+    data.push(['総合スコア', maleTotalAvg, femaleTotalAvg, totalDiff]);
+    
+    return XLSX.utils.aoa_to_sheet(data);
+}
+
+// ⑤ 各設問の回答分布シート作成
+function createQuestionDistributionSheet() {
+    const data = [
+        ['設問番号', 'カテゴリー', '回答1', '回答2', '回答3', '回答4', '回答5', '平均スコア', '回答数']
+    ];
+    
+    const categories = Object.keys(categoryQuestions);
+    
+    categories.forEach(category => {
+        const questionNumbers = categoryQuestions[category];
+        
+        questionNumbers.forEach(qNum => {
+            const answers = filteredData.map(item => item[qNum]).filter(a => a !== undefined);
+            
+            if (answers.length > 0) {
+                const count1 = answers.filter(a => a === 1).length;
+                const count2 = answers.filter(a => a === 2).length;
+                const count3 = answers.filter(a => a === 3).length;
+                const count4 = answers.filter(a => a === 4).length;
+                const count5 = answers.filter(a => a === 5).length;
+                const avg = (answers.reduce((a, b) => a + b, 0) / answers.length).toFixed(2);
+                
+                data.push([
+                    `Q${qNum}`,
+                    category,
+                    count1,
+                    count2,
+                    count3,
+                    count4,
+                    count5,
+                    avg,
+                    answers.length
+                ]);
+            }
+        });
+    });
+    
+    return XLSX.utils.aoa_to_sheet(data);
+}
+
+// ⑥ 個別データシート作成
+function createDetailDataSheet() {
+    const categories = Object.keys(categoryQuestions);
+    const header = ['社員コード', '部署', '性別', '診断日時', '総合スコア', 'リスクレベル', ...categories];
+    const data = [header];
+    
+    filteredData.forEach(item => {
+        const riskLevel = getRiskLevel(item.totalScore);
+        const riskLabel = riskLevel === 'high' ? '高' : riskLevel === 'medium' ? '中' : '低';
+        
+        const categoryScores = categories.map(cat => 
+            item.categoryScores[cat] ? item.categoryScores[cat].toFixed(1) : '0'
+        );
+        
+        data.push([
+            item.employeeCode,
+            item.department,
+            item.gender,
+            new Date(item.timestamp).toLocaleString('ja-JP'),
+            item.totalScore.toFixed(1),
+            riskLabel,
+            ...categoryScores
+        ]);
+    });
+    
+    return XLSX.utils.aoa_to_sheet(data);
 }
 
 // 役員会用PDFレポート生成
