@@ -1231,3 +1231,369 @@ function viewDetail(employeeCode) {
     
     alert(`社員コード: ${employee.employeeCode}\n部署: ${employee.department}\n総合スコア: ${employee.totalScore.toFixed(1)}点\n\n詳細表示機能は今後実装予定です`);
 }
+// ========================================
+// PDF企業向けレポート生成機能（完全版）
+// ========================================
+
+async function generateExecutivePDF() {
+    if (filteredData.length === 0) {
+        alert('データがありません。フィルタを確認してください。');
+        return;
+    }
+    
+    try {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
+        });
+        
+        let yPosition = 20;
+        
+        // ========================================
+        // 1. 表紙ページ
+        // ========================================
+        doc.setFontSize(28);
+        doc.text('エンゲージメント調査レポート', 105, 80, { align: 'center' });
+        
+        doc.setFontSize(14);
+        const companyFilter = document.getElementById('companyFilter').value;
+        const companyName = companyFilter !== 'all' ? companyFilter : '全社';
+        doc.text(`対象企業: ${companyName}`, 105, 100, { align: 'center' });
+        
+        doc.setFontSize(12);
+        const today = new Date().toLocaleDateString('ja-JP');
+        doc.text(`生成日: ${today}`, 105, 110, { align: 'center' });
+        
+        doc.setFontSize(10);
+        doc.text(`対象データ件数: ${filteredData.length}件`, 105, 120, { align: 'center' });
+        
+        // ========================================
+        // 2. エグゼクティブサマリーページ
+        // ========================================
+        doc.addPage();
+        yPosition = 20;
+        
+        doc.setFontSize(18);
+        doc.text('エグゼクティブサマリー', 20, yPosition);
+        yPosition += 15;
+        
+        // 全体統計
+        const total = filteredData.length;
+        const avgScore = (filteredData.reduce((sum, d) => sum + d.totalScore, 0) / total).toFixed(1);
+        const highRisk = filteredData.filter(d => d.totalScore < 50).length;
+        const mediumRisk = filteredData.filter(d => d.totalScore >= 50 && d.totalScore < 70).length;
+        const lowRisk = filteredData.filter(d => d.totalScore >= 70).length;
+        
+        doc.setFontSize(12);
+        doc.text(`全体平均スコア: ${avgScore}点 / 100点`, 20, yPosition);
+        yPosition += 8;
+        doc.text(`回答者数: ${total}人`, 20, yPosition);
+        yPosition += 15;
+        
+        // リスク分布表
+        doc.setFontSize(14);
+        doc.text('リスク分布', 20, yPosition);
+        yPosition += 10;
+        
+        const riskTableData = [
+            ['リスクレベル', '人数', '割合'],
+            ['高リスク (<50点)', `${highRisk}人`, `${((highRisk/total)*100).toFixed(1)}%`],
+            ['中リスク (50-70点)', `${mediumRisk}人`, `${((mediumRisk/total)*100).toFixed(1)}%`],
+            ['低リスク (70点以上)', `${lowRisk}人`, `${((lowRisk/total)*100).toFixed(1)}%`]
+        ];
+        
+        doc.autoTable({
+            startY: yPosition,
+            head: [riskTableData[0]],
+            body: riskTableData.slice(1),
+            theme: 'grid',
+            headStyles: { fillColor: [0, 123, 255] },
+            styles: { font: 'helvetica', fontSize: 10 }
+        });
+        
+        yPosition = doc.lastAutoTable.finalY + 15;
+        
+        // 性別統計
+        const maleData = filteredData.filter(d => d.gender === '男性');
+        const femaleData = filteredData.filter(d => d.gender === '女性');
+        const maleAvg = maleData.length > 0 ? 
+            (maleData.reduce((sum, d) => sum + d.totalScore, 0) / maleData.length).toFixed(1) : 0;
+        const femaleAvg = femaleData.length > 0 ? 
+            (femaleData.reduce((sum, d) => sum + d.totalScore, 0) / femaleData.length).toFixed(1) : 0;
+        
+        doc.setFontSize(14);
+        doc.text('性別統計', 20, yPosition);
+        yPosition += 10;
+        
+        const genderTableData = [
+            ['性別', '人数', '平均スコア'],
+            ['男性', `${maleData.length}人`, `${maleAvg}点`],
+            ['女性', `${femaleData.length}人`, `${femaleAvg}点`]
+        ];
+        
+        doc.autoTable({
+            startY: yPosition,
+            head: [genderTableData[0]],
+            body: genderTableData.slice(1),
+            theme: 'grid',
+            headStyles: { fillColor: [0, 123, 255] },
+            styles: { font: 'helvetica', fontSize: 10 }
+        });
+        
+        // ========================================
+        // 3. レーダーチャート（画像として挿入）
+        // ========================================
+        doc.addPage();
+        yPosition = 20;
+        
+        doc.setFontSize(18);
+        doc.text('カテゴリー別スコア（レーダーチャート）', 20, yPosition);
+        yPosition += 10;
+        
+        // レーダーチャートをキャンバスから画像として取得
+        const radarCanvas = document.getElementById('executiveRadarChart');
+        if (radarCanvas) {
+            try {
+                const radarImage = radarCanvas.toDataURL('image/png');
+                doc.addImage(radarImage, 'PNG', 20, yPosition, 170, 170);
+                yPosition += 180;
+            } catch (error) {
+                console.error('レーダーチャート画像取得エラー:', error);
+                doc.setFontSize(10);
+                doc.text('※ レーダーチャートの取得に失敗しました', 20, yPosition);
+                yPosition += 10;
+            }
+        }
+        
+        // ========================================
+        // 4. カテゴリー別スコア詳細表
+        // ========================================
+        doc.addPage();
+        yPosition = 20;
+        
+        doc.setFontSize(18);
+        doc.text('カテゴリー別スコア詳細', 20, yPosition);
+        yPosition += 10;
+        
+        const categories = Object.keys(categoryQuestions);
+        const categoryTableData = [['カテゴリー', '平均スコア', '最高スコア', '最低スコア']];
+        
+        categories.forEach(cat => {
+            const scores = filteredData
+                .map(item => item.categoryScores[cat])
+                .filter(score => score !== undefined && score !== null);
+            
+            if (scores.length > 0) {
+                const avg = (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1);
+                const max = Math.max(...scores).toFixed(1);
+                const min = Math.min(...scores).toFixed(1);
+                categoryTableData.push([cat, `${avg}点`, `${max}点`, `${min}点`]);
+            }
+        });
+        
+        doc.autoTable({
+            startY: yPosition,
+            head: [categoryTableData[0]],
+            body: categoryTableData.slice(1),
+            theme: 'striped',
+            headStyles: { fillColor: [0, 123, 255] },
+            styles: { font: 'helvetica', fontSize: 9 }
+        });
+        
+        // ========================================
+        // 5. 部署別比較表
+        // ========================================
+        doc.addPage();
+        yPosition = 20;
+        
+        doc.setFontSize(18);
+        doc.text('部署別比較', 20, yPosition);
+        yPosition += 10;
+        
+        const departments = [...new Set(filteredData.map(d => d.department))];
+        const departmentTableData = [['部署', '人数', '平均スコア']];
+        
+        departments.forEach(dept => {
+            const deptData = filteredData.filter(d => d.department === dept);
+            const count = deptData.length;
+            const avgTotal = (deptData.reduce((sum, d) => sum + d.totalScore, 0) / count).toFixed(1);
+            departmentTableData.push([dept, `${count}人`, `${avgTotal}点`]);
+        });
+        
+        doc.autoTable({
+            startY: yPosition,
+            head: [departmentTableData[0]],
+            body: departmentTableData.slice(1),
+            theme: 'grid',
+            headStyles: { fillColor: [0, 123, 255] },
+            styles: { font: 'helvetica', fontSize: 10 }
+        });
+        
+        yPosition = doc.lastAutoTable.finalY + 15;
+        
+        // ========================================
+        // 6. 性別比較表（カテゴリー別）
+        // ========================================
+        if (yPosition > 220) {
+            doc.addPage();
+            yPosition = 20;
+        }
+        
+        doc.setFontSize(18);
+        doc.text('性別比較（カテゴリー別）', 20, yPosition);
+        yPosition += 10;
+        
+        const genderCategoryTableData = [['カテゴリー', '男性平均', '女性平均', '差分']];
+        
+        categories.forEach(cat => {
+            const maleScores = maleData.map(item => item.categoryScores[cat]).filter(s => s !== undefined);
+            const femaleScores = femaleData.map(item => item.categoryScores[cat]).filter(s => s !== undefined);
+            
+            const maleAvgCat = maleScores.length > 0 ? 
+                (maleScores.reduce((a, b) => a + b, 0) / maleScores.length).toFixed(1) : 0;
+            const femaleAvgCat = femaleScores.length > 0 ? 
+                (femaleScores.reduce((a, b) => a + b, 0) / femaleScores.length).toFixed(1) : 0;
+            const diff = (maleAvgCat - femaleAvgCat).toFixed(1);
+            
+            genderCategoryTableData.push([cat, `${maleAvgCat}点`, `${femaleAvgCat}点`, `${diff}点`]);
+        });
+        
+        doc.autoTable({
+            startY: yPosition,
+            head: [genderCategoryTableData[0]],
+            body: genderCategoryTableData.slice(1),
+            theme: 'striped',
+            headStyles: { fillColor: [0, 123, 255] },
+            styles: { font: 'helvetica', fontSize: 9 }
+        });
+        
+        // ========================================
+        // 7. 重要アラート一覧
+        // ========================================
+        doc.addPage();
+        yPosition = 20;
+        
+        doc.setFontSize(18);
+        doc.text('重要アラート', 20, yPosition);
+        yPosition += 10;
+        
+        doc.setFontSize(12);
+        
+        // 高リスク従業員
+        const highRiskEmployees = filteredData.filter(d => d.totalScore < 50);
+        if (highRiskEmployees.length > 0) {
+            doc.setFontSize(14);
+            doc.text(`高リスク従業員: ${highRiskEmployees.length}人`, 20, yPosition);
+            yPosition += 8;
+            
+            doc.setFontSize(10);
+            highRiskEmployees.slice(0, 5).forEach(emp => {
+                doc.text(`・社員コード: ${emp.employeeCode} | 部署: ${emp.department} | スコア: ${emp.totalScore.toFixed(1)}点`, 25, yPosition);
+                yPosition += 6;
+            });
+            
+            if (highRiskEmployees.length > 5) {
+                doc.text(`※ 他 ${highRiskEmployees.length - 5}人`, 25, yPosition);
+                yPosition += 6;
+            }
+            yPosition += 5;
+        }
+        
+        // 設問別低スコアアラート
+        const questionAlerts = detectLowScoreQuestions();
+        if (questionAlerts.length > 0) {
+            doc.setFontSize(14);
+            doc.text(`低スコア設問: ${questionAlerts.length}件`, 20, yPosition);
+            yPosition += 8;
+            
+            doc.setFontSize(9);
+            questionAlerts.slice(0, 10).forEach(alert => {
+                if (yPosition > 270) {
+                    doc.addPage();
+                    yPosition = 20;
+                }
+                doc.text(`・Q${alert.questionNum}: ${alert.questionText.substring(0, 30)}...`, 25, yPosition);
+                yPosition += 5;
+                doc.text(`  カテゴリー: ${alert.category} | 平均: ${alert.avgScore}/5.0 | 該当: ${alert.count}人`, 27, yPosition);
+                yPosition += 7;
+            });
+        }
+        
+        // ========================================
+        // 8. 改善提案（最終ページ）
+        // ========================================
+        doc.addPage();
+        yPosition = 20;
+        
+        doc.setFontSize(18);
+        doc.text('改善提案', 20, yPosition);
+        yPosition += 15;
+        
+        doc.setFontSize(11);
+        
+        // 全体スコアに基づく提案
+        if (parseFloat(avgScore) < 60) {
+            doc.text('【緊急対応が必要】', 20, yPosition);
+            yPosition += 8;
+            doc.setFontSize(10);
+            doc.text('・全体平均スコアが60点未満です。組織全体の課題として早急な対応が必要です。', 25, yPosition);
+            yPosition += 6;
+            doc.text('・経営層と人事部門で現状分析と改善計画の策定を推奨します。', 25, yPosition);
+            yPosition += 10;
+        } else if (parseFloat(avgScore) < 70) {
+            doc.text('【改善の余地あり】', 20, yPosition);
+            yPosition += 8;
+            doc.setFontSize(10);
+            doc.text('・全体平均スコアは標準的ですが、改善の余地があります。', 25, yPosition);
+            yPosition += 6;
+            doc.text('・低スコアカテゴリーに焦点を当てた施策を検討してください。', 25, yPosition);
+            yPosition += 10;
+        } else {
+            doc.text('【良好な状態】', 20, yPosition);
+            yPosition += 8;
+            doc.setFontSize(10);
+            doc.text('・全体平均スコアは良好です。現状維持と更なる向上を目指してください。', 25, yPosition);
+            yPosition += 10;
+        }
+        
+        // カテゴリー別提案
+        doc.setFontSize(11);
+        doc.text('【カテゴリー別改善ポイント】', 20, yPosition);
+        yPosition += 8;
+        
+        // 最低スコアカテゴリーを特定
+        const categoryScores = categories.map(cat => {
+            const scores = filteredData.map(item => item.categoryScores[cat]).filter(s => s !== undefined);
+            const avg = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+            return { category: cat, score: avg };
+        }).sort((a, b) => a.score - b.score);
+        
+        doc.setFontSize(10);
+        categoryScores.slice(0, 3).forEach((item, index) => {
+            doc.text(`${index + 1}. ${item.category}: ${item.score.toFixed(1)}点`, 25, yPosition);
+            yPosition += 6;
+        });
+        
+        yPosition += 10;
+        
+        // フッター
+        doc.setFontSize(8);
+        doc.text('※ 本レポートは診断データに基づく自動生成レポートです。', 20, yPosition);
+        yPosition += 5;
+        doc.text('※ 詳細な分析や個別対応については、人事担当者にご相談ください。', 20, yPosition);
+        
+        // ========================================
+        // PDFダウンロード
+        // ========================================
+        const fileName = `エンゲージメント調査_企業向けレポート_${new Date().toISOString().split('T')[0]}.pdf`;
+        doc.save(fileName);
+        
+        alert(`PDFレポート「${fileName}」を生成しました`);
+        
+    } catch (error) {
+        console.error('PDF生成エラー:', error);
+        alert('PDF生成中にエラーが発生しました: ' + error.message);
+    }
+}
