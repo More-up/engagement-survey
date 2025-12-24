@@ -1207,12 +1207,25 @@ function viewDetail(employeeCode) {
     alert(`社員コード: ${employee.employeeCode}\n部署: ${employee.department}\n総合スコア: ${employee.totalScore.toFixed(1)}点\n\n詳細表示機能は今後実装予定です`);
 }
 
+// PDF生成の重複防止フラグ
+let isPdfGenerating = false;
+
 // PDF企業向けレポート生成機能（日本語対応版）
 // Canvas→画像変換→PDF埋め込み方式
 // ========================================
 
 async function generateExecutivePDF() {
-    if (filteredData.length === 0) {
+    // 生成中の場合は処理をブロック
+    if (isPdfGenerating) {
+        alert('⚠️ PDFレポート生成中です。しばらくお待ちください。');
+        return;
+    }
+
+    // 生成フラグをON
+    isPdfGenerating = true;
+
+    try {
+        const filteredData = getFilteredData();
         alert('データがありません。フィルタを確認してください。');
         return;
     }
@@ -1642,6 +1655,9 @@ async function generateExecutivePDF() {
     } catch (error) {
         console.error('PDF生成エラー:', error);
         alert(`PDF生成エラー: ${error.message}`);
+    } finally {
+        // 生成フラグをOFF（必ず実行）
+        isPdfGenerating = false;
     }
 }
 
