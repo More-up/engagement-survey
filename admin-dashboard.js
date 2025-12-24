@@ -1199,12 +1199,161 @@ function createDetailDataSheet() {
     return XLSX.utils.aoa_to_sheet(data);
 }
 
-// viewDetail関数を追加
+// viewDetail関数を追加（詳細モーダル表示版）
 function viewDetail(employeeCode) {
     const employee = allData.find(d => d.employeeCode === employeeCode);
-    if (!employee) return;
+    if (!employee) {
+        alert('従業員データが見つかりません');
+        return;
+    }
     
-    alert(`社員コード: ${employee.employeeCode}\n部署: ${employee.department}\n総合スコア: ${employee.totalScore.toFixed(1)}点\n\n詳細表示機能は今後実装予定です`);
+    // モーダルHTMLを作成
+    const modalHTML = `
+        <div id="employeeDetailModal" style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+        ">
+            <div style="
+                background: white;
+                border-radius: 20px;
+                padding: 40px;
+                max-width: 800px;
+                max-height: 90vh;
+                overflow-y: auto;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            ">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                    <h2 style="color: #667eea; margin: 0;">📋 従業員詳細情報</h2>
+                    <button onclick="closeEmployeeDetailModal()" style="
+                        background: #dc3545;
+                        color: white;
+                        border: none;
+                        border-radius: 50%;
+                        width: 40px;
+                        height: 40px;
+                        font-size: 20px;
+                        cursor: pointer;
+                    ">✕</button>
+                </div>
+                
+                <!-- 基本情報 -->
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <h3 style="color: #495057; margin-bottom: 15px;">基本情報</h3>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div>
+                            <strong>社員コード:</strong> ${employee.employeeCode}
+                        </div>
+                        <div>
+                            <strong>部署:</strong> ${employee.department}
+                        </div>
+                        <div>
+                            <strong>性別:</strong> ${employee.gender}
+                        </div>
+                        <div>
+                            <strong>診断日時:</strong> ${new Date(employee.timestamp).toLocaleString('ja-JP')}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- スコアサマリー -->
+                <div style="background: ${employee.totalScore < 50 ? '#f8d7da' : employee.totalScore < 70 ? '#fff3cd' : '#d4edda'}; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <h3 style="color: #495057; margin-bottom: 15px;">総合スコア</h3>
+                    <div style="text-align: center;">
+                        <div style="font-size: 48px; font-weight: bold; color: ${employee.totalScore < 50 ? '#dc3545' : employee.totalScore < 70 ? '#ffc107' : '#28a745'};">
+                            ${employee.totalScore.toFixed(1)}
+                        </div>
+                        <div style="font-size: 18px; color: #666;">/ 100点</div>
+                        <div style="margin-top: 10px; font-weight: bold; color: ${employee.totalScore < 50 ? '#dc3545' : employee.totalScore < 70 ? '#856404' : '#155724'};">
+                            ${employee.totalScore < 50 ? '⚠️ 高リスク' : employee.totalScore < 70 ? '⚠️ 中リスク' : '✅ 低リスク'}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- カテゴリー別スコア -->
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <h3 style="color: #495057; margin-bottom: 15px;">📊 カテゴリー別スコア</h3>
+                    ${Object.entries(employee.categoryScores).map(([category, score]) => `
+                        <div style="margin-bottom: 15px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span style="font-weight: bold;">${category}</span>
+                                <span style="font-weight: bold; color: ${score < 50 ? '#dc3545' : score < 70 ? '#ffc107' : '#28a745'};">
+                                    ${score.toFixed(1)}点
+                                </span>
+                            </div>
+                            <div style="background: #e9ecef; height: 10px; border-radius: 5px; overflow: hidden;">
+                                <div style="
+                                    width: ${score}%;
+                                    height: 100%;
+                                    background: ${score < 50 ? '#dc3545' : score < 70 ? '#ffc107' : '#28a745'};
+                                    transition: width 0.3s;
+                                "></div>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <!-- 低スコア設問 -->
+                ${(() => {
+                    const lowScoreQuestions = [];
+                    for (let i = 1; i <= 100; i++) {
+                        const score = employee[`q${i}`];
+                        if (score && score <= 2) {
+                            lowScoreQuestions.push({ num: i, score: score });
+                        }
+                    }
+                    
+                    if (lowScoreQuestions.length > 0) {
+                        return `
+                            <div style="background: #fff3cd; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #ffc107;">
+                                <h3 style="color: #856404; margin-bottom: 15px;">⚠️ 低スコア設問（2点以下）</h3>
+                                <ul style="margin: 0; padding-left: 20px;">
+                                    ${lowScoreQuestions.map(q => `
+                                        <li style="margin-bottom: 8px;">
+                                            <strong>設問${q.num}:</strong> ${questions[q.num - 1]} 
+                                            <span style="color: #dc3545; font-weight: bold;">(${q.score}点)</span>
+                                        </li>
+                                    `).join('')}
+                                </ul>
+                            </div>
+                        `;
+                    }
+                    return '';
+                })()}
+                
+                <!-- アクションボタン -->
+                <div style="text-align: center; margin-top: 30px;">
+                    <button onclick="closeEmployeeDetailModal()" style="
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        color: white;
+                        border: none;
+                        padding: 12px 30px;
+                        border-radius: 8px;
+                        font-size: 16px;
+                        cursor: pointer;
+                    ">閉じる</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // モーダルを表示
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
+// モーダルを閉じる関数
+function closeEmployeeDetailModal() {
+    const modal = document.getElementById('employeeDetailModal');
+    if (modal) {
+        modal.remove();
+    }
 }
 
 // PDF生成の重複防止フラグ
@@ -1226,8 +1375,6 @@ async function generateExecutivePDF() {
     isPdfGenerating = true;
 
     try {
-        const filteredData = getFilteredData();
-        
         if (filteredData.length === 0) {
             alert('データがありません。フィルタを確認してください。');
             isPdfGenerating = false;
