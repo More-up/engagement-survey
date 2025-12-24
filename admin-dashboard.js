@@ -379,12 +379,6 @@ function updateGenderBarChart(maleData, femaleData) {
         return scores.length > 0 ? (scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
     });
     
-    const differences = maleScores.map((male, i) => male - femaleScores[i]);
-    const backgroundColors = differences.map(diff => {
-        if (Math.abs(diff) <= 5) return 'rgba(128, 128, 128, 0.6)';
-        return diff > 0 ? 'rgba(0, 123, 255, 0.6)' : 'rgba(255, 20, 147, 0.6)';
-    });
-    
     window.genderComparisonBarChart = new Chart(ctx, {
         type: 'bar',
         data: {
@@ -403,15 +397,6 @@ function updateGenderBarChart(maleData, femaleData) {
                     backgroundColor: 'rgba(255, 20, 147, 0.6)',
                     borderColor: 'rgba(255, 20, 147, 1)',
                     borderWidth: 1
-                },
-                {
-                    label: '差分（男性-女性）',
-                    data: differences,
-                    backgroundColor: backgroundColors,
-                    borderColor: backgroundColors.map(c => c.replace('0.6', '1')),
-                    borderWidth: 1,
-                    type: 'line',
-                    yAxisID: 'y1'
                 }
             ]
         },
@@ -423,13 +408,6 @@ function updateGenderBarChart(maleData, femaleData) {
                     beginAtZero: true,
                     max: 100,
                     title: { display: true, text: 'スコア' }
-                },
-                y1: {
-                    type: 'linear',
-                    display: true,
-                    position: 'right',
-                    title: { display: true, text: '差分' },
-                    grid: { drawOnChartArea: false }
                 }
             },
             plugins: {
@@ -1221,18 +1199,9 @@ function createDetailDataSheet() {
     return XLSX.utils.aoa_to_sheet(data);
 }
 
-function generateExecutivePDF() {
-    alert('PDFレポート生成機能は今後実装予定です');
-}
-
-function viewDetail(employeeCode) {
-    const employee = allData.find(d => d.employeeCode === employeeCode);
-    if (!employee) return;
-    
-    alert(`社員コード: ${employee.employeeCode}\n部署: ${employee.department}\n総合スコア: ${employee.totalScore.toFixed(1)}点\n\n詳細表示機能は今後実装予定です`);
-}
 // ========================================
-// PDF企業向けレポート生成機能（完全版）
+// PDF企業向けレポート生成機能（日本語対応版）
+// Canvas→画像変換→PDF埋め込み方式
 // ========================================
 
 async function generateExecutivePDF() {
@@ -1249,351 +1218,422 @@ async function generateExecutivePDF() {
             format: 'a4'
         });
         
-        let yPosition = 20;
+        // A4サイズ (mm)
+        const pageWidth = 210;
+        const pageHeight = 297;
+        const margin = 15;
+        const contentWidth = pageWidth - (margin * 2);
+        
+        // ========================================
+        // ヘルパー関数: HTMLコンテンツをCanvasに変換してPDFに追加
+        // ========================================
+        async function addHtmlContentToPdf(htmlContent, addNewPage = false) {
+            if (addNewPage) {
+                doc.addPage();
+            }
+            
+            // 一時的なコンテナを作成
+            const tempContainer = document.createElement('div');
+            tempContainer.style.position = 'absolute';
+            tempContainer.style.left = '-9999px';
+            tempContainer.style.width = `${contentWidth * 3.78}px`; // mm → px (96 DPI換算)
+            tempContainer.style.backgroundColor = '#ffffff';
+            tempContainer.style.padding = '20px';
+            tempContainer.style.fontFamily = 'Arial, "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif';
+            tempContainer.innerHTML = htmlContent;
+            document.body.appendChild(tempContainer);
+            
+            try {
+                // html2canvasでCanvasに変換
+                const canvas = await html2canvas(tempContainer, {
+                    scale: 2,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    useCORS: true
+                });
+                
+                // CanvasをPDFに追加
+                const imgData = canvas.toDataURL('image/png');
+                const imgWidth = contentWidth;
+                const imgHeight = (canvas.height * contentWidth) / canvas.width;
+                
+                // 画像が1ページに収まらない場合の処理
+                if (imgHeight > (pageHeight - margin * 2)) {
+                    // 複数ページに分割
+                    let remainingHeight = imgHeight;
+                    let sourceY = 0;
+                    const maxHeightPerPage = pageHeight - margin * 2;
+                    
+                    while (remainingHeight > 0) {
+                        const currentHeight = Math.min(remainingHeight, maxHeightPerPage);
+                        
+                        doc.addImage(
+                            imgData,
+                            'PNG',
+                            margin,
+                            margin,
+                            imgWidth,
+                            currentHeight,
+                            undefined,
+                            'FAST',
+                            0
+                        );
+                        
+                        sourceY += currentHeight;
+                        remainingHeight -= currentHeight;
+                        
+                        if (remainingHeight > 0) {
+                            doc.addPage();
+                        }
+                    }
+                } else {
+                    // 1ページに収まる場合
+                    doc.addImage(imgData, 'PNG', margin, margin, imgWidth, imgHeight);
+                }
+                
+            } finally {
+                // 一時コンテナを削除
+                document.body.removeChild(tempContainer);
+            }
+        }
         
         // ========================================
         // 1. 表紙ページ
         // ========================================
-        doc.setFontSize(28);
-        doc.text('エンゲージメント調査レポート', 105, 80, { align: 'center' });
-        
-        doc.setFontSize(14);
         const companyFilter = document.getElementById('companyFilter').value;
         const companyName = companyFilter !== 'all' ? companyFilter : '全社';
-        doc.text(`対象企業: ${companyName}`, 105, 100, { align: 'center' });
-        
-        doc.setFontSize(12);
         const today = new Date().toLocaleDateString('ja-JP');
-        doc.text(`生成日: ${today}`, 105, 110, { align: 'center' });
         
-        doc.setFontSize(10);
-        doc.text(`対象データ件数: ${filteredData.length}件`, 105, 120, { align: 'center' });
+        const coverHtml = `
+            <div style="text-align: center; padding: 120px 20px;">
+                <h1 style="font-size: 32px; color: #2c3e50; margin-bottom: 60px;">エンゲージメント調査レポート</h1>
+                <p style="font-size: 20px; color: #34495e; margin: 20px 0;"><strong>対象企業:</strong> ${companyName}</p>
+                <p style="font-size: 18px; color: #7f8c8d; margin: 20px 0;">生成日: ${today}</p>
+                <p style="font-size: 16px; color: #95a5a6; margin: 20px 0;">対象データ件数: ${filteredData.length}件</p>
+            </div>
+        `;
+        await addHtmlContentToPdf(coverHtml);
         
         // ========================================
         // 2. エグゼクティブサマリーページ
         // ========================================
-        doc.addPage();
-        yPosition = 20;
-        
-        doc.setFontSize(18);
-        doc.text('エグゼクティブサマリー', 20, yPosition);
-        yPosition += 15;
-        
-        // 全体統計
         const total = filteredData.length;
         const avgScore = (filteredData.reduce((sum, d) => sum + d.totalScore, 0) / total).toFixed(1);
         const highRisk = filteredData.filter(d => d.totalScore < 50).length;
         const mediumRisk = filteredData.filter(d => d.totalScore >= 50 && d.totalScore < 70).length;
         const lowRisk = filteredData.filter(d => d.totalScore >= 70).length;
         
-        doc.setFontSize(12);
-        doc.text(`全体平均スコア: ${avgScore}点 / 100点`, 20, yPosition);
-        yPosition += 8;
-        doc.text(`回答者数: ${total}人`, 20, yPosition);
-        yPosition += 15;
+        const maleCount = filteredData.filter(d => d.gender === '男性').length;
+        const femaleCount = filteredData.filter(d => d.gender === '女性').length;
+        const maleAvg = maleCount > 0 ? (filteredData.filter(d => d.gender === '男性').reduce((sum, d) => sum + d.totalScore, 0) / maleCount).toFixed(1) : 0;
+        const femaleAvg = femaleCount > 0 ? (filteredData.filter(d => d.gender === '女性').reduce((sum, d) => sum + d.totalScore, 0) / femaleCount).toFixed(1) : 0;
         
-        // リスク分布表
-        doc.setFontSize(14);
-        doc.text('リスク分布', 20, yPosition);
-        yPosition += 10;
-        
-        const riskTableData = [
-            ['リスクレベル', '人数', '割合'],
-            ['高リスク (<50点)', `${highRisk}人`, `${((highRisk/total)*100).toFixed(1)}%`],
-            ['中リスク (50-70点)', `${mediumRisk}人`, `${((mediumRisk/total)*100).toFixed(1)}%`],
-            ['低リスク (70点以上)', `${lowRisk}人`, `${((lowRisk/total)*100).toFixed(1)}%`]
-        ];
-        
-        doc.autoTable({
-            startY: yPosition,
-            head: [riskTableData[0]],
-            body: riskTableData.slice(1),
-            theme: 'grid',
-            headStyles: { fillColor: [0, 123, 255] },
-            styles: { font: 'helvetica', fontSize: 10 }
-        });
-        
-        yPosition = doc.lastAutoTable.finalY + 15;
-        
-        // 性別統計
-        const maleData = filteredData.filter(d => d.gender === '男性');
-        const femaleData = filteredData.filter(d => d.gender === '女性');
-        const maleAvg = maleData.length > 0 ? 
-            (maleData.reduce((sum, d) => sum + d.totalScore, 0) / maleData.length).toFixed(1) : 0;
-        const femaleAvg = femaleData.length > 0 ? 
-            (femaleData.reduce((sum, d) => sum + d.totalScore, 0) / femaleData.length).toFixed(1) : 0;
-        
-        doc.setFontSize(14);
-        doc.text('性別統計', 20, yPosition);
-        yPosition += 10;
-        
-        const genderTableData = [
-            ['性別', '人数', '平均スコア'],
-            ['男性', `${maleData.length}人`, `${maleAvg}点`],
-            ['女性', `${femaleData.length}人`, `${femaleAvg}点`]
-        ];
-        
-        doc.autoTable({
-            startY: yPosition,
-            head: [genderTableData[0]],
-            body: genderTableData.slice(1),
-            theme: 'grid',
-            headStyles: { fillColor: [0, 123, 255] },
-            styles: { font: 'helvetica', fontSize: 10 }
-        });
+        const summaryHtml = `
+            <div style="padding: 20px;">
+                <h2 style="font-size: 24px; color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; margin-bottom: 25px;">エグゼクティブサマリー</h2>
+                
+                <div style="margin-bottom: 30px;">
+                    <p style="font-size: 18px; color: #34495e; margin: 10px 0;"><strong>全体平均スコア:</strong> ${avgScore}点 / 100点</p>
+                    <p style="font-size: 16px; color: #7f8c8d; margin: 10px 0;">回答者数: ${total}人</p>
+                </div>
+                
+                <h3 style="font-size: 18px; color: #2c3e50; margin: 25px 0 15px 0;">リスク分布</h3>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+                    <thead>
+                        <tr style="background-color: #3498db; color: white;">
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">リスクレベル</th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">人数</th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">割合</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="background-color: #fff3cd;">
+                            <td style="padding: 10px; border: 1px solid #ddd;">高リスク (&lt;50点)</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${highRisk}人</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${((highRisk/total)*100).toFixed(1)}%</td>
+                        </tr>
+                        <tr style="background-color: #d1ecf1;">
+                            <td style="padding: 10px; border: 1px solid #ddd;">中リスク (50-70点)</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${mediumRisk}人</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${((mediumRisk/total)*100).toFixed(1)}%</td>
+                        </tr>
+                        <tr style="background-color: #d4edda;">
+                            <td style="padding: 10px; border: 1px solid #ddd;">低リスク (≥70点)</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${lowRisk}人</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${((lowRisk/total)*100).toFixed(1)}%</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h3 style="font-size: 18px; color: #2c3e50; margin: 25px 0 15px 0;">性別統計</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background-color: #3498db; color: white;">
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">性別</th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">人数</th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">平均スコア</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding: 10px; border: 1px solid #ddd;">男性</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${maleCount}人</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${maleAvg}点</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 10px; border: 1px solid #ddd;">女性</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${femaleCount}人</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${femaleAvg}点</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        `;
+        await addHtmlContentToPdf(summaryHtml, true);
         
         // ========================================
-        // 3. レーダーチャート（画像として挿入）
+        // 3. カテゴリー別レーダーチャート（既存のCanvasを利用）
         // ========================================
         doc.addPage();
-        yPosition = 20;
-        
-        doc.setFontSize(18);
-        doc.text('カテゴリー別スコア（レーダーチャート）', 20, yPosition);
-        yPosition += 10;
-        
-        // レーダーチャートをキャンバスから画像として取得
-        const radarCanvas = document.getElementById('executiveRadarChart');
+        const radarCanvas = document.getElementById('dashboard10CategoryRadar');
         if (radarCanvas) {
-            try {
-                const radarImage = radarCanvas.toDataURL('image/png');
-                doc.addImage(radarImage, 'PNG', 20, yPosition, 170, 170);
-                yPosition += 180;
-            } catch (error) {
-                console.error('レーダーチャート画像取得エラー:', error);
-                doc.setFontSize(10);
-                doc.text('※ レーダーチャートの取得に失敗しました', 20, yPosition);
-                yPosition += 10;
-            }
+            const radarImgData = radarCanvas.toDataURL('image/png');
+            const radarWidth = contentWidth;
+            const radarHeight = (radarCanvas.height * contentWidth) / radarCanvas.width;
+            
+            // タイトルを追加
+            const chartTitleHtml = `
+                <div style="padding: 10px;">
+                    <h2 style="font-size: 24px; color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px;">10カテゴリー別スコア</h2>
+                </div>
+            `;
+            await addHtmlContentToPdf(chartTitleHtml);
+            
+            // レーダーチャート画像を追加
+            doc.addImage(radarImgData, 'PNG', margin, 50, radarWidth, Math.min(radarHeight, 150));
         }
         
         // ========================================
         // 4. カテゴリー別スコア詳細表
         // ========================================
-        doc.addPage();
-        yPosition = 20;
-        
-        doc.setFontSize(18);
-        doc.text('カテゴリー別スコア詳細', 20, yPosition);
-        yPosition += 10;
-        
         const categories = Object.keys(categoryQuestions);
-        const categoryTableData = [['カテゴリー', '平均スコア', '最高スコア', '最低スコア']];
-        
-        categories.forEach(cat => {
-            const scores = filteredData
-                .map(item => item.categoryScores[cat])
-                .filter(score => score !== undefined && score !== null);
-            
-            if (scores.length > 0) {
-                const avg = (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1);
-                const max = Math.max(...scores).toFixed(1);
-                const min = Math.min(...scores).toFixed(1);
-                categoryTableData.push([cat, `${avg}点`, `${max}点`, `${min}点`]);
-            }
+        const categoryScoresData = categories.map(cat => {
+            const scores = filteredData.map(d => d.categoryScores[cat]).filter(s => s !== undefined);
+            const avg = scores.length > 0 ? (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : 0;
+            return { category: cat, avg: avg };
         });
+        categoryScoresData.sort((a, b) => b.avg - a.avg);
         
-        doc.autoTable({
-            startY: yPosition,
-            head: [categoryTableData[0]],
-            body: categoryTableData.slice(1),
-            theme: 'striped',
-            headStyles: { fillColor: [0, 123, 255] },
-            styles: { font: 'helvetica', fontSize: 9 }
-        });
+        const categoryTableRows = categoryScoresData.map((item, index) => `
+            <tr style="background-color: ${index % 2 === 0 ? '#f8f9fa' : '#ffffff'};">
+                <td style="padding: 10px; border: 1px solid #ddd;">${item.category}</td>
+                <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${item.avg}点</td>
+            </tr>
+        `).join('');
+        
+        const categoryTableHtml = `
+            <div style="padding: 20px;">
+                <h3 style="font-size: 18px; color: #2c3e50; margin: 25px 0 15px 0;">カテゴリー別スコア詳細</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background-color: #3498db; color: white;">
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">カテゴリー</th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">平均スコア</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${categoryTableRows}
+                    </tbody>
+                </table>
+            </div>
+        `;
+        await addHtmlContentToPdf(categoryTableHtml, true);
         
         // ========================================
         // 5. 部署別比較表
         // ========================================
-        doc.addPage();
-        yPosition = 20;
-        
-        doc.setFontSize(18);
-        doc.text('部署別比較', 20, yPosition);
-        yPosition += 10;
-        
-        const departments = [...new Set(filteredData.map(d => d.department))];
-        const departmentTableData = [['部署', '人数', '平均スコア']];
-        
-        departments.forEach(dept => {
-            const deptData = filteredData.filter(d => d.department === dept);
-            const count = deptData.length;
-            const avgTotal = (deptData.reduce((sum, d) => sum + d.totalScore, 0) / count).toFixed(1);
-            departmentTableData.push([dept, `${count}人`, `${avgTotal}点`]);
+        const departmentData = {};
+        filteredData.forEach(item => {
+            if (!departmentData[item.department]) {
+                departmentData[item.department] = [];
+            }
+            departmentData[item.department].push(item.totalScore);
         });
         
-        doc.autoTable({
-            startY: yPosition,
-            head: [departmentTableData[0]],
-            body: departmentTableData.slice(1),
-            theme: 'grid',
-            headStyles: { fillColor: [0, 123, 255] },
-            styles: { font: 'helvetica', fontSize: 10 }
-        });
+        const departmentTableRows = Object.keys(departmentData).map((dept, index) => {
+            const scores = departmentData[dept];
+            const avg = (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1);
+            return `
+                <tr style="background-color: ${index % 2 === 0 ? '#f8f9fa' : '#ffffff'};">
+                    <td style="padding: 10px; border: 1px solid #ddd;">${dept}</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${scores.length}人</td>
+                    <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${avg}点</td>
+                </tr>
+            `;
+        }).join('');
         
-        yPosition = doc.lastAutoTable.finalY + 15;
+        const departmentTableHtml = `
+            <div style="padding: 20px;">
+                <h2 style="font-size: 24px; color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; margin-bottom: 25px;">部署別比較</h2>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background-color: #3498db; color: white;">
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">部署</th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">人数</th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">平均スコア</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${departmentTableRows}
+                    </tbody>
+                </table>
+            </div>
+        `;
+        await addHtmlContentToPdf(departmentTableHtml, true);
         
         // ========================================
-        // 6. 性別比較表（カテゴリー別）
+        // 6. 性別比較表
         // ========================================
-        if (yPosition > 220) {
-            doc.addPage();
-            yPosition = 20;
-        }
-        
-        doc.setFontSize(18);
-        doc.text('性別比較（カテゴリー別）', 20, yPosition);
-        yPosition += 10;
-        
-        const genderCategoryTableData = [['カテゴリー', '男性平均', '女性平均', '差分']];
-        
-        categories.forEach(cat => {
-            const maleScores = maleData.map(item => item.categoryScores[cat]).filter(s => s !== undefined);
-            const femaleScores = femaleData.map(item => item.categoryScores[cat]).filter(s => s !== undefined);
-            
-            const maleAvgCat = maleScores.length > 0 ? 
-                (maleScores.reduce((a, b) => a + b, 0) / maleScores.length).toFixed(1) : 0;
-            const femaleAvgCat = femaleScores.length > 0 ? 
-                (femaleScores.reduce((a, b) => a + b, 0) / femaleScores.length).toFixed(1) : 0;
-            const diff = (maleAvgCat - femaleAvgCat).toFixed(1);
-            
-            genderCategoryTableData.push([cat, `${maleAvgCat}点`, `${femaleAvgCat}点`, `${diff}点`]);
-        });
-        
-        doc.autoTable({
-            startY: yPosition,
-            head: [genderCategoryTableData[0]],
-            body: genderCategoryTableData.slice(1),
-            theme: 'striped',
-            headStyles: { fillColor: [0, 123, 255] },
-            styles: { font: 'helvetica', fontSize: 9 }
-        });
+        const genderTableHtml = `
+            <div style="padding: 20px;">
+                <h2 style="font-size: 24px; color: #2c3e50; border-bottom: 3px solid #3498db; padding-bottom: 10px; margin-bottom: 25px;">性別比較</h2>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background-color: #3498db; color: white;">
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">性別</th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">人数</th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">平均スコア</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding: 10px; border: 1px solid #ddd;">男性</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${maleCount}人</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${maleAvg}点</td>
+                        </tr>
+                        <tr style="background-color: #f8f9fa;">
+                            <td style="padding: 10px; border: 1px solid #ddd;">女性</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${femaleCount}人</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${femaleAvg}点</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        `;
+        await addHtmlContentToPdf(genderTableHtml, true);
         
         // ========================================
         // 7. 重要アラート一覧
         // ========================================
-        doc.addPage();
-        yPosition = 20;
+        const highRiskEmployees = filteredData
+            .filter(d => d.totalScore < 50)
+            .sort((a, b) => a.totalScore - b.totalScore)
+            .slice(0, 5);
         
-        doc.setFontSize(18);
-        doc.text('重要アラート', 20, yPosition);
-        yPosition += 10;
+        const lowScoreQuestions = detectLowScoreQuestions();
         
-        doc.setFontSize(12);
+        const alertRows = highRiskEmployees.map((emp, index) => `
+            <tr style="background-color: ${index % 2 === 0 ? '#fff3cd' : '#ffffff'};">
+                <td style="padding: 10px; border: 1px solid #ddd;">${emp.employeeCode}</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${emp.gender}</td>
+                <td style="padding: 10px; border: 1px solid #ddd; text-align: right; color: #dc3545; font-weight: bold;">${emp.totalScore.toFixed(1)}点</td>
+            </tr>
+        `).join('');
         
-        // 高リスク従業員
-        const highRiskEmployees = filteredData.filter(d => d.totalScore < 50);
-        if (highRiskEmployees.length > 0) {
-            doc.setFontSize(14);
-            doc.text(`高リスク従業員: ${highRiskEmployees.length}人`, 20, yPosition);
-            yPosition += 8;
-            
-            doc.setFontSize(10);
-            highRiskEmployees.slice(0, 5).forEach(emp => {
-                doc.text(`・社員コード: ${emp.employeeCode} | 部署: ${emp.department} | スコア: ${emp.totalScore.toFixed(1)}点`, 25, yPosition);
-                yPosition += 6;
-            });
-            
-            if (highRiskEmployees.length > 5) {
-                doc.text(`※ 他 ${highRiskEmployees.length - 5}人`, 25, yPosition);
-                yPosition += 6;
-            }
-            yPosition += 5;
-        }
+        const questionAlertRows = lowScoreQuestions.slice(0, 10).map((q, index) => `
+            <tr style="background-color: ${index % 2 === 0 ? '#f8f9fa' : '#ffffff'};">
+                <td style="padding: 10px; border: 1px solid #ddd;">Q${q.questionNumber}</td>
+                <td style="padding: 10px; border: 1px solid #ddd;">${q.questionText.substring(0, 40)}...</td>
+                <td style="padding: 10px; border: 1px solid #ddd; text-align: right;">${q.respondents}人</td>
+                <td style="padding: 10px; border: 1px solid #ddd; text-align: right; color: #dc3545; font-weight: bold;">${q.avgScore.toFixed(1)}点</td>
+            </tr>
+        `).join('');
         
-        // 設問別低スコアアラート
-        const questionAlerts = detectLowScoreQuestions();
-        if (questionAlerts.length > 0) {
-            doc.setFontSize(14);
-            doc.text(`低スコア設問: ${questionAlerts.length}件`, 20, yPosition);
-            yPosition += 8;
-            
-            doc.setFontSize(9);
-            questionAlerts.slice(0, 10).forEach(alert => {
-                if (yPosition > 270) {
-                    doc.addPage();
-                    yPosition = 20;
-                }
-                doc.text(`・Q${alert.questionNum}: ${alert.questionText.substring(0, 30)}...`, 25, yPosition);
-                yPosition += 5;
-                doc.text(`  カテゴリー: ${alert.category} | 平均: ${alert.avgScore}/5.0 | 該当: ${alert.count}人`, 27, yPosition);
-                yPosition += 7;
-            });
-        }
+        const alertsHtml = `
+            <div style="padding: 20px;">
+                <h2 style="font-size: 24px; color: #2c3e50; border-bottom: 3px solid #dc3545; padding-bottom: 10px; margin-bottom: 25px;">重要アラート一覧</h2>
+                
+                <h3 style="font-size: 18px; color: #2c3e50; margin: 25px 0 15px 0;">高リスク従業員（スコア順上位5名）</h3>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+                    <thead>
+                        <tr style="background-color: #dc3545; color: white;">
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">社員コード</th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">性別</th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">総合スコア</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${alertRows}
+                    </tbody>
+                </table>
+                
+                <h3 style="font-size: 18px; color: #2c3e50; margin: 25px 0 15px 0;">設問別低スコアアラート（上位10件）</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background-color: #dc3545; color: white;">
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">設問番号</th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: left;">設問内容</th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">回答者数</th>
+                            <th style="padding: 12px; border: 1px solid #ddd; text-align: right;">平均スコア</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${questionAlertRows}
+                    </tbody>
+                </table>
+            </div>
+        `;
+        await addHtmlContentToPdf(alertsHtml, true);
         
         // ========================================
-        // 8. 改善提案（最終ページ）
+        // 8. 改善提案
         // ========================================
-        doc.addPage();
-        yPosition = 20;
-        
-        doc.setFontSize(18);
-        doc.text('改善提案', 20, yPosition);
-        yPosition += 15;
-        
-        doc.setFontSize(11);
-        
-        // 全体スコアに基づく提案
+        let suggestions = '';
         if (parseFloat(avgScore) < 60) {
-            doc.text('【緊急対応が必要】', 20, yPosition);
-            yPosition += 8;
-            doc.setFontSize(10);
-            doc.text('・全体平均スコアが60点未満です。組織全体の課題として早急な対応が必要です。', 25, yPosition);
-            yPosition += 6;
-            doc.text('・経営層と人事部門で現状分析と改善計画の策定を推奨します。', 25, yPosition);
-            yPosition += 10;
+            suggestions = '全体スコアが低いため、組織全体の課題を特定し、包括的な改善策を検討することを推奨します。';
         } else if (parseFloat(avgScore) < 70) {
-            doc.text('【改善の余地あり】', 20, yPosition);
-            yPosition += 8;
-            doc.setFontSize(10);
-            doc.text('・全体平均スコアは標準的ですが、改善の余地があります。', 25, yPosition);
-            yPosition += 6;
-            doc.text('・低スコアカテゴリーに焦点を当てた施策を検討してください。', 25, yPosition);
-            yPosition += 10;
+            suggestions = '全体スコアは中程度です。特定のカテゴリーや部署に焦点を当てた改善策を検討してください。';
         } else {
-            doc.text('【良好な状態】', 20, yPosition);
-            yPosition += 8;
-            doc.setFontSize(10);
-            doc.text('・全体平均スコアは良好です。現状維持と更なる向上を目指してください。', 25, yPosition);
-            yPosition += 10;
+            suggestions = '全体スコアは良好です。さらなる向上のため、低スコアカテゴリーの改善を継続してください。';
         }
         
-        // カテゴリー別提案
-        doc.setFontSize(11);
-        doc.text('【カテゴリー別改善ポイント】', 20, yPosition);
-        yPosition += 8;
+        const topLowCategories = categoryScoresData.slice(-3).reverse();
+        const categoryRecommendations = topLowCategories.map(cat => 
+            `<li style="margin: 10px 0; color: #34495e;">${cat.category}（${cat.avg}点）の改善に注力してください。</li>`
+        ).join('');
         
-        // 最低スコアカテゴリーを特定
-        const categoryScores = categories.map(cat => {
-            const scores = filteredData.map(item => item.categoryScores[cat]).filter(s => s !== undefined);
-            const avg = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
-            return { category: cat, score: avg };
-        }).sort((a, b) => a.score - b.score);
-        
-        doc.setFontSize(10);
-        categoryScores.slice(0, 3).forEach((item, index) => {
-            doc.text(`${index + 1}. ${item.category}: ${item.score.toFixed(1)}点`, 25, yPosition);
-            yPosition += 6;
-        });
-        
-        yPosition += 10;
-        
-        // フッター
-        doc.setFontSize(8);
-        doc.text('※ 本レポートは診断データに基づく自動生成レポートです。', 20, yPosition);
-        yPosition += 5;
-        doc.text('※ 詳細な分析や個別対応については、人事担当者にご相談ください。', 20, yPosition);
+        const suggestionsHtml = `
+            <div style="padding: 20px;">
+                <h2 style="font-size: 24px; color: #2c3e50; border-bottom: 3px solid #27ae60; padding-bottom: 10px; margin-bottom: 25px;">改善提案</h2>
+                
+                <div style="background-color: #d4edda; border-left: 5px solid #27ae60; padding: 15px; margin-bottom: 20px;">
+                    <p style="font-size: 16px; color: #155724; margin: 0;">${suggestions}</p>
+                </div>
+                
+                <h3 style="font-size: 18px; color: #2c3e50; margin: 25px 0 15px 0;">重点改善カテゴリー</h3>
+                <ul style="list-style-type: disc; padding-left: 20px;">
+                    ${categoryRecommendations}
+                </ul>
+                
+                <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd;">
+                    <p style="font-size: 12px; color: #7f8c8d; text-align: center;">このレポートは${today}に生成されました。</p>
+                    <p style="font-size: 12px; color: #7f8c8d; text-align: center;">データ件数: ${filteredData.length}件</p>
+                </div>
+            </div>
+        `;
+        await addHtmlContentToPdf(suggestionsHtml, true);
         
         // ========================================
-        // PDFダウンロード
+        // PDFを保存
         // ========================================
-        const fileName = `エンゲージメント調査_企業向けレポート_${new Date().toISOString().split('T')[0]}.pdf`;
-        doc.save(fileName);
+        const filename = `エンゲージメント調査_企業向けレポート_${new Date().toISOString().split('T')[0]}.pdf`;
+        doc.save(filename);
         
-        alert(`PDFレポート「${fileName}」を生成しました`);
+        alert(`PDFレポートを生成しました:\n${filename}`);
         
     } catch (error) {
         console.error('PDF生成エラー:', error);
-        alert('PDF生成中にエラーが発生しました: ' + error.message);
+        alert(`PDF生成エラー: ${error.message}`);
     }
 }
+
