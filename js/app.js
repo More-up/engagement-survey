@@ -149,9 +149,17 @@ let companyName = ''; // URLパラメータから取得する会社名
 // URLパラメータから会社名を取得
 function getCompanyFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get('company') || '未設定';
+    let company = urlParams.get('company');
+    
+    // デバッグ用ログ
+    console.log('🔍 取得した会社名:', company);
+    
+    if (!company) {
+        company = '未設定';
+    }
+    
+    return company;
 }
-
 // ページ読み込み時に会社名を取得
 window.addEventListener('DOMContentLoaded', function() {
     companyName = getCompanyFromURL();
