@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>管理者ダッシュボード - エンゲージメント・ナビ</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS ライブラリ（Excelレポート生成用） -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+    <!-- jsPDF ライブラリ（PDFレポート生成用） -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.0/jspdf.plugin.autotable.min.js"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
     <style>
         * {
@@ -294,6 +298,11 @@
             border-left-color: #dc3545;
         }
 
+        .alert-item.warning {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+        }
+
         .alert-item strong {
             display: block;
             margin-bottom: 5px;
@@ -429,6 +438,38 @@
             color: #6c757d;
             margin-top: 5px;
         }
+
+        .chart-type-btn {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 10px;
+        }
+
+        .chart-type-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .trend-view-btn {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 10px;
+        }
+
+        .trend-view-btn.active {
+            background: #667eea;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -527,13 +568,10 @@
                         <!-- 男性カード -->
                         <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; text-align: center;">
                             <h3 style="color: #667eea; margin-bottom: 15px;">👨 男性</h3>
-                            <!-- 平均スコア（大きく表示） -->
                             <div id="maleAvgScore" style="font-size: 3rem; color: #667eea; font-weight: 700; margin: 10px 0;">0</div>
                             <div style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">平均スコア</div>
-                            <!-- 人数（中サイズ） -->
                             <div id="maleCount" style="font-size: 1.5rem; font-weight: 600; color: #495057; margin: 8px 0;">0人</div>
                             <div style="font-size: 0.85rem; color: #999; margin-bottom: 15px;">人数</div>
-                            <!-- シェア率（小サイズ） -->
                             <div id="maleRatio" style="font-size: 1.2rem; color: #999; margin: 5px 0;">0%</div>
                             <div style="font-size: 0.8rem; color: #999;">シェア率</div>
                         </div>
@@ -541,24 +579,29 @@
                         <!-- 女性カード -->
                         <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; text-align: center;">
                             <h3 style="color: #f093fb; margin-bottom: 15px;">👩 女性</h3>
-                            <!-- 平均スコア（大きく表示） -->
                             <div id="femaleAvgScore" style="font-size: 3rem; color: #f093fb; font-weight: 700; margin: 10px 0;">0</div>
                             <div style="font-size: 0.9rem; color: #666; margin-bottom: 15px;">平均スコア</div>
-                            <!-- 人数（中サイズ） -->
                             <div id="femaleCount" style="font-size: 1.5rem; font-weight: 600; color: #495057; margin: 8px 0;">0人</div>
                             <div style="font-size: 0.85rem; color: #999; margin-bottom: 15px;">人数</div>
-                            <!-- シェア率（小サイズ） -->
                             <div id="femaleRatio" style="font-size: 1.2rem; color: #999; margin: 5px 0;">0%</div>
                             <div style="font-size: 0.8rem; color: #999;">シェア率</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- 男女別カテゴリ比較 -->
+                <!-- 男女別カテゴリ比較（レーダーチャート） -->
                 <div class="section">
-                    <h2>📊 男女別カテゴリ比較</h2>
+                    <h2>📊 男女別カテゴリ比較（レーダーチャート）</h2>
                     <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
-                        <canvas id="genderRadarChart" style="max-height: 400px;"></canvas>
+                        <canvas id="genderComparisonRadarChart" style="max-height: 400px;"></canvas>
+                    </div>
+                </div>
+
+                <!-- 男女別カテゴリ比較（棒グラフ） -->
+                <div class="section">
+                    <h2>📊 男女別カテゴリ比較（棒グラフ + 差分）</h2>
+                    <div style="background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                        <canvas id="genderComparisonBarChart" style="max-height: 400px;"></canvas>
                     </div>
                 </div>
 
@@ -566,12 +609,9 @@
                 <div class="section trend-section">
                     <h2>📈 改善トレンド</h2>
                     <div class="controls">
-                        <button class="toggle-btn active" onclick="changeTrendView('all')">全社</button>
-                        <button class="toggle-btn" onclick="changeTrendView('department')">部署別</button>
-                        <button class="toggle-btn" onclick="changeTrendView('individual')">個人別</button>
-                        <button class="btn btn-secondary" onclick="changeTrendPeriod(3)">3ヶ月</button>
-                        <button class="btn btn-secondary active" onclick="changeTrendPeriod(6)">6ヶ月</button>
-                        <button class="btn btn-secondary" onclick="changeTrendPeriod(12)">12ヶ月</button>
+                        <button class="trend-view-btn active" onclick="changeTrendView('overall')">総合スコア推移</button>
+                        <button class="trend-view-btn" onclick="changeTrendView('category')">カテゴリー別推移</button>
+                        <button class="trend-view-btn" onclick="changeTrendView('risk')">リスク人数推移</button>
                     </div>
                     <div class="chart-container">
                         <canvas id="trendChart"></canvas>
@@ -630,6 +670,13 @@
             <div id="tab2" class="tab-content">
                 <div class="section">
                     <h2>部署別パフォーマンス比較</h2>
+                    <!-- 部署選択UI -->
+                    <div id="departmentSelection" style="margin-bottom: 20px;"></div>
+                    <!-- グラフ切り替えボタン -->
+                    <div style="margin-bottom: 20px;">
+                        <button class="chart-type-btn active" onclick="switchDepartmentChartType('radar')">レーダーチャート</button>
+                        <button class="chart-type-btn" onclick="switchDepartmentChartType('bar')">棒グラフ</button>
+                    </div>
                     <div class="department-cards" id="departmentCards"></div>
                 </div>
                 <div class="section comparison-section">
@@ -646,13 +693,31 @@
                     <h2>レポート出力</h2>
                     <div class="controls">
                         <button class="btn btn-primary" onclick="exportCSV()">📊 CSVエクスポート</button>
-                        <button class="btn btn-primary" onclick="generateDetailedReport()">📄 詳細レポート生成</button>
+                        <button class="btn btn-primary" onclick="generateDetailedReport()">📄 Excelレポート生成（分析用）</button>
+                        <button class="btn btn-primary" onclick="generateExecutivePDF()">📥 PDFレポート生成（企業提出用）</button>
                     </div>
+                    <p style="margin-top: 20px; color: #666;">
+                        <strong>Excelレポート</strong>: データ分析用の詳細データ（Q1-Q100の回答分布、集計表など）<br>
+                        <strong>PDFレポート</strong>: 企業様への提出用レポート（グラフ・チャート中心、印刷可能）
+                    </p>
                 </div>
             </div>
         </div>
     </div>
 
     <script src="admin-dashboard.js"></script>
+    <script>
+        // 認証機能
+        function authenticate() {
+            const password = document.getElementById('passwordInput').value;
+            if (password === 'moreup-japan') {
+                document.getElementById('authSection').style.display = 'none';
+                document.getElementById('dashboardSection').style.display = 'block';
+                loadData();
+            } else {
+                alert('パスワードが正しくありません');
+            }
+        }
+    </script>
 </body>
 </html>
