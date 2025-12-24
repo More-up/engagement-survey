@@ -1328,6 +1328,91 @@ function viewDetail(employeeCode) {
                     return '';
                 })()}
                 
+                <!-- 全設問の回答 -->
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                    <h3 style="color: #495057; margin-bottom: 15px;">📝 全設問の回答（100問）</h3>
+                    <p style="color: #666; font-size: 13px; margin-bottom: 15px;">※ クリックでカテゴリーを展開/折りたたみ</p>
+                    ${Object.entries(categoryQuestions).map(([category, questionNums]) => {
+                        const categoryScores = questionNums.map(num => employee[`q${num}`]).filter(s => s !== undefined);
+                        const categoryAvg = categoryScores.length > 0 
+                            ? (categoryScores.reduce((a, b) => a + b, 0) / categoryScores.length * 20).toFixed(1)
+                            : 0;
+                        
+                        const categoryId = category.replace(/[^a-zA-Z0-9]/g, '');
+                        
+                        return `
+                            <div style="margin-bottom: 15px; border: 1px solid #dee2e6; border-radius: 8px; overflow: hidden;">
+                                <div 
+                                    onclick="toggleCategory('${categoryId}')" 
+                                    style="
+                                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                        color: white;
+                                        padding: 12px 15px;
+                                        cursor: pointer;
+                                        display: flex;
+                                        justify-content: space-between;
+                                        align-items: center;
+                                        user-select: none;
+                                    "
+                                >
+                                    <span style="font-weight: bold;">▼ ${category}</span>
+                                    <span style="font-weight: bold;">平均: ${categoryAvg}点</span>
+                                </div>
+                                <div id="category-${categoryId}" style="display: none; padding: 15px; background: white;">
+                                    ${questionNums.map(num => {
+                                        const score = employee[`q${num}`];
+                                        const questionText = questions[num - 1];
+                                        
+                                        let bgColor = '#d4edda';  // 緑（高スコア）
+                                        let textColor = '#155724';
+                                        let emoji = '✅';
+                                        
+                                        if (score <= 2) {
+                                            bgColor = '#f8d7da';  // 赤（低スコア）
+                                            textColor = '#721c24';
+                                            emoji = '❌';
+                                        } else if (score === 3) {
+                                            bgColor = '#fff3cd';  // 黄色（中スコア）
+                                            textColor = '#856404';
+                                            emoji = '⚠️';
+                                        } else if (score === 4) {
+                                            bgColor = '#d1ecf1';  // 青（良スコア）
+                                            textColor = '#0c5460';
+                                            emoji = '👍';
+                                        }
+                                        
+                                        return `
+                                            <div style="
+                                                background: ${bgColor};
+                                                padding: 10px;
+                                                margin-bottom: 8px;
+                                                border-radius: 5px;
+                                                border-left: 4px solid ${textColor};
+                                            ">
+                                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                    <div style="flex: 1;">
+                                                        <strong style="color: ${textColor};">Q${num}:</strong>
+                                                        <span style="color: #495057;">${questionText}</span>
+                                                    </div>
+                                                    <div style="
+                                                        min-width: 60px;
+                                                        text-align: right;
+                                                        font-weight: bold;
+                                                        color: ${textColor};
+                                                        font-size: 16px;
+                                                    ">
+                                                        ${emoji} ${score}点
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+                
                 <!-- アクションボタン -->
                 <div style="text-align: center; margin-top: 30px;">
                     <button onclick="closeEmployeeDetailModal()" style="
@@ -1353,6 +1438,21 @@ function closeEmployeeDetailModal() {
     const modal = document.getElementById('employeeDetailModal');
     if (modal) {
         modal.remove();
+    }
+}
+
+// カテゴリーの展開/折りたたみ
+function toggleCategory(categoryId) {
+    const element = document.getElementById('category-' + categoryId);
+    if (element) {
+        const arrow = element.previousElementSibling.querySelector('span:first-child');
+        if (element.style.display === 'none' || element.style.display === '') {
+            element.style.display = 'block';
+            if (arrow) arrow.textContent = arrow.textContent.replace('▼', '▲');
+        } else {
+            element.style.display = 'none';
+            if (arrow) arrow.textContent = arrow.textContent.replace('▲', '▼');
+        }
     }
 }
 
